@@ -1,0 +1,141 @@
+/* Dashboard & Workspace Specific Styles */
+
+.dashboard-root {
+  background-color: var(--color-surface);
+  min-height: 100vh;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Sidebar Drawer & Desktop Collapsible Styling */
+.dash-sidebar {
+  border-right: 1px solid var(--color-hairline);
+  will-change: transform;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Mobile phones (< 768px): drawer slides in when .sidebar-open */
+@media (max-width: 767px) {
+  .dash-sidebar {
+    transform: translateX(-100%) !important;
+  }
+  .dash-sidebar.sidebar-open {
+    transform: translateX(0) !important;
+  }
+}
+
+/* Tablets, split-screen, laptops, desktops (>= 768px): visible by default unless .sidebar-collapsed */
+@media (min-width: 768px) {
+  .dash-sidebar:not(.sidebar-collapsed) {
+    transform: translateX(0) !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+  }
+
+  .dash-sidebar.sidebar-collapsed {
+    transform: translateX(-100%) !important;
+    pointer-events: none !important;
+  }
+
+  #dashboard-main-layout.sidebar-collapsed-layout {
+    padding-left: 0 !important;
+  }
+
+  header.sidebar-collapsed-header {
+    left: 0 !important;
+  }
+}
+
+/* Day Chip Horizontal Scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: var(--color-surface-container-low);
+  border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--color-outline-variant);
+  border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline);
+}
+
+/* Task Checkbox Custom Accents */
+.task-checkbox {
+  accent-color: var(--color-primary);
+}
+
+/* Notion Database Table Row Hover */
+.db-item-row:hover td {
+  background-color: var(--color-surface-container-low);
+}
+
+/* Status dropdown in table */
+.status-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20fill%3D%22%23444748%22%20d%3D%22M0%200l5%206%205-6z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 8px 5px;
+  padding-right: 18px !important;
+}
+
+/* Spec Detail Modal Backdrop */
+.spec-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(25, 25, 25, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.spec-modal-card {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--color-hairline-strong);
+  max-width: 44rem;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  padding: 2rem;
+}
+
+.rubric-section {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background-color: var(--color-surface-container-low);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-surface-container);
+}
+
+.rubric-section-title {
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-secondary);
+  font-weight: 600;
+  margin-bottom: 0.375rem;
+}
