@@ -6,6 +6,8 @@
 ![Stack](https://img.shields.io/badge/Built%20With-Vite%20•%20Tailwind%20•%20Supabase-38BDF8?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Local--First-Cloud%20Sync%20Ready-10B981?style=for-the-badge)
 
+📖 **Need a complete setup walkthrough?** Read the detailed [**Project Setup & Installation Guide (SETUP.md)**](file:///Users/ritesh/projects/interview-prep-os/SETUP.md).
+
 ---
 
 ## 🎯 Overview
