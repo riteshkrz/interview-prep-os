@@ -497,3 +497,66 @@
 .dialog-backdrop.active .dialog-card {
   transform: scale(1);
 }
+
+/* Legal Documents Prose Styling */
+.legal-prose h3 {
+  font-family: var(--font-family-base, sans-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.legal-prose h3:first-child {
+  margin-top: 0;
+}
+
+.legal-prose p {
+  color: #94A3B8;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  margin-bottom: 0.75rem;
+}
+
+.legal-prose strong {
+  color: #F1F5F9;
+  font-weight: 600;
+}
+
+.legal-prose ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-bottom: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.legal-prose li {
+  color: #CBD5E1;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.legal-prose a {
+  color: #38BDF8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+.legal-prose a:hover {
+  color: #7DD3FC;
+}
+
+.legal-prose code {
+  font-family: var(--font-family-code, monospace);
+  font-size: 0.8rem;
+  padding: 0.15rem 0.4rem;
+  background-color: #141C2E;
+  border: 1px solid #24314A;
+  border-radius: 4px;
+  color: #38BDF8;
+}

@@ -12,6 +12,7 @@ import { renderPricing } from './components/Pricing.js';
 import { renderClosingCTA } from './components/ClosingCTA.js';
 import { renderFooter } from './components/Footer.js';
 import { renderFaqModal } from './components/FaqModal.js';
+import { renderLegalModal, setupLegalModalListeners, openLegalModal, renderLegalPage } from './components/LegalModals.js';
 import { renderDashboardApp, attachDashboardListeners } from './dashboard/DashboardApp.js';
 import { renderBlogApp, attachBlogListeners } from './blog/BlogApp.js';
 import { renderAuthPage, attachAuthPageListeners } from './auth/AuthPage.js';
@@ -29,6 +30,17 @@ function handleRouting() {
   const isAuth = hash.includes('login') || hash.includes('signin') || hash.includes('signup') || hash.includes('auth') || path.includes('/login') || path.includes('/auth');
   const isBlog = hash.includes('blog') || path.includes('/blog');
   const isDashboard = hash.includes('dashboard') || path.includes('/dashboard');
+
+  // Legal routes check (terms, privacy, refund, shipping/delivery, contact)
+  const legalMatch = hash.match(/^#\/?(terms|privacy|refund|shipping|delivery|contact)/i);
+  if (legalMatch) {
+    const rawKey = legalMatch[1].toLowerCase();
+    const policyKey = rawKey === 'delivery' ? 'shipping' : rawKey;
+    app.innerHTML = renderLegalPage(policyKey);
+    setupLegalModalListeners();
+    window.scrollTo(0, 0);
+    return;
+  }
 
   if (isBuy) {
     renderLandingPage();
@@ -109,12 +121,14 @@ function renderLandingPage() {
     </main>
     ${renderFooter()}
     ${renderFaqModal()}
+    ${renderLegalModal()}
   `;
 
   setupMobileMenu();
   setupHeroChecklist();
   setupLandingDatabaseTabs();
   setupFaqModal();
+  setupLegalModalListeners();
   setupScrollspyAndNavigation();
 }
 
