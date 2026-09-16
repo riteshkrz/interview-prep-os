@@ -34,6 +34,11 @@ export function renderDashboardSidebar(activeTab = 'daily-dashboard', isCollapse
               <span class="material-symbols-outlined text-[16px] ${activeTab === 'system-design' ? 'text-[#38BDF8]' : 'text-[#64748B]'}">schema</span>
               <span>System Design</span>
             </a>
+            <a href="#/dashboard" data-nav-target="system-design-roadmap" class="sidebar-nav-item flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-all ${activeTab === 'system-design-roadmap' ? 'bg-[#182238] border border-[#24314A] text-[#F8FAFC] font-medium shadow-xs' : 'text-[#94A3B8] hover:bg-[#141C2E] hover:text-[#F8FAFC]'}">
+              <span class="material-symbols-outlined text-[16px] ${activeTab === 'system-design-roadmap' ? 'text-[#38BDF8]' : 'text-[#64748B]'}">alt_route</span>
+              <span>30-Day SysDesign</span>
+              <span class="ml-auto text-[9px] font-code px-1 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-semibold">30D</span>
+            </a>
             <a href="#/dashboard" data-nav-target="revision-hub" class="sidebar-nav-item flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-all ${activeTab === 'revision-hub' ? 'bg-[#182238] border border-[#24314A] text-[#F8FAFC] font-medium shadow-xs' : 'text-[#94A3B8] hover:bg-[#141C2E] hover:text-[#F8FAFC]'}">
               <span class="material-symbols-outlined text-[16px] ${activeTab === 'revision-hub' ? 'text-[#38BDF8]' : 'text-[#64748B]'}">replay</span>
               <span>Revision Hub</span>

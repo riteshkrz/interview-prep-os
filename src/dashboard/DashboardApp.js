@@ -15,7 +15,8 @@ import {
   updateProblemStars,
   subscribeState,
   saveState,
-  updateCatalogFromRemote
+  updateCatalogFromRemote,
+  toggleSysDesignRoadmapDay
 } from './state.js';
 import { renderDashboardSidebar } from './DashboardSidebar.js';
 import { renderDashboardHeader, renderHeaderSyncStatusBadge, renderHeaderUserProfile } from './DashboardHeader.js';
@@ -30,6 +31,7 @@ import { renderPdfStore, renderPdfCheckoutModal, downloadProductGuide, PDF_PRODU
 import { renderProblemDetailModal } from './ProblemDetailModal.js';
 import { renderDsaTrackerView } from './DsaTrackerView.js';
 import { renderSystemDesignView } from './SystemDesignView.js';
+import { renderSystemDesignRoadmapView } from './SystemDesignRoadmapView.js';
 import { renderRevisionHubView } from './RevisionHubView.js';
 import { renderReadinessView } from './ReadinessView.js';
 import {
@@ -76,6 +78,11 @@ let sysTab = 'all';
 let sysDiff = 'all';
 let sysSearch = '';
 
+// Filters for 30-Day System Design Roadmap Workspace
+let sysRoadmapWeek = 'all';
+let sysRoadmapStatus = 'all';
+let sysRoadmapSearch = '';
+
 let focusTimerInterval = null;
 let mockTimerInterval = null;
 let unsubscribeSync = null;
@@ -88,6 +95,8 @@ export function renderDashboardApp() {
     mainWorkspaceContent = renderDsaTrackerView(dsaStatusFilter, dsaPatternFilter, dsaDiffFilter, dsaSearch);
   } else if (currentTab === 'system-design') {
     mainWorkspaceContent = renderSystemDesignView(sysTab, sysSearch, sysDiff);
+  } else if (currentTab === 'system-design-roadmap') {
+    mainWorkspaceContent = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch);
   } else if (currentTab === 'revision-hub') {
     mainWorkspaceContent = renderRevisionHubView();
   } else if (currentTab === 'readiness-assessment') {
@@ -796,10 +805,35 @@ export function attachDashboardListeners() {
       }
       return;
     }
+
+    // 30-Day System Design Roadmap Week filter
+    const weekBtn = e.target.closest('.sys-roadmap-filter-week, .roadmap-week-chip');
+    if (weekBtn) {
+      e.preventDefault();
+      const w = weekBtn.getAttribute('data-week') || weekBtn.getAttribute('data-filter-week');
+      sysRoadmapWeek = w || 'all';
+      refreshWorkspaceView();
+      return;
+    }
   };
 
   // 3. Global Delegated Change Handler (Checkboxes, Status Selects, Dropdowns)
   root.onchange = (e) => {
+    // 30-Day System Design Roadmap day toggle
+    if (e.target.matches('.sys-roadmap-toggle-checkbox')) {
+      const day = e.target.getAttribute('data-roadmap-day');
+      toggleSysDesignRoadmapDay(day);
+      refreshWorkspaceView();
+      return;
+    }
+
+    // 30-Day System Design Roadmap status select
+    if (e.target.id === 'sys-roadmap-status-select') {
+      sysRoadmapStatus = e.target.value;
+      refreshWorkspaceView();
+      return;
+    }
+
     // Checklist item toggle checkbox
     if (e.target.matches('.task-checkbox')) {
       const id = e.target.getAttribute('data-task-id');
@@ -905,6 +939,21 @@ function attachWorkspaceListeners() {
       const cursorPos = e.target.selectionStart;
       refreshWorkspaceView();
       const nextInput = document.getElementById('sys-search-input');
+      if (nextInput) {
+        nextInput.focus();
+        nextInput.setSelectionRange(cursorPos, cursorPos);
+      }
+    };
+  }
+
+  // Live Search Input for 30-Day System Design Roadmap
+  const sysRoadmapSearchInput = document.getElementById('sys-roadmap-search');
+  if (sysRoadmapSearchInput) {
+    sysRoadmapSearchInput.oninput = (e) => {
+      sysRoadmapSearch = e.target.value;
+      const cursorPos = e.target.selectionStart;
+      refreshWorkspaceView();
+      const nextInput = document.getElementById('sys-roadmap-search');
       if (nextInput) {
         nextInput.focus();
         nextInput.setSelectionRange(cursorPos, cursorPos);
@@ -1313,6 +1362,8 @@ function refreshWorkspaceView() {
     html = renderDsaTrackerView(dsaStatusFilter, dsaPatternFilter, dsaDiffFilter, dsaSearch);
   } else if (currentTab === 'system-design') {
     html = renderSystemDesignView(sysTab, sysSearch, sysDiff);
+  } else if (currentTab === 'system-design-roadmap') {
+    html = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch);
   } else if (currentTab === 'revision-hub') {
     html = renderRevisionHubView();
   } else if (currentTab === 'readiness-assessment') {

@@ -681,7 +681,8 @@ export const CLEAN_STATE = {
   dailyTasks: initCleanDailyTasks(),
   checklist: initCleanDailyTasks(),
   dsaProblems: DSA_PROBLEMS.map(p => ({ ...p, status: 'Queued', confidence: 0, timeSpent: '—' })),
-  systemSpecs: SYSTEM_DESIGN_SPECS.map(s => ({ ...s, status: 'Queued', stars: 0, timeSpent: '—' }))
+  systemSpecs: SYSTEM_DESIGN_SPECS.map(s => ({ ...s, status: 'Queued', stars: 0, timeSpent: '—' })),
+  sysDesignRoadmap: {}
 };
 
 // Demo state showing an active mid-sprint student
@@ -1081,6 +1082,9 @@ export function loadState() {
             };
           });
         }
+        if (!parsed.sysDesignRoadmap || typeof parsed.sysDesignRoadmap !== 'object') {
+          parsed.sysDesignRoadmap = {};
+        }
         return parsed;
       }
     }
@@ -1150,6 +1154,9 @@ export function applyRemoteState(remoteData) {
   if (remoteData.readinessRadar && typeof remoteData.readinessRadar === 'object') {
     state.readinessRadar = { ...state.readinessRadar, ...remoteData.readinessRadar };
   }
+  if (remoteData.sysDesignRoadmap && typeof remoteData.sysDesignRoadmap === 'object') {
+    state.sysDesignRoadmap = { ...state.sysDesignRoadmap, ...remoteData.sysDesignRoadmap };
+  }
   state.curriculum = FULL_45_DAY_CURRICULUM;
 
   // Persist into local storage
@@ -1217,6 +1224,19 @@ export function setDay(dayNum) {
     state.dailyTasks[dayNum] = tasks;
     state.checklist[dayNum] = tasks;
   }
+  saveState();
+}
+
+export function toggleSysDesignRoadmapDay(dayNum) {
+  if (!state.sysDesignRoadmap) {
+    state.sysDesignRoadmap = {};
+  }
+  const day = Number(dayNum);
+  const current = Boolean(state.sysDesignRoadmap[day]?.completed);
+  state.sysDesignRoadmap[day] = {
+    completed: !current,
+    completedAt: !current ? new Date().toISOString() : null
+  };
   saveState();
 }
 
