@@ -1,597 +1,874 @@
 /**
- * 45-Day Interview Prep OS - 30-Day System Design Roadmap Workspace
- * An opinionated, day-by-day 30-day curriculum guiding senior engineers
- * from core distributed building blocks to Staff-level whiteboard execution.
+ * 45-Day Interview Prep OS - 6-Week (42-Day) System Design Master Roadmap Workspace
+ * Complete, opinionated day-by-day curriculum mapping Parts 0 to 13,
+ * with weekly revision days every 7th day, and the 20 production specs
+ * executed in the last 18 study days paired with key architectural concepts.
  */
 
 import { state, toggleSysDesignRoadmapDay } from './state.js';
 
-export const SYSTEM_DESIGN_30_DAY_ROADMAP = [
+export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
   // =========================================================================
-  // WEEK 1: SCALABILITY FUNDAMENTALS & BUILDING BLOCKS (Days 1 to 7)
+  // WEEK 1: FRAMEWORKS, COMPUTE & CORE INGRESS (Days 1 to 7)
   // =========================================================================
   {
     day: 1,
     week: 1,
-    weekTitle: "Scalability Fundamentals & Protocols",
-    topic: "Networking & Transport: TCP, UDP, HTTP/3, WebSockets & gRPC",
-    domain: "Networking & Protocols",
+    weekTitle: "Frameworks, Compute & Core Ingress",
+    topic: "Part 0 · The Playbook: Framework, Numbers & Estimation",
+    domain: "Interview Playbook",
     difficulty: "Foundations",
-    estTime: "60 mins",
-    objective: "Master connection lifecycles, latency characteristics, and transmission overhead across transport and application layer protocols.",
+    estTime: "75 mins",
+    isRevision: false,
+    objective: "Master the 7-Step Interview Delivery Framework, back-of-the-envelope estimation math, and the latency numbers every software engineer must memorize.",
     keyTradeoffs: [
-      "TCP (head-of-line blocking, 3-way handshake) vs UDP (loss-tolerant, ultra-low latency audio/video streaming)",
-      "HTTP/2 (multiplexing single TCP connection) vs HTTP/3 QUIC (UDP-based stream multiplexing without HOL blocking)",
-      "WebSockets (full-duplex persistent bidirectional socket) vs SSE (lightweight unidirectional server push) vs Long-Polling"
+      "The 45-Minute Pacing Rule: 8 min Requirements & Scope → 7 min Capacity & API → 15 min High-Level Architecture → 15 min Deep Dive Bottlenecks",
+      "Latency Hierarchy to Memorize: L1 Cache (0.5 ns), RAM (100 ns), NVMe SSD (100 µs), Datacenter RTT (500 µs), Transcontinental CA to Netherlands (150 ms)",
+      "Daily Traffic Estimation Formula: 100M DAU × 10 writes/day ≈ 1,150 QPS (Peak 2,300 QPS with 2× multiplier); 1 byte/req = 100 MB/day"
     ],
     readingLinks: [
-      { title: "Cloudflare: What is HTTP/3 and QUIC?", url: "https://blog.cloudflare.com/http-3-vs-http-2/" },
-      { title: "gRPC vs REST: Performance Benchmarks", url: "https://grpc.io/docs/what-is-grpc/introduction/" }
+      { title: "Latency Numbers Every Programmer Should Know (Interactive)", url: "https://colin-scott.github.io/personal_website/research/interactive_latency.html" },
+      { title: "System Design Primer: Back-of-the-envelope calculations", url: "https://github.com/donnemartin/system-design-primer#back-of-the-envelope-calculations" }
     ]
   },
   {
     day: 2,
     week: 1,
-    weekTitle: "Scalability Fundamentals & Protocols",
-    topic: "Load Balancing, Reverse Proxies & Consistent Hashing",
-    domain: "Traffic Routing & Ingress",
+    weekTitle: "Frameworks, Compute & Core Ingress",
+    topic: "Compute Runtimes: Processes, Threads & Containers",
+    domain: "Compute Foundations",
     difficulty: "Foundations",
-    estTime: "75 mins",
-    objective: "Distribute ingress traffic across homogeneous clusters while preventing thundering herd problems and hot-spotting.",
+    estTime: "70 mins",
+    isRevision: false,
+    objective: "Understand execution models, kernel context switching, memory segmentation, and containerization vs. full hardware virtualization.",
     keyTradeoffs: [
-      "Layer 4 (Transport, IP/Port, packet inspection only, high throughput) vs Layer 7 (Application, TLS termination, path routing, header inspection)",
-      "Consistent Hashing with Virtual Nodes (mitigates re-hashing $K/N$ keys on cluster resize) vs Naive Modulo Hashing",
-      "Active-Active vs Active-Passive failover configurations using DNS Anycast and BGP routing"
+      "Process (isolated virtual address space, IPC via sockets/shared memory, high creation cost) vs. Thread (shared memory space, lightweight, race condition risks)",
+      "Virtual Machines (Type-1/2 Hypervisor, guest OS overhead, full hardware isolation) vs. Containers (shared Linux kernel, cgroups resource limits, namespaces isolation)",
+      "IaaS (raw VMs, AWS EC2) vs. PaaS (runtime managed, Heroku/Render) vs. SaaS (packaged software, Google Workspace)"
     ],
     readingLinks: [
-      { title: "Envoy Proxy Architecture Guide", url: "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/arch_overview" },
-      { title: "Consistent Hashing with Virtual Nodes Deep Dive", url: "https://tom-e-white.com/2007/11/consistent-hashing.html" }
+      { title: "Julia Evans: What are Linux namespaces and cgroups?", url: "https://jvns.ca/blog/2016/10/10/what-even-is-a-container/" },
+      { title: "Red Hat: Linux Process and Thread Management", url: "https://www.redhat.com/sysadmin" }
     ]
   },
   {
     day: 3,
     week: 1,
-    weekTitle: "Scalability Fundamentals & Protocols",
-    topic: "Caching Strategies, Invalidation & Distributed Eviction",
-    domain: "Caching & In-Memory Storage",
+    weekTitle: "Frameworks, Compute & Core Ingress",
+    topic: "Serverless Internals & Website Scaling to Millions",
+    domain: "Cloud Architecture",
     difficulty: "Medium",
     estTime: "75 mins",
-    specId: "sd-3",
-    objective: "Shield databases from read saturation using layered cache architectures and predictable invalidation semantics.",
+    isRevision: false,
+    objective: "Analyze AWS Lambda execution internals (Firecracker microVMs), cold start mitigations, and the progressive architectural evolution to 10M+ users.",
     keyTradeoffs: [
-      "Cache-Aside (application orchestrates DB fallback, stale window) vs Read/Write-Through vs Write-Back (async DB persistence, data loss risk)",
-      "Eviction Algorithms: LRU (recency) vs LFU (frequency) vs 2Q/SLRU (scan-resistant caching)",
-      "Cache Stampede / Dog-piling mitigation: Mutex locks, Probabilistic early expiration (XFetch), and stale-while-revalidate"
+      "AWS Lambda Behind the Scenes: MicroVMs (Firecracker), warm worker pools, execution context reuse vs. cold start latency penalties",
+      "Scaling Lifecycle: Single Monolith → Read-Replicas + DB Split → Distributed Cache (Redis) → Stateless Web Cluster + LB → Multi-Region Sharding",
+      "Big Data Cloud Evaluation: EMR (Hadoop/Spark on EC2) vs. BigQuery/Snowflake serverless columnar storage for analytical workloads"
     ],
     readingLinks: [
-      { title: "Facebook Paper: Scaling Memcache", url: "https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf" },
-      { title: "Redis Cluster Specification & Hash Slots", url: "https://redis.io/topics/cluster-spec" }
+      { title: "AWS Firecracker: Lightweight MicroVMs for Serverless", url: "https://firecracker-microvm.github.io/" },
+      { title: "High Scalability: Scaling Web Architecture from 1 to 10M Users", url: "http://highscalability.com" }
     ]
   },
   {
     day: 4,
     week: 1,
-    weekTitle: "Scalability Fundamentals & Protocols",
-    topic: "Database Paradigms & Storage Engines: B-Trees vs LSM-Trees",
-    domain: "Database Internals",
+    weekTitle: "Frameworks, Compute & Core Ingress",
+    topic: "Transport Protocols & Security: TCP, UDP, HTTP/3 & HTTPS",
+    domain: "Networking & Security",
     difficulty: "Medium",
-    estTime: "90 mins",
-    objective: "Understand how storage engines interact with OS page caches, NVMe disks, and I/O access patterns.",
+    estTime: "80 mins",
+    isRevision: false,
+    objective: "Master connection lifecycles, flow control, head-of-line blocking, and the cryptographic mechanics of TLS 1.3.",
     keyTradeoffs: [
-      "B-Tree (read-optimized, in-place overwrites, random I/O write amplification - PostgreSQL, MySQL InnoDB) vs LSM-Tree (write-optimized, append-only commit log + SSTables - RocksDB, Cassandra)",
-      "Relational (strict schema, ACID, normalized joins) vs NoSQL Document (JSON flexible schema, denormalized) vs Wide-Column (sparse tabular)",
-      "Bloom Filters & Compaction strategies (Size-Tiered vs Leveled Compaction in write-heavy workloads)"
+      "TCP (reliable byte stream, 3-way handshake, sliding window flow control) vs. UDP (datagrams, connectionless, zero handshake, loss-tolerant audio/video)",
+      "HTTP/1.1 (pipelining HOL blocking) → HTTP/2 (single TCP stream multiplexing) → HTTP/3 QUIC (UDP transport, 0-RTT resumption, independent streams)",
+      "TLS 1.3 Handshake: 1-RTT connection setup, Diffie-Hellman ephemeral key exchange, forward secrecy, and certificate chain validation"
     ],
     readingLinks: [
-      { title: "Martin Kleppmann: B-Trees vs LSM-Trees in DDIA", url: "https://dataintensive.net/" },
-      { title: "RocksDB Architecture Guide", url: "https://github.com/facebook/rocksdb/wiki/RocksDB-Basics" }
+      { title: "Cloudflare: HTTP/3 vs. HTTP/2 Performance Benchmarks", url: "https://blog.cloudflare.com/http-3-vs-http-2/" },
+      { title: "The Illustrated TLS 1.3 Connection", url: "https://tls13.xargs.org/" }
     ]
   },
   {
     day: 5,
     week: 1,
-    weekTitle: "Scalability Fundamentals & Protocols",
-    topic: "Database Scaling: Replication, Partitioning & Sharding",
-    domain: "Data Partitioning",
-    difficulty: "Medium",
-    estTime: "80 mins",
-    objective: "Horizontally partition datasets across database nodes while maintaining query routing and re-balancing safety.",
+    weekTitle: "Frameworks, Compute & Core Ingress",
+    topic: "DNS Resolution, Browser Pipeline & URL Navigation",
+    domain: "Ingress Resolution",
+    difficulty: "Foundations",
+    estTime: "70 mins",
+    isRevision: false,
+    objective: "Trace the complete millisecond lifecycle of a web request from keystroke to DOM painting and multi-level DNS caching.",
     keyTradeoffs: [
-      "Single-Leader (asynchronous read-replicas, replication lag) vs Multi-Leader (conflict resolution) vs Leaderless (Dynamo quorum)",
-      "Range-Based Partitioning (range queries efficient, risk of write hot-spots on timestamps) vs Hash-Based Partitioning (uniform distribution, scatter-gather queries)",
-      "Cross-Shard Transactions & Distributed Joins (two-phase commit penalty vs denormalization)"
+      "DNS Resolution Hierarchy: Browser Cache → OS hosts cache → Recursive Resolver (ISP) → Root Nameserver (.) → TLD (.com) → Authoritative Nameserver",
+      "What Happens When You Type a URL: Keystroke autocomplete → DNS resolution → TCP 3-way handshake → TLS negotiation → HTTP GET → HTML Parsing",
+      "Browser Engine Pipeline: HTML Tokenization → DOM Construction → CSSOM → Render Tree → Layout Calculation (Reflow) → Pixel Painting"
     ],
     readingLinks: [
-      { title: "Figma: How We Partitioned Our PostgreSQL Database", url: "https://www.figma.com/blog/how-figma-scaled-to-multiple-databases/" },
-      { title: "Vitess: Horizontal Scaling for MySQL", url: "https://vitess.io/docs/overview/what-is-vitess/" }
+      { title: "Alex Gaynor: What happens when you type google.com into your browser", url: "https://github.com/alex/what-happens-when" },
+      { title: "How Browsers Work: Behind the scenes of modern web browsers", url: "https://web.dev/howbrowserswork/" }
     ]
   },
   {
     day: 6,
     week: 1,
-    weekTitle: "Scalability Fundamentals & Protocols",
-    topic: "Distributed Transactions, ACID, BASE & the CAP Theorem",
-    domain: "Distributed Transactions",
-    difficulty: "Hard",
-    estTime: "80 mins",
-    objective: "Evaluate consistency vs availability trade-offs and implement resilient eventual-consistency compensation models.",
+    weekTitle: "Frameworks, Compute & Core Ingress",
+    topic: "Load Balancing (L4 vs. L7) & Modern API Paradigms",
+    domain: "Traffic Routing & Ingress",
+    difficulty: "Medium",
+    estTime: "75 mins",
+    isRevision: false,
+    objective: "Route ingress traffic across server pools using transport and application-layer gateways, and compare REST, GraphQL, and gRPC contracts.",
     keyTradeoffs: [
-      "CAP Theorem & PACELC: Under partition (P), choose Availability (A) vs Consistency (C); Else (E), choose Latency (L) vs Consistency (C)",
-      "Two-Phase Commit / 2PC (blocking coordinator, single point of failure, latency overhead) vs 3PC",
-      "Sagas (Event-driven asynchronous compensation) vs Orchestration Engine (Temporal / AWS Step Functions) for distributed workflows"
+      "Layer 4 (Transport, IP/Port routing, Maglev/IPVS, high packet throughput) vs. Layer 7 (Application, TLS termination, path routing, header inspection, Envoy/Nginx)",
+      "API Styles: REST (resource-oriented, HTTP caching) vs. GraphQL (custom queries, single endpoint, N+1 problem) vs. gRPC (HTTP/2 binary Protobuf, high velocity)",
+      "API Gateways & Service Discovery: Client-side discovery (Netflix Eureka) vs. Server-side discovery (AWS ALB / Kubernetes CoreDNS)"
     ],
     readingLinks: [
-      { title: "Daniel Abadi: Problems with CAP, and Yahoo PACELC", url: "http://dbmsmusings.blogspot.com/2010/04/problems-with-cap-and_26.html" },
-      { title: "Sagas Pattern in Microservices Architecture", url: "https://microservices.io/patterns/data/saga.html" }
+      { title: "Envoy Proxy Architecture Overview", url: "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/arch_overview" },
+      { title: "Google: Maglev - A Fast and Reliable Software Network Load Balancer", url: "https://research.google/pubs/pub44824/" }
     ]
   },
   {
     day: 7,
     week: 1,
-    weekTitle: "Scalability Fundamentals & Protocols",
-    topic: "Milestone 1: Back-of-the-Envelope Math & Latency Numbers",
-    domain: "Capacity Planning",
-    difficulty: "Foundations",
-    estTime: "60 mins",
-    objective: "Perform real-time QPS, bandwidth, storage, and memory sizing calculations in under 5 minutes without hesitation.",
+    weekTitle: "Frameworks, Compute & Core Ingress",
+    topic: "REVISION DAY 1 · Estimation Drills, Protocols & Ingress",
+    domain: "Active Recall & Drills",
+    difficulty: "Review & Mock",
+    estTime: "80 mins",
+    isRevision: true,
+    objective: "Solidify Week 1 fundamentals: perform rapid back-of-the-envelope calculations, sketch network ingress flows, and drill protocol trade-offs.",
     keyTradeoffs: [
-      "Numbers Every Engineer Should Know: L1 Cache (0.5 ns), RAM (100 ns), NVMe SSD Random Read (100 µs), Datacenter Roundtrip (500 µs), CA to Netherlands (150 ms)",
-      "Read vs Write Ratio sizing: 100M daily active users $\\times$ 10 writes/day $\\approx 1150$ QPS (Peak $2300$ QPS with $2\\times$ traffic multiplier)",
-      "Storage sizing with replication factor $3\\times$ and 5-year retention lifecycle calculations"
+      "Flash Drill 1: Calculate the RAM and storage required for 500M daily active users uploading 1 photo (2 MB) per day with 3× replication",
+      "Flash Drill 2: Draw the full protocol journey of a HTTPS GET request passing through DNS, L4 BGP Anycast, L7 Envoy, and reverse proxy",
+      "Flash Drill 3: Defend when to use gRPC over GraphQL for internal microservices communication vs. public consumer clients"
     ],
     readingLinks: [
-      { title: "Latency Numbers Every Programmer Should Know (Interactive)", url: "https://colin-scott.github.io/personal_website/research/interactive_latency.html" }
+      { title: "System Design Interview Checklist for Senior Candidates", url: "https://github.com/donnemartin/system-design-primer" }
     ]
   },
 
   // =========================================================================
-  // WEEK 2: HIGH-FREQUENCY SYSTEM PATTERNS (Days 8 to 14)
+  // WEEK 2: SECURITY, DATA MODELING & DATABASE INTERNALS (Days 8 to 14)
   // =========================================================================
   {
     day: 8,
     week: 2,
-    weekTitle: "High-Frequency System Patterns",
-    topic: "Design a URL Shortener (TinyURL / Bitly)",
-    domain: "Core System Patterns",
+    weekTitle: "Security, Data Modeling & Database Internals",
+    topic: "Security Architecture: SSO, Password Hashing & API Tokens",
+    domain: "Authentication & Security",
     difficulty: "Medium",
     estTime: "75 mins",
-    specId: "sd-1",
-    objective: "Architect a high-read redirection service generating unique 7-character Base62 keys with sub-10ms latency.",
+    isRevision: false,
+    objective: "Implement zero-trust security boundaries, modern federation (OAuth2/SAML), cryptographic password storage, and HMAC request signing.",
     keyTradeoffs: [
-      "MD5/SHA256 hash truncation (collision risks, retry overhead) vs Key Generation Service / KGS (pre-allocated ranges, in-memory tokens)",
-      "HTTP 301 Permanent Redirect (browser caches redirection, reduces server load, eliminates click analytics) vs HTTP 302 Temporary (full analytics tracking)",
-      "Bloom Filters in front of Redis to filter out nonexistent keys and prevent cache-penetration attacks"
+      "Single Sign-On (SSO): OAuth 2.0 (delegated authorization) vs. OIDC (identity layer over OAuth) vs. SAML 2.0 (enterprise XML federation)",
+      "Password Hashing: SHA-256 (vulnerable to GPU brute force) vs. Argon2id / bcrypt / scrypt (work-factor iteration, salt, memory hardness)",
+      "Web API Security: Bearer JWT (stateless, revocation challenges) vs. HMAC SHA-256 (request payload signing, replay defense via timestamp/nonce)",
+      "Zero-Day Case Study: Log4Shell (JNDI lookup executing remote untrusted Java LDAP code)"
     ],
     readingLinks: [
-      { title: "System Design Primer: URL Shortener", url: "https://github.com/donnemartin/system-design-primer#design-pastebin" }
+      { title: "OWASP Password Storage Cheat Sheet", url: "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html" },
+      { title: "Cloudflare: Inside the Log4j Vulnerability (CVE-2021-44228)", url: "https://blog.cloudflare.com/inside-the-log4j2-vulnerability-cve-2021-44228/" }
     ]
   },
   {
     day: 9,
     week: 2,
-    weekTitle: "High-Frequency System Patterns",
-    topic: "Design an API Rate Limiter & Edge Gateway",
-    domain: "Security & Edge Gateways",
-    difficulty: "Medium",
-    estTime: "80 mins",
-    specId: "sd-2",
-    objective: "Protect backend clusters from denial-of-service spikes and enforce per-user/per-IP quota policies across distributed nodes.",
+    weekTitle: "Security, Data Modeling & Database Internals",
+    topic: "Transactions: Isolation Levels, MVCC, CAP & PACELC",
+    domain: "Transactions & Consistency",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    isRevision: false,
+    objective: "Understand ACID isolation levels, multi-version concurrency control mechanics, and distributed consistency constraints.",
     keyTradeoffs: [
-      "Token Bucket (allows bursts up to capacity) vs Leaky Bucket (smooth constant egress rate) vs Sliding Window Counter (accurate memory-efficient)",
-      "Distributed Synchronization: Atomic Redis `INCR` + `EXPIRE` via Lua scripts vs Token server",
-      "Client Response Headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `Retry-After` with HTTP 429 Too Many Requests"
+      "ANSI SQL Isolation Levels: Read Uncommitted (dirty reads) → Read Committed → Repeatable Read (phantom reads) → Serializable (2-Phase Locking / SSI)",
+      "Multi-Version Concurrency Control (MVCC): Readers never block writers and writers never block readers via snapshot versioning",
+      "CAP & PACELC Theorem: If Partition (P), choose Availability (A) vs. Consistency (C); Else (E), choose Latency (L) vs. Consistency (C)",
+      "Optimistic Locking (version column check-and-set: `WHERE version = @v`) vs. Pessimistic Locking (`SELECT FOR UPDATE` blocking)"
     ],
     readingLinks: [
-      { title: "Stripe: Scaling Your API with Rate Limiters", url: "https://stripe.com/blog/rate-limiters" }
+      { title: "Martin Kleppmann: Transactions & Isolation Levels in DDIA", url: "https://dataintensive.net/" },
+      { title: "Daniel Abadi: Consistency Tradeoffs in Modern Distributed Database Design (PACELC)", url: "http://dbmsmusings.blogspot.com/2010/04/problems-with-cap-and_26.html" }
     ]
   },
   {
     day: 10,
     week: 2,
-    weekTitle: "High-Frequency System Patterns",
-    topic: "Design a Scalable Multi-Channel Notification Service",
-    domain: "Async Messaging & Push",
+    weekTitle: "Security, Data Modeling & Database Internals",
+    topic: "Replication Topology: Read-Replicas & Consistency Lag",
+    domain: "Database Replication",
     difficulty: "Medium",
     estTime: "75 mins",
-    specId: "sd-6",
-    objective: "Deliver billions of push, email, and SMS notifications across third-party gateways with priority scheduling and user preferences.",
+    isRevision: false,
+    objective: "Evaluate synchronous vs. asynchronous database replication models, replica read lag, and cross-datacenter multi-master write conflicts.",
     keyTradeoffs: [
-      "Priority Queues (Transactional OTPs vs Promotional blasts) with distinct worker pools",
-      "Deduplication & Idempotency: Redis TTL keys on `(userId, eventId)` to prevent double-charging or duplicate alerts",
-      "Circuit Breakers and exponential backoff with jitter on downstream third-party provider timeouts (APNs, FCM, Twilio)"
+      "Synchronous Replication (zero data loss RPO, write latency dictated by slowest replica) vs. Asynchronous Replication (sub-ms writes, risk of lost data on failover)",
+      "Replication Lag Anomalies: Monotonic Reads, Read-Your-Own-Writes (read from leader for 5s after write), and Consistent Prefix Reads",
+      "Database Taxonomy: Relational (PostgreSQL, strict schema) vs. Document (MongoDB, JSON trees) vs. Key-Value (DynamoDB) vs. Wide-Column (Cassandra) vs. Graph (Neo4j)"
     ],
     readingLinks: [
-      { title: "Netflix: Scaling Push Notifications Across 200M Devices", url: "https://netflixtechblog.com" }
+      { title: "PostgreSQL Documentation: High Availability and Replication", url: "https://www.postgresql.org/docs/current/high-availability.html" }
     ]
   },
   {
     day: 11,
     week: 2,
-    weekTitle: "High-Frequency System Patterns",
-    topic: "Design a Pastebin & Ephemeral Encrypted Secret Store",
-    domain: "Blob Storage & Security",
-    difficulty: "Medium",
-    estTime: "70 mins",
-    objective: "Store multi-megabyte text and code snippets with client-side encryption and automated TTL expiration.",
+    weekTitle: "Security, Data Modeling & Database Internals",
+    topic: "Sharding Strategies & Storage Engines: B-Tree vs. LSM-Tree",
+    domain: "Storage Engines & Sharding",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    isRevision: false,
+    objective: "Horizontally partition datasets across shards and compare random I/O in B-Trees against append-only LSM-Tree commit logs.",
     keyTradeoffs: [
-      "Metadata (PostgreSQL / DynamoDB) separated from raw text payload (Object Storage S3 / MinIO)",
-      "Pre-signed S3 URLs for direct client-to-storage upload, bypassing application server CPU and memory bottlenecks",
-      "Automated Expiration: Active background cleanup daemons vs S3 Lifecycle Expiration Rules"
+      "Range-Based Sharding (efficient range queries, hot-spotting on timestamp keys) vs. Hash-Based Sharding (uniform distribution, scatter-gather queries)",
+      "Consistent Hashing: Hash ring with virtual nodes (vnodes) ensures only $K/N$ keys move during cluster resizing",
+      "Storage Engine Internals: B-Tree (read-optimized, in-place updates, page write amplification) vs. LSM-Tree (write-optimized, append-only WAL + MemTable + SSTables with Leveled Compaction)"
     ],
     readingLinks: [
-      { title: "AWS S3: Working with Pre-Signed URLs", url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html" }
+      { title: "RocksDB: A Persistent Key-Value Store for Fast Storage", url: "https://github.com/facebook/rocksdb/wiki/RocksDB-Basics" },
+      { title: "Figma: Scaling Database Architecture via Partitioning", url: "https://www.figma.com/blog/how-figma-scaled-to-multiple-databases/" }
     ]
   },
   {
     day: 12,
     week: 2,
-    weekTitle: "High-Frequency System Patterns",
-    topic: "Design a Distributed Web Crawler & Inverted Indexer",
-    domain: "Search & Web Ingestion",
+    weekTitle: "Security, Data Modeling & Database Internals",
+    topic: "Time Series Databases & Big Data Evolution Papers",
+    domain: "Time Series & Analytics",
     difficulty: "Hard",
-    estTime: "85 mins",
-    objective: "Traverse billions of web pages respecting robot policies, eliminating duplicate cycles, and streaming inverted indexes.",
+    estTime: "80 mins",
+    isRevision: false,
+    objective: "Store high-cardinality telemetry data and understand the historical lineage from Google's GFS/MapReduce papers to modern data lakes.",
     keyTradeoffs: [
-      "URL Frontier: Host politeness queues (delay between requests to same domain) combined with priority ranking queues",
-      "Duplicate Content Detection: Fingerprinting with 64-bit SimHash / MurmurHash to detect near-duplicate HTML pages",
-      "Distributed Inverted Index partitioning: Document-partitioned (local index, scatter-gather queries) vs Term-partitioned (high query throughput for single words)"
+      "Time-Series DB Architecture: InfluxDB/TimescaleDB/Prometheus; Gorilla delta-of-delta timestamp compression and XOR floating-point encoding",
+      "Big Data Foundation Papers: Google File System (GFS) chunk servers → MapReduce batch processing → Bigtable wide-column store",
+      "Open Source Evolution: Hadoop HDFS → Apache Spark in-memory DAG engine → Apache Iceberg/Delta Lake ACID table formats"
     ],
     readingLinks: [
-      { title: "Google Paper: The Anatomy of a Large-Scale Hypertextual Web Search Engine", url: "http://infolab.stanford.edu/pub/papers/google.pdf" }
+      { title: "Facebook Paper: Gorilla - A Fast, Scalable, In-Memory Time Series Database", url: "https://www.vldb.org/pvldb/vol8/p1816-teller.pdf" },
+      { title: "Google GFS Paper: The Google File System", url: "https://research.google/pubs/pub51/" }
     ]
   },
   {
     day: 13,
     week: 2,
-    weekTitle: "High-Frequency System Patterns",
-    topic: "Design Search Autocomplete / Typeahead (Google Search Bar)",
-    domain: "In-Memory Prefix Search",
-    difficulty: "Hard",
-    estTime: "80 mins",
-    specId: "sd-5",
-    objective: "Deliver top 5 trending autocomplete suggestions under 30ms latency for every keystroke entered by millions of concurrent users.",
+    weekTitle: "Security, Data Modeling & Database Internals",
+    topic: "Caching Strategies, Cache Failures & Redis vs. Memcached",
+    domain: "In-Memory Caching",
+    difficulty: "Medium",
+    estTime: "75 mins",
+    isRevision: false,
+    objective: "Eliminate read hot-spots, prevent catastrophic cache outages, and evaluate single-threaded vs. multi-threaded in-memory engines.",
     keyTradeoffs: [
-      "In-Memory Trie with top-K caching at each prefix node vs Inverted Index lookup vs Redis Sorted Sets (`ZREVRANGEBYLEX`)",
-      "Offline Batch Aggregation (MapReduce / Spark calculating 7-day query frequencies) vs Real-Time Streaming Updates",
-      "Client-side keystroke debouncing (300ms) and browser LocalStorage caching of popular single-character prefixes"
+      "The Five Cache Patterns: Cache-Aside, Read-Through, Write-Through, Write-Around, Write-Back (Write-Behind async persistence)",
+      "The Three Failure Modes: Cache Penetration (nonexistent keys → Bloom filter defense), Cache Stampede (mutex lock / probabilistic early expiration XFetch), Cache Avalanche (randomized TTL jitter)",
+      "Redis vs. Memcached: Redis (rich data structures: Sets, Sorted Sets, Hashes, Streams; single-threaded event loop; persistence via RDB/AOF) vs. Memcached (simple key-string, multi-threaded)"
     ],
     readingLinks: [
-      { title: "System Design of Google Autocomplete", url: "https://blog.bytebytego.com" }
+      { title: "Redis: An In-Depth Look at Redis Architecture", url: "https://redis.io/docs/manual/" },
+      { title: "Facebook Paper: Scaling Memcache in Production", url: "https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf" }
     ]
   },
   {
     day: 14,
     week: 2,
-    weekTitle: "High-Frequency System Patterns",
-    topic: "Milestone 2: Distributed Locking & Concurrency Primitives",
-    domain: "Concurrency Primitives",
-    difficulty: "Hard",
+    weekTitle: "Security, Data Modeling & Database Internals",
+    topic: "REVISION DAY 2 · Database Internals, Sharding & Caching",
+    domain: "Active Recall & Drills",
+    difficulty: "Review & Mock",
     estTime: "80 mins",
-    objective: "Coordinate distributed state across unsynchronized nodes without deadlocks or split-brain inconsistencies.",
+    isRevision: true,
+    objective: "Consolidate Week 2 topics: drill ACID anomaly scenarios, sharding key selection, B-Tree vs. LSM compaction mechanics, and cache failure defenses.",
     keyTradeoffs: [
-      "Redis Redlock (consensus across 5 independent Redis masters) vs Apache ZooKeeper (ephemeral sequential zNodes + leader watches)",
-      "Fencing Tokens (monotonically increasing tokens to prevent stale lock holders from executing after GC pauses)",
-      "Optimistic Concurrency Control (OCC with version column: `WHERE version = 5`) vs Pessimistic DB Row Locking (`SELECT FOR UPDATE` bottleneck)"
+      "Flash Drill 1: Design a sharding key for a multi-tenant SaaS application that prevents noisy-neighbor write saturation",
+      "Flash Drill 2: Explain step-by-step what happens when an LSM-Tree MemTable flushes to disk and how Bloom filters speed up point queries",
+      "Flash Drill 3: Diagram how to resolve a Cache Stampede when 10,000 requests/sec request an expired popular product cache key"
     ],
     readingLinks: [
-      { title: "Martin Kleppmann: How to Do Distributed Locking (Redlock Analysis)", url: "https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html" },
-      { title: "Redis: Distributed Locks with Redis (Redlock)", url: "https://redis.io/docs/manual/patterns/distributed-locks/" }
+      { title: "Designing Data-Intensive Applications: Chapter 3 & 7", url: "https://dataintensive.net/" }
     ]
   },
 
   // =========================================================================
-  // WEEK 3: DISTRIBUTED STORAGE, STREAMING & CONSENSUS (Days 15 to 21)
+  // WEEK 3: STORAGE, MESSAGING & DISTRIBUTED FOUNDATIONS (Days 15 to 21)
   // =========================================================================
   {
     day: 15,
     week: 3,
-    weekTitle: "Distributed Storage, Streaming & Consensus",
-    topic: "Design a Distributed Key-Value Store (DynamoDB / Cassandra)",
-    domain: "Distributed Database Engines",
-    difficulty: "Hard",
-    estTime: "90 mins",
-    specId: "sd-4",
-    objective: "Architect a masterless planetary-scale key-value store with tunable consistency, high write availability, and gossip membership.",
+    weekTitle: "Storage, Messaging & Distributed Foundations",
+    topic: "Storage Architecture: Block, File, Object & SSD Internals",
+    domain: "Physical & Cloud Storage",
+    difficulty: "Medium",
+    estTime: "75 mins",
+    isRevision: false,
+    objective: "Understand physical NVMe disk performance, storage classification, and mathematical durability via erasure coding.",
     keyTradeoffs: [
-      "Consistent Hashing Ring with Virtual Nodes (mitigates hotspots and re-partitioning overhead)",
-      "Tunable Quorum Consensus ($R + W > N$ ensures strong consistency; $W=1, R=1$ ensures ultra-low latency)",
-      "Vector Clocks (detect concurrent write conflicts) & Merkle Trees (anti-entropy background replica repair)"
+      "Storage Categories: Block Storage (SAN, raw unformatted volumes, AWS EBS, low-latency DB files) vs. File Storage (NFS, POSIX hierarchical tree) vs. Object Storage (S3, immutable REST blob keys)",
+      "SSD Performance Mechanics: NAND flash pages vs. erase blocks, flash translation layer (FTL), write amplification factor, trim command",
+      "Durability Math: $3\\times$ Replication (200% storage overhead, $3\\times$ cost) vs. Reed-Solomon Erasure Coding (e.g. 8+4 chunk configuration, 50% overhead, parity CPU cost)"
     ],
     readingLinks: [
-      { title: "Amazon Dynamo Paper: Highly Available Key-Value Store", url: "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" }
+      { title: "Coding for SSDs: What every programmer should know about solid-state drives", url: "https://codecapsule.com/2014/02/12/coding-for-ssds-part-1-introduction-and-table-of-contents/" },
+      { title: "Backblaze: Erasure Coding Explained Simply", url: "https://www.backblaze.com/blog/reed-solomon/" }
     ]
   },
   {
     day: 16,
     week: 3,
-    weekTitle: "Distributed Storage, Streaming & Consensus",
-    topic: "Design a Distributed Message Broker & Event Stream (Apache Kafka)",
-    domain: "Event Streaming & Logs",
+    weekTitle: "Storage, Messaging & Distributed Foundations",
+    topic: "Messaging, Event Streaming & Why Kafka Is Fast",
+    domain: "Event Streaming & Queues",
     difficulty: "Hard",
-    estTime: "90 mins",
-    specId: "sd-7",
-    objective: "Build high-throughput append-only distributed commit logs capable of millions of messages per second with zero-copy I/O.",
+    estTime: "85 mins",
+    isRevision: false,
+    objective: "Build high-throughput append-only distributed event brokers, evaluate delivery semantics, and design Saga workflows.",
     keyTradeoffs: [
-      "Log-Structured Append-Only Storage (sequential disk write throughput matches RAM speeds) vs Random B-Tree updates",
-      "Zero-Copy Transfer (`sendfile` syscall reads directly from OS page cache to network socket, bypassing JVM/user memory)",
-      "Consumer Groups & Partition Rebalancing (Cooperative Sticky Rebalance vs Eager Rebalance)"
+      "Delivery Semantics: At-Most Once (fire and forget), At-Least Once (retries on timeout, requires idempotent consumer), Exactly Once (transactional producer + consumer offset commit)",
+      "Why Kafka Is So Fast: Sequential disk I/O (matches RAM speeds), OS page cache utilization, zero-copy `sendfile` network socket transfer, batch compression",
+      "Microservice Transactions: Orchestration (central orchestrator sends commands, e.g. Temporal) vs. Choreography (services react to domain events via Kafka)"
     ],
     readingLinks: [
-      { title: "Kafka Design Overview: Deep Dive into Log Architecture", url: "https://kafka.apache.org/documentation/#design" }
+      { title: "Apache Kafka Design Documentation", url: "https://kafka.apache.org/documentation/#design" },
+      { title: "Microservice Architecture: Saga Pattern", url: "https://microservices.io/patterns/data/saga.html" }
     ]
   },
   {
     day: 17,
     week: 3,
-    weekTitle: "Distributed Storage, Streaming & Consensus",
-    topic: "Design Distributed Object Storage (Amazon S3 / GCS)",
-    domain: "Blob Storage Systems",
-    difficulty: "Hard",
-    estTime: "85 mins",
-    specId: "sd-8",
-    objective: "Store exabytes of unstructured blob data with 99.999999999% (11 9's) durability using chunking and erasure coding.",
+    weekTitle: "Storage, Messaging & Distributed Foundations",
+    topic: "Distributed Systems Core: Consensus, Time & Ordering",
+    domain: "Distributed Systems Theory",
+    difficulty: "Staff Level",
+    estTime: "90 mins",
+    isRevision: false,
+    objective: "Coordinate state machines across unreliable asynchronous networks, handle clock drift, and resolve partition conflicts.",
     keyTradeoffs: [
-      "Replication ($3\\times$ storage overhead, 200% extra cost) vs Reed-Solomon Erasure Coding (e.g. 8+4 chunk configuration, 50% extra cost, higher CPU)",
-      "Decoupled Metadata Service (Spanner / CockroachDB for directory hierarchy) vs Storage Chunk Servers",
-      "Multipart Upload & Resumption Protocol for multi-gigabyte video files with independent chunk checksums"
+      "Consensus Protocols: Paxos vs. Raft (Leader election via randomized timers, Log replication, Safety invariants); Multi-Raft in TiKV & CockroachDB",
+      "Distributed Time: Physical clocks (NTP drift, TrueTime GPS/atomic clocks in Google Spanner) vs. Logical clocks (Lamport timestamps, Vector clocks for causal ordering)",
+      "Conflict Resolution: Last-Write-Wins (data loss risk) vs. Multi-Version Concurrency vs. Merkle Tree anti-entropy background synchronization",
+      "Failure Detectors: Heartbeat pings, timeout thresholds, and $\\phi$-accrual failure detectors"
     ],
     readingLinks: [
-      { title: "Design Principles of AWS S3 and Erasure Coding", url: "https://www.allthingsdistributed.com/" }
+      { title: "The Raft Consensus Paper: In Search of an Understandable Consensus Algorithm", url: "https://raft.github.io/raft.pdf" },
+      { title: "Google Spanner: Google's Globally Distributed Database", url: "https://research.google/pubs/pub39966/" }
     ]
   },
   {
     day: 18,
     week: 3,
-    weekTitle: "Distributed Storage, Streaming & Consensus",
-    topic: "Design a Planetary-Scale Distributed Cache (Redis Cluster)",
-    domain: "Distributed Caching",
+    weekTitle: "Storage, Messaging & Distributed Foundations",
+    topic: "Advanced Networking: Service Mesh, Anycast & WebRTC",
+    domain: "Advanced Networking",
     difficulty: "Hard",
     estTime: "80 mins",
-    specId: "sd-3",
-    objective: "Cluster in-memory nodes across 16,384 hash slots with automatic leader failover and minimal replication latency.",
+    isRevision: false,
+    objective: "Manage east-west service communication, planetary Anycast routing, connection scalability (C10M), and peer-to-peer real-time media.",
     keyTradeoffs: [
-      "Client-Side Partition Routing (smart clients query cluster nodes directly via hash slot MOVED redirection) vs Proxy-Based (Twemproxy/Envoy)",
-      "Gossip Protocol for failure detection (PING/PONG messages among nodes without centralized coordinator)",
-      "Async Master-Replica Replication (risk of lost writes during sudden primary failure before failover)"
+      "Service Mesh (Istio, Linkerd): Sidecar proxy (Envoy) handling mTLS, distributed tracing, retries, and circuit breaking transparent to application code",
+      "Global Traffic Management: BGP Anycast (multiple datacenters advertise same IP address; nearest router routes request) vs. DNS-based GSLB",
+      "Scaling Long-Lived Connections: Linux `epoll` event loop, file descriptor limits (`ulimit`), socket memory buffers tuning",
+      "WebRTC Architecture: Peer-to-peer media streaming, SDP session negotiation, NAT traversal via STUN/TURN servers"
+    ],
+    readingLinks: [
+      { title: "Istio Architecture and Concepts", url: "https://istio.io/latest/docs/concepts/what-is-istio/" },
+      { title: "Cloudflare: What is Anycast and How Does It Work?", url: "https://www.cloudflare.com/learning/cdn/glossary/anycast-network/" }
+    ]
+  },
+  {
+    day: 19,
+    week: 3,
+    weekTitle: "Storage, Messaging & Distributed Foundations",
+    topic: "Deployment Patterns, Circuit Breakers & Linux Diagnostics",
+    domain: "Reliability & Operations",
+    difficulty: "Medium",
+    estTime: "75 mins",
+    isRevision: false,
+    objective: "Deploy software with zero downtime, build cascading failure circuit breakers, and diagnose runaway production processes on Linux.",
+    keyTradeoffs: [
+      "Six Deployment Strategies: Recreate (downtime), Rolling (gradual replacement), Blue/Green (instant rollback, 2× infrastructure cost), Canary (traffic ramp: 1% → 10% → 100%), A/B Testing, Shadow/Mirroring",
+      "Resilience Primitives: Exponential backoff with full jitter, circuit breakers (Closed → Open → Half-Open states), bulkheading, backpressure",
+      "Linux Production Debugging: Identifying runaway CPU/memory with `top -H`, `vmstat`, `iostat`, `strace`, `perf`, and thread dump thread state inspection"
+    ],
+    readingLinks: [
+      { title: "Martin Fowler: Canary Releases", url: "https://martinfowler.com/bliki/CanaryRelease.html" },
+      { title: "Netflix Hystrix: Circuit Breaker Pattern", url: "https://github.com/Netflix/Hystrix/wiki/How-it-Works" }
+    ]
+  },
+  {
+    day: 20,
+    week: 3,
+    weekTitle: "Storage, Messaging & Distributed Foundations",
+    topic: "SLIs/SLOs, Multi-Region DR & Chaos Engineering",
+    domain: "SRE & Disaster Recovery",
+    difficulty: "Hard",
+    estTime: "80 mins",
+    isRevision: false,
+    objective: "Define availability error budgets, architect multi-region active-active disaster recovery, and inject chaos into live clusters.",
+    keyTradeoffs: [
+      "Reliability Metrics: SLI (measured latency/error rate) → SLO (target goal, e.g. 99.9% under 200ms) → SLA (contractual legal commitment with financial penalties)",
+      "Multi-Region Architectures: Active-Passive (asynchronous DB replica in backup region, RTO/RPO trade-off) vs. Active-Active (planetary read/write, partition reconciliation)",
+      "Chaos Engineering: Principles of Chaos, Game Days, Chaos Monkey (random instance termination), Chaos Kong (datacenter evacuation simulation)"
+    ],
+    readingLinks: [
+      { title: "Google SRE Book: Service Level Objectives", url: "https://sre.google/sre-book/service-level-objectives/" },
+      { title: "Principles of Chaos Engineering", url: "https://principlesofchaos.org/" }
+    ]
+  },
+  {
+    day: 21,
+    week: 3,
+    weekTitle: "Storage, Messaging & Distributed Foundations",
+    topic: "REVISION DAY 3 · Distributed Consensus, Kafka & Multi-Region",
+    domain: "Active Recall & Drills",
+    difficulty: "Review & Mock",
+    estTime: "85 mins",
+    isRevision: true,
+    objective: "Master Week 3 distributed core: explain Raft leader election invariants, diagram zero-copy Kafka data flows, and design cross-region failover protocols.",
+    keyTradeoffs: [
+      "Flash Drill 1: Explain step-by-step how a Raft cluster handles a network partition where the leader is isolated with a minority of nodes",
+      "Flash Drill 2: Trace a message byte from producer network socket through Kafka broker page cache to consumer disk without CPU memory copying",
+      "Flash Drill 3: Contrast Blue-Green deployment with Canary deployment for a microservice with stateful database migrations"
+    ],
+    readingLinks: [
+      { title: "The Secret Lives of Data: Raft Visualization", url: "http://thesecretlivesofdata.com/raft/" }
+    ]
+  },
+
+  // =========================================================================
+  // WEEK 4: THE LAST 18 DAYS · APPLIED DESIGNS PART I (Days 22 to 28)
+  // Ingress, Caching, Ephemeral Storage & Search
+  // =========================================================================
+  {
+    day: 22,
+    week: 4,
+    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
+    topic: "Spec 1: URL Shortener (TinyURL / Bitly)",
+    domain: "High-Frequency Key Generation",
+    difficulty: "Medium",
+    estTime: "80 mins",
+    specId: "sd-1",
+    isRevision: false,
+    objective: "Architect a high-read URL shortener generating unique 7-character Base62 keys with sub-8ms redirection.",
+    keyTradeoffs: [
+      "Theory Concept 4.10: Generating Globally Unique IDs (UUIDv4 128-bit vs. Twitter Snowflake 64-bit time-ordered IDs vs. Key Generation Service pre-allocated ranges)",
+      "Key Generation Service (KGS): Pre-allocates unique Base62 key blocks in memory, eliminating runtime collision checking and DB roundtrips",
+      "Redirection: HTTP 301 Permanent (browser caches redirect, eliminates server load, kills click telemetry) vs. HTTP 302 Temporary (full analytics tracking)"
+    ],
+    readingLinks: [
+      { title: "Engineering Monograph: Base62 & KGS Deep Dive", url: "#/blog?article=design-url-shortener-kgs" }
+    ]
+  },
+  {
+    day: 23,
+    week: 4,
+    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
+    topic: "Spec 18: API Rate Limiter & Edge Gateway",
+    domain: "Traffic Control & Security",
+    difficulty: "Medium",
+    estTime: "80 mins",
+    specId: "sd-18",
+    isRevision: false,
+    objective: "Protect backend services from DDoS traffic spikes and enforce per-client rate quotas across distributed Redis nodes.",
+    keyTradeoffs: [
+      "Theory Concept 3.4 & 11.2: Rate Limiting Algorithms & Edge Reverse Proxies (Token Bucket vs. Leaky Bucket vs. Sliding Window Counter)",
+      "Distributed Rate Limiting: Atomic Redis Lua scripts executing `INCR` + `EXPIRE` in a single transaction, avoiding race condition gaps",
+      "Edge Gateway Integration: Envoy global rate-limiting gRPC filter with fallback open behavior to avoid dropping valid traffic on cache downtime"
+    ],
+    readingLinks: [
+      { title: "Stripe: Scaling Your API with Distributed Rate Limiters", url: "https://stripe.com/blog/rate-limiters" }
+    ]
+  },
+  {
+    day: 24,
+    week: 4,
+    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
+    topic: "Spec 11: Content Delivery Network (CDN) Architecture",
+    domain: "Global Edge Delivery",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    specId: "sd-11",
+    isRevision: false,
+    objective: "Design a planetary CDN edge caching network serving static assets and dynamic content with Anycast routing.",
+    keyTradeoffs: [
+      "Theory Concept 2.5 & 11.4: Content Delivery Networks & Anycast BGP Routing (Multi-PoP edge topology, BGP shortest-path routing)",
+      "Tiered Edge Caching: Origin Server → Cache Shield (regional tier) → Edge PoP → Client; shields origin database from collapse during traffic spikes",
+      "Cache Invalidation & Purging: Soft-purge (stale-while-revalidate), surrogate keys (tag-based instant purging), and byte-range HTTP request caching"
+    ],
+    readingLinks: [
+      { title: "Cloudflare: How CDN Edge Networks Work", url: "https://www.cloudflare.com/learning/cdn/what-is-a-cdn/" }
+    ]
+  },
+  {
+    day: 25,
+    week: 4,
+    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
+    topic: "Spec 3: Distributed Cache Cluster (Redis / Memcached)",
+    domain: "In-Memory Data Structures",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    specId: "sd-3",
+    isRevision: false,
+    objective: "Architect a sub-millisecond distributed cache handling 500K ops/sec with horizontal peer-to-peer sharding and failover.",
+    keyTradeoffs: [
+      "Theory Concept 5.4 & 5.5: Why Redis Is So Fast & Bloom Filters for Cache Penetration Defense",
+      "Redis Cluster Sharding: 16,384 hash slots partitioned across master nodes; MOVED and ASK redirection protocols for smart clients",
+      "Hot Key & Thundering Herd Mitigation: Read-replicas with local cache layers, probabilistic early expiration (XFetch), and mutex singleflight requests"
     ],
     readingLinks: [
       { title: "Redis Cluster Specification", url: "https://redis.io/topics/cluster-spec" }
     ]
   },
   {
-    day: 19,
-    week: 3,
-    weekTitle: "Distributed Storage, Streaming & Consensus",
-    topic: "Design Real-Time Messaging & Chat (WhatsApp / Slack / Discord)",
-    domain: "Real-Time Collaboration",
+    day: 26,
+    week: 4,
+    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
+    topic: "Spec 17: Distributed Web Crawler & Search Indexer",
+    domain: "Web Ingestion & Indexing",
     difficulty: "Hard",
     estTime: "85 mins",
-    specId: "sd-9",
-    objective: "Maintain millions of concurrent stateful connections with instantaneous message delivery, online presence, and offline sync.",
+    specId: "sd-17",
+    isRevision: false,
+    objective: "Traverse billions of web pages respecting domain politeness, filtering duplicates, and generating distributed inverted search indexes.",
     keyTradeoffs: [
-      "Persistent WebSocket Gateways (stateful connection tracking) vs Ephemeral HTTP REST",
-      "Presence Service: Periodic heartbeat pings to Redis sorted sets vs Pub/Sub channel broadcasts",
-      "Message Delivery Lifecycle: Device $\\to$ Gateway $\\to$ Queue $\\to$ DB $\\to$ Recipient Gateway (Single tick, Double tick, Blue read receipt)"
+      "Theory Concept 5.5 & 4.12: Bloom Filters for Visited URLs & Big Data Inverted Indexing Papers",
+      "URL Frontier Architecture: Host politeness FIFO queues with delay timers combined with priority queues (PageRank / update frequency)",
+      "Deduplication: 64-bit SimHash / MurmurHash fingerprinting for near-duplicate HTML content; Bloom filters in RAM for 10B+ URL existence checks"
     ],
     readingLinks: [
-      { title: "Discord: How Discord Scaled to 15 Million Concurrent Users on Elixir & Rust", url: "https://discord.com/blog/why-discord-is-switching-from-go-to-rust" }
+      { title: "Googlebot Architecture & Web Crawling at Scale", url: "http://infolab.stanford.edu/pub/papers/google.pdf" }
     ]
   },
   {
-    day: 20,
-    week: 3,
-    weekTitle: "Distributed Storage, Streaming & Consensus",
-    topic: "Design Real-Time Collaborative Document Editing (Google Docs / Figma)",
-    domain: "Concurrency & Collaborative Engines",
+    day: 27,
+    week: 4,
+    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
+    topic: "Spec 16: Search Autocomplete / Typeahead (Google Search Bar)",
+    domain: "Prefix Search & Ranking",
+    difficulty: "Hard",
+    estTime: "80 mins",
+    specId: "sd-16",
+    isRevision: false,
+    objective: "Return top 5 ranked search suggestions under 30ms for every keystroke entered by hundreds of millions of users.",
+    keyTradeoffs: [
+      "Theory Concept 1.6: Choosing Cloud Providers & Storage Engines for Big Data Trie Analytics",
+      "In-Memory Trie Optimization: Serialized Prefix Tree stored in RAM, caching top-K most frequent query strings directly on each Trie node",
+      "Offline Batch Processing: Spark/Hadoop processing past 7 days of search query logs to compute query frequencies and update serialized Trie weekly"
+    ],
+    readingLinks: [
+      { title: "ByteByteGo: Design Search Autocomplete System", url: "https://blog.bytebytego.com" }
+    ]
+  },
+  {
+    day: 28,
+    week: 4,
+    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
+    topic: "REVISION DAY 4 · Ingress, Caching & Search Whiteboard Drills",
+    domain: "Applied Whiteboard Drills",
+    difficulty: "Review & Mock",
+    estTime: "85 mins",
+    isRevision: true,
+    objective: "Simulate real 45-minute whiteboard interviews on Week 4 designs: TinyURL, Rate Limiter, CDN, Distributed Cache, Web Crawler, and Autocomplete.",
+    keyTradeoffs: [
+      "Whiteboard Mock 1: Conduct a 45-minute timed design of an API Rate Limiter. Defend sliding window counter vs. token bucket with distributed Redis",
+      "Whiteboard Mock 2: Design Autocomplete prefix search under strict 30ms p99 constraints. Detail how to update top-K nodes without taking down the cluster",
+      "Whiteboard Mock 3: Compare Bloom filters with Redis sets for 10 billion URL deduplication: memory sizing and false positive implications"
+    ],
+    readingLinks: [
+      { title: "System Design Interview Cheat Sheet: The 7-Step Method", url: "#/dashboard" }
+    ]
+  },
+
+  // =========================================================================
+  // WEEK 5: THE LAST 18 DAYS · APPLIED DESIGNS PART II (Days 29 to 35)
+  // Planetary Storage, Messaging, Real-Time Collaboration & Telemetry
+  // =========================================================================
+  {
+    day: 29,
+    week: 5,
+    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
+    topic: "Spec 2: Distributed Key-Value Store (DynamoDB / Cassandra)",
+    domain: "Planetary Database Engines",
+    difficulty: "Hard",
+    estTime: "90 mins",
+    specId: "sd-2",
+    isRevision: false,
+    objective: "Design a planetary-scale key-value store with tunable consistency, multi-master writes, and sub-10ms p99 at 1M+ QPS.",
+    keyTradeoffs: [
+      "Theory Concept 10.3: Conflict Resolution & Anti-Entropy (Vector Clocks, Merkle Trees & Gossip Membership)",
+      "Tunable Quorum Math: $R + W > N$ ensures strong consistency; $W=1, R=1$ optimizes for write availability and sub-millisecond response",
+      "Storage Engine & Repair: LSM-Tree storage with commit log on NVMe; Hinted handoff during temporary node failure; Read repair on stale quorum responses"
+    ],
+    readingLinks: [
+      { title: "Amazon Dynamo Paper: Highly Available Key-Value Store", url: "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" }
+    ]
+  },
+  {
+    day: 30,
+    week: 5,
+    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
+    topic: "Spec 4: Distributed Object Storage (Amazon S3 / Google Cloud Storage)",
+    domain: "Exabyte Storage Systems",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    specId: "sd-4",
+    isRevision: false,
+    objective: "Store exabytes of unstructured blob data with 11 9's durability using chunking, parallel multipart upload, and erasure coding.",
+    keyTradeoffs: [
+      "Theory Concept 6.4 & 6.5: Multipart Upload Protocols & Designing Amazon S3 Interview Question",
+      "Decoupled Metadata vs. Block Servers: Metadata tier (CockroachDB/Spanner) managing directory tree and chunk locations separate from raw data chunk nodes",
+      "Reed-Solomon Erasure Coding (e.g., 8+4 scheme: any 4 chunk servers can fail simultaneously without data loss, with only 50% storage overhead)"
+    ],
+    readingLinks: [
+      { title: "AWS S3 Architecture & Multipart Upload Design", url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html" }
+    ]
+  },
+  {
+    day: 31,
+    week: 5,
+    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
+    topic: "Spec 5: Distributed Message Queue & Event Bus (Kafka / RabbitMQ)",
+    domain: "Distributed Event Streaming",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    specId: "sd-5",
+    isRevision: false,
+    objective: "Build high-throughput append-only distributed event brokers supporting multi-partition consumer groups and message retention.",
+    keyTradeoffs: [
+      "Theory Concept 7.1 & 7.2: Delivery Semantics (Exactly-Once) & Why Kafka Is Fast (Sequential I/O + Page Cache Zero-Copy)",
+      "Partitioning & Ordering: Total order guaranteed within a partition; messages routed by partition key hash; consumer rebalancing protocols",
+      "RabbitMQ (push-based AMQP, complex routing exchanges, smart broker/dumb consumer) vs. Kafka (pull-based dumb broker/smart consumer, high throughput log)"
+    ],
+    readingLinks: [
+      { title: "Kafka Internals: The Anatomy of a Distributed Streaming Platform", url: "https://kafka.apache.org/documentation/#design" }
+    ]
+  },
+  {
+    day: 32,
+    week: 5,
+    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
+    topic: "Spec 8: Distributed Multi-Channel Notification System",
+    domain: "Async Messaging & Push",
+    difficulty: "Medium",
+    estTime: "75 mins",
+    specId: "sd-8",
+    isRevision: false,
+    objective: "Deliver billions of push, SMS, and email alerts with user notification preferences, rate limits, and third-party circuit breakers.",
+    keyTradeoffs: [
+      "Theory Concept 2.7 & 13.5: Push Protocols (SSE, WebSockets, APNs/FCM) & Webhooks Outbound Delivery",
+      "Priority Queues: Dedicated worker clusters for critical transactional alerts (OTP) separate from marketing promotional batch blasts",
+      "Deduplication & Replay Defense: Redis key TTL locking on `(userId, eventId)` to guarantee idempotency across network retries"
+    ],
+    readingLinks: [
+      { title: "Designing a Scalable Notification System", url: "https://blog.bytebytego.com" }
+    ]
+  },
+  {
+    day: 33,
+    week: 5,
+    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
+    topic: "Spec 7: Real-Time Chat & Messaging Service (WhatsApp / Slack)",
+    domain: "Real-Time Collaboration",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    specId: "sd-7",
+    isRevision: false,
+    objective: "Maintain millions of concurrent stateful WebSocket connections with instantaneous message delivery, online presence, and offline sync.",
+    keyTradeoffs: [
+      "Theory Concept 11.5 & 11.6: Scaling Long-Lived Connections & WebRTC Real-Time Media",
+      "Connection Gateways: Ephemeral WebSocket servers tracking user connection state; Redis Pub/Sub routing messages across gateway servers",
+      "Message Delivery State Machine: Device → Gateway → Queue → DB → Recipient Gateway (Single tick: sent, Double tick: delivered, Blue tick: read receipt)"
+    ],
+    readingLinks: [
+      { title: "Discord: How Discord Scaled WebSocket Connections to 15M Concurrent Users", url: "https://discord.com/blog/why-discord-is-switching-from-go-to-rust" }
+    ]
+  },
+  {
+    day: 34,
+    week: 5,
+    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
+    topic: "Spec 9: Collaborative Document Editor (Google Docs / Figma)",
+    domain: "Multiplayer Concurrency",
     difficulty: "Staff Level",
     estTime: "90 mins",
-    specId: "sd-10",
-    objective: "Synchronize simultaneous multi-user character edits over high-latency networks without conflicting overwrites.",
+    specId: "sd-9",
+    isRevision: false,
+    objective: "Synchronize simultaneous character edits over unreliable networks without conflicting overwrites or data loss.",
     keyTradeoffs: [
-      "Operational Transformation / OT (centralized server orders operations and transforms character indexes) vs Conflict-Free Replicated Data Types / CRDTs (decentralized, peer-to-peer, mathematically convergent state)",
-      "State Vectors & Undo Buffers in collaborative text canvases",
-      "Chunked Snapshotting & Snapshot Persistence to S3 with delta log compaction"
+      "Theory Concept 13.1 & 10.2: Event Sourcing, CQRS & Distributed Time / Lamport Ordering",
+      "Operational Transformation (OT: centralized sequencing server transforms character indexes) vs. Conflict-Free Replicated Data Types (CRDTs: mathematically convergent peer-to-peer state vectors)",
+      "Snapshot Compaction & Undo Buffers: Periodic snapshot persistence to S3 with delta log compaction"
     ],
     readingLinks: [
       { title: "Figma: How Figma's Multiplayer Technology Works", url: "https://www.figma.com/blog/how-figmas-multiplayer-technology-works/" }
     ]
   },
   {
-    day: 21,
-    week: 3,
-    weekTitle: "Distributed Storage, Streaming & Consensus",
-    topic: "Milestone 3: Deep Dive into Distributed Consensus (Raft & Paxos)",
-    domain: "Consensus Algorithms",
-    difficulty: "Staff Level",
-    estTime: "90 mins",
-    objective: "Understand how leader election, log replication, and safety guarantees operate in modern systems like etcd, TiKV, and CockroachDB.",
+    day: 35,
+    week: 5,
+    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
+    topic: "REVISION DAY 5 · Storage, Messaging & Real-Time Whiteboard Drills",
+    domain: "Applied Whiteboard Drills",
+    difficulty: "Review & Mock",
+    estTime: "85 mins",
+    isRevision: true,
+    objective: "Simulate whiteboard scenarios for Week 5 systems: DynamoDB, S3, Kafka, Notification Service, WhatsApp, and Google Docs.",
     keyTradeoffs: [
-      "Classic Paxos (complex, difficult to understand and implement) vs Raft (understandable state machine, strict leader-driven flow)",
-      "Leader Election (Randomized election timeouts prevent split votes) and Log Matching Property",
-      "Multi-Raft Architecture (partitioning the keyspace into thousands of independent Raft consensus groups for horizontal scalability)"
+      "Whiteboard Mock 1: Walk through an end-to-end design of WhatsApp. Diagram message delivery flow when recipient is offline and then reconnects",
+      "Whiteboard Mock 2: Contrast DynamoDB quorum consistency math ($R+W > N$) with Kafka consumer offset commit guarantees",
+      "Whiteboard Mock 3: Defend Operational Transformation vs. CRDTs in a Collaborative Document Editor whiteboard design session"
     ],
     readingLinks: [
-      { title: "The Raft Consensus Paper: In Search of an Understandable Consensus Algorithm", url: "https://raft.github.io/raft.pdf" },
-      { title: "Secret Lives of Data: Raft Visualization", url: "http://thesecretlivesofdata.com/raft/" }
+      { title: "The 7-Step System Design Interview Framework", url: "#/dashboard" }
     ]
   },
 
   // =========================================================================
-  // WEEK 4: GEOSPATIAL, MEDIA & FINANCIAL SYSTEMS (Days 22 to 28)
+  // WEEK 6: THE LAST 18 DAYS · APPLIED DESIGNS PART III & CAPSTONE (Days 36 to 42)
+  // Media, Geospatial, Ledgers, Flash Sales & Staff Capstone
   // =========================================================================
   {
-    day: 22,
-    week: 4,
-    weekTitle: "Geospatial, Media & Financial Systems",
-    topic: "Design Proximity Service / Nearby Locations (Yelp / Google Maps)",
-    domain: "Geospatial Architecture",
-    difficulty: "Medium",
-    estTime: "75 mins",
-    specId: "sd-11",
-    objective: "Query places within a dynamic radius (e.g. 5km) from billions of geospatial coordinates with sub-15ms response times.",
-    keyTradeoffs: [
-      "Geohash (Base32 encoded 2D bounding boxes, prefix string matching) vs QuadTree (recursive quadrant subdivision in memory) vs Google S2 (Hilbert curve space-filling)",
-      "Read-Heavy Caching: Static places (restaurants rarely move) cached by Geohash precision prefix (e.g. length 6 $\\approx$ 1.2km)",
-      "Boundary condition edge case: Target location lying right on a quadrant border requires querying 8 neighboring grid cells"
-    ],
-    readingLinks: [
-      { title: "Uber: H3 Hexagonal Hierarchical Spatial Index", url: "https://www.uber.com/blog/h3/" }
-    ]
-  },
-  {
-    day: 23,
-    week: 4,
-    weekTitle: "Geospatial, Media & Financial Systems",
-    topic: "Design Ride-Sharing Real-Time Dispatch & Tracking (Uber / Lyft)",
-    domain: "Real-Time Geospatial Streams",
+    day: 36,
+    week: 6,
+    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
+    topic: "Spec 10: Global Video Streaming Platform (YouTube / Netflix)",
+    domain: "Media Streaming & Transcoding",
     difficulty: "Hard",
     estTime: "85 mins",
-    specId: "sd-12",
-    objective: "Ingest driver GPS coordinates every 4 seconds and match ride requests with nearby active drivers under dynamic surge pricing.",
+    specId: "sd-10",
+    isRevision: false,
+    objective: "Ingest 4K raw video, execute parallel transcoding DAG pipelines, and distribute globally via Adaptive Bitrate Streaming (HLS/DASH).",
     keyTradeoffs: [
-      "Location Ingestion Pipeline: High-velocity driver GPS streams into Apache Kafka $\\to$ In-Memory Location Cache (Redis Geohash)",
-      "Dispatch Matching Engine: Geospatial index search combined with ETA routing engines, batching requests in 10-second matching buckets",
-      "Dynamic Surge Pricing Pipeline: Real-time supply vs demand ratio calculated using Apache Flink streaming across hexagonal H3 cells"
-    ],
-    readingLinks: [
-      { title: "Uber Engineering: Designing the Real-time Dispatch Platform", url: "https://www.uber.com/blog/engineering/" }
-    ]
-  },
-  {
-    day: 24,
-    week: 4,
-    weekTitle: "Geospatial, Media & Financial Systems",
-    topic: "Design Global Video Streaming & Transcoding (Netflix / YouTube)",
-    domain: "Media Streaming & CDNs",
-    difficulty: "Hard",
-    estTime: "90 mins",
-    specId: "sd-13",
-    objective: "Ingest 4K raw video files, transcode into multi-bitrate streams, and distribute globally with instant playback and zero buffering.",
-    keyTradeoffs: [
-      "Adaptive Bitrate Streaming / ABR (HLS & MPEG-DASH: client dynamically switches between 360p, 720p, 1080p, 4K based on network bandwidth)",
-      "Distributed Transcoding Pipeline: Split raw video into 10-second chunks $\\to$ parallel transcode across GPU worker clusters $\\to$ stitch manifests",
-      "Multi-Tier CDN Edge Caching (Open Connect / Cloudflare) with proactive pre-warming for trending releases"
+      "Theory Concept 8.4 & 12.5: Outage War Stories & Autoscaling Capacity Planning Under Massive Ingress",
+      "Distributed Video Transcoding: Split raw video into 10-second chunks → parallel GPU worker clusters → stitch multi-bitrate HLS/DASH manifests",
+      "CDN Edge Caching: Multi-tier CDN caching (Open Connect / Cloudflare) with proactive pre-warming for trending releases"
     ],
     readingLinks: [
       { title: "Netflix: High Quality Video Encoding at Scale", url: "https://netflixtechblog.com/high-quality-video-encoding-at-scale-d159f3136ce7" }
     ]
   },
   {
-    day: 25,
-    week: 4,
-    weekTitle: "Geospatial, Media & Financial Systems",
-    topic: "Design Social Network Feed & Timeline (Twitter / Instagram)",
+    day: 37,
+    week: 6,
+    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
+    topic: "Spec 13: Proximity Server (Yelp / Google Maps Places)",
+    domain: "Geospatial Indexing",
+    difficulty: "Medium",
+    estTime: "80 mins",
+    specId: "sd-13",
+    isRevision: false,
+    objective: "Query places within a dynamic radius (e.g. 5km) from billions of coordinates with sub-15ms response times.",
+    keyTradeoffs: [
+      "Theory Concept 9.1 & 9.2: Proximity Search: Geohash and Quadtree & Designing Google Maps Routing Engines",
+      "Geospatial Indexing: Geohash (Base32 2D bounding boxes, prefix string lookup) vs. QuadTree (recursive quadrant subdivision) vs. Google S2 (Hilbert curve space-filling)",
+      "Boundary Conditions: Handling locations lying on quadrant boundaries by querying 8 neighboring bounding cells in parallel"
+    ],
+    readingLinks: [
+      { title: "Uber: H3 Hexagonal Hierarchical Spatial Indexing", url: "https://www.uber.com/blog/h3/" }
+    ]
+  },
+  {
+    day: 38,
+    week: 6,
+    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
+    topic: "Spec 12: Ride-Sharing Dispatch & Tracking (Uber / Lyft)",
+    domain: "Real-Time Geospatial Streams",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    specId: "sd-12",
+    isRevision: false,
+    objective: "Ingest driver GPS coordinates every 4 seconds and match ride requests with nearby active drivers under dynamic surge pricing.",
+    keyTradeoffs: [
+      "Theory Concept 12.1 & 12.2: Distributed Tracing & High-Throughput Logging Pipelines",
+      "Location Ingestion Pipeline: High-velocity driver GPS streams into Kafka → In-Memory Location Cache (Redis Geohash)",
+      "Surge Pricing Engine: Streaming supply vs. demand calculation using Apache Flink across hexagonal H3 cells with dynamic multiplier updates"
+    ],
+    readingLinks: [
+      { title: "Uber Engineering: Designing the Real-Time Dispatch Platform", url: "https://www.uber.com/blog/engineering/" }
+    ]
+  },
+  {
+    day: 39,
+    week: 6,
+    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
+    topic: "Spec 6: Social Media News Feed (Twitter / Instagram / Facebook)",
     domain: "Social Graph & Feeds",
     difficulty: "Hard",
     estTime: "85 mins",
-    specId: "sd-14",
-    objective: "Generate personalized timelines for hundreds of millions of users balancing celebrity write amplification against read latencies.",
+    specId: "sd-6",
+    isRevision: false,
+    objective: "Generate personalized feeds for hundreds of millions of users balancing write amplification against read latencies.",
     keyTradeoffs: [
-      "Fan-out on Write (Push model: post is copied to all followers' timeline caches; fast reads O(1), catastrophic for celebrities with 80M followers)",
-      "Fan-out on Read (Pull model: user queries fetch posts from all followed accounts at request time; slow reads, fast writes)",
-      "Hybrid Fan-out Architecture: Push for standard users, Pull for verified celebrities ($> 20k$ followers), merged at read time in Redis"
+      "Theory Concept 7.3 & 13.4: Orchestration vs. Choreography & Service Decomposition with the Strangler Fig Pattern",
+      "Fan-out on Write (Push: post copied to all followers' timeline caches; instant O(1) reads, catastrophic write amplification for celebrities)",
+      "Hybrid Fan-out Architecture: Push for normal users, Pull for verified celebrities (>20k followers), merged at read time in Redis"
     ],
     readingLinks: [
       { title: "Twitter Engineering: Timelines at Scale", url: "https://blog.x.com/engineering/en_us/topics/infrastructure/2013/timelines-at-scale" }
     ]
   },
   {
-    day: 26,
-    week: 4,
-    weekTitle: "Geospatial, Media & Financial Systems",
-    topic: "Design Distributed Payment Gateway & Ledger (Stripe / Square)",
-    domain: "Fintech & Transaction Ledgers",
+    day: 40,
+    week: 6,
+    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
+    topic: "Spec 15: Payment Processing & Ledger System (Stripe / PayPal)",
+    domain: "Fintech & Ledgers",
     difficulty: "Staff Level",
     estTime: "90 mins",
     specId: "sd-15",
+    isRevision: false,
     objective: "Process multi-currency monetary transactions with exactly-once settlement, immutable double-entry ledgers, and zero financial drift.",
     keyTradeoffs: [
-      "Double-Entry Bookkeeping (immutable debits and credits must sum to zero; no account balance is modified in-place)",
-      "Idempotency Key Protocol (Client generates unique UUID; Server acquires distributed lock and stores response snapshot for 24h)",
-      "Distributed Reconciliation Engine: Asynchronous cron matching internal ledger transactions against banking partner settlement files"
+      "Theory Concept 7.4 & 13.2: Distributed Transactions (2PC vs. Saga) & Idempotency Key Architecture",
+      "Double-Entry Bookkeeping: Immutable debits and credits must sum to zero; account balances are never updated in-place",
+      "Idempotency Protocol: Client UUID token acquired with distributed lock; response cached for 24 hours to prevent duplicate credit card charges"
     ],
     readingLinks: [
       { title: "Stripe: Designing Robust and Idempotent APIs", url: "https://stripe.com/blog/idempotency" }
     ]
   },
   {
-    day: 27,
-    week: 4,
-    weekTitle: "Geospatial, Media & Financial Systems",
-    topic: "Design Ad Click Aggregator & Real-Time Analytics Pipeline",
-    domain: "Streaming & OLAP Systems",
-    difficulty: "Hard",
-    estTime: "80 mins",
-    specId: "sd-16",
-    objective: "Count billions of ad impressions and click events in real time to bill advertisers and detect click fraud.",
-    keyTradeoffs: [
-      "Streaming Ingestion (Kafka) $\\to$ Stream Aggregation (Apache Flink / Spark Streaming with tumbling and sliding windows) $\\to$ OLAP Datastore (ClickHouse / Druid)",
-      "Lambda Architecture (Batch layer + Speed layer) vs Kappa Architecture (single stream processing engine for both real-time and historical replay)",
-      "Watermarking & Handling Out-of-Order / Delayed Events without double counting"
-    ],
-    readingLinks: [
-      { title: "Uber: Building AthenaX - Streaming SQL Engine", url: "https://www.uber.com/blog/athenax/" }
-    ]
-  },
-  {
-    day: 28,
-    week: 4,
-    weekTitle: "Geospatial, Media & Financial Systems",
-    topic: "Design Distributed Webhook Delivery Engine (Svix / Stripe Webhooks)",
-    domain: "Reliable Event Dispatch",
-    difficulty: "Medium",
-    estTime: "75 mins",
-    specId: "sd-17",
-    objective: "Deliver guaranteed webhook notifications to third-party endpoints with automated retries, signature security, and tenant fairness.",
-    keyTradeoffs: [
-      "Fair-Share Multi-Tenant Queuing: Prevent one slow or misconfigured customer endpoint from blocking the global dispatch pool",
-      "Exponential Backoff with Full Jitter: Retry schedule over 72 hours (e.g. 5s, 1m, 15m, 1h, 6h, 24h) before moving to Dead Letter Queue (DLQ)",
-      "HMAC-SHA256 Payload Signature Verification in headers to guarantee authentic sender identity"
-    ],
-    readingLinks: [
-      { title: "Svix: Building a Webhook Service at Scale", url: "https://www.svix.com/blog/" }
-    ]
-  },
-
-  // =========================================================================
-  // WEEK 5: STAFF-LEVEL SYNTHESIS & WHITEBOARD MASTERY (Days 29 to 30)
-  // =========================================================================
-  {
-    day: 29,
-    week: 5,
-    weekTitle: "Staff-Level Synthesis & Whiteboard Mastery",
-    topic: "The 45-Minute Senior/Staff Whiteboard Framework",
-    domain: "Interview Execution Framework",
+    day: 41,
+    week: 6,
+    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
+    topic: "Spec 14 & 20: Flash Sale (Ticketmaster) & Distributed Scheduler",
+    domain: "High Concurrency & Scheduling",
     difficulty: "Staff Level",
     estTime: "90 mins",
-    objective: "Internalize the 4-phase structured delivery rubric that FAANG interviewers use to evaluate L5 and L6 candidates.",
+    specId: "sd-14",
+    isRevision: false,
+    objective: "Prevent inventory overselling during 100K QPS flash sales and execute delayed tasks across distributed worker nodes.",
     keyTradeoffs: [
-      "Phase 1 (8 mins): Understand the Problem & Establish Scope (Functional requirements, non-functional requirements: DAU, latency, availability 99.99%)",
-      "Phase 2 (7 mins): High-Level API & Back-of-Envelope Sizing (Data models, API contracts, QPS, storage)",
-      "Phase 3 (15 mins): High-Level Architecture Diagram (Client $\\to$ DNS $\\to$ CDN $\\to$ Load Balancers $\\to$ API Gateways $\\to$ Microservices $\\to$ Cache/DB)",
-      "Phase 4 (15 mins): Deep Dive Critical Bottlenecks (Single points of failure, partition hot-spots, data replication lag, network partitioning)"
+      "Theory Concept 9.6 & 13.3: Flash Sale Architectures & Workflow Orchestration with Durable Execution",
+      "Inventory Pre-Allocation: Stock stored in atomic Redis Lua counters (`DECRBY`) with virtual queuing gates (Token Bucket)",
+      "Distributed Task Scheduler (`sd-20`): Hierarchical Timing Wheels, database leases, and worker heartbeat locks for millions of delayed jobs"
     ],
     readingLinks: [
-      { title: "System Design Interview Checklist for Senior Candidates", url: "https://github.com/donnemartin/system-design-primer" }
+      { title: "Designing a Flash Sale System Under Extreme Concurrency", url: "https://blog.bytebytego.com" }
     ]
   },
   {
-    day: 30,
-    week: 5,
-    weekTitle: "Staff-Level Synthesis & Whiteboard Mastery",
-    topic: "Resilience, Chaos Engineering, Multi-Region & Disaster Recovery",
-    domain: "Disaster Recovery & Chaos",
+    day: 42,
+    week: 6,
+    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
+    topic: "REVISION DAY 6 · Full Staff/Principal Mock Simulation & Capstone",
+    domain: "Staff Capstone Simulation",
     difficulty: "Staff Level",
     estTime: "90 mins",
-    objective: "Architect mission-critical applications that survive complete cloud region outages, database corruptions, and cascading network partitions.",
+    isRevision: true,
+    objective: "Execute a full 45-minute senior/staff whiteboard interview on an unseen prompt incorporating trade-offs, disaster recovery, cost, and cross-functional leadership.",
     keyTradeoffs: [
-      "Multi-Region Deployment: Active-Active (planetary read/write with Conflict-Free replication) vs Active-Passive with warm standbys (RTO/RPO trade-offs)",
-      "Cascading Failure Prevention: Circuit Breakers, Bulkheading, Shedding load (HTTP 503 Service Unavailable), and Client-Side Rate Limiting",
-      "Observability & Chaos Engineering: Distributed Tracing (OpenTelemetry/Jaeger), Structured Logs, Metrics (Prometheus), Chaos Monkey"
+      "The 45-Minute Execution Rubric: Step 1 Scope & Numbers (8m) → Step 2 API & Capacity (7m) → Step 3 Core Architecture (15m) → Step 4 Bottleneck Deep Dives (15m)",
+      "Staff-Level Differentiation: Driving trade-offs proactively, addressing financial cost constraints, multi-region failover, and operational observability",
+      "Final Review: Complete personal mastery audit across all 20 production specs and 14 concept domains"
     ],
     readingLinks: [
-      { title: "Netflix: Chaos Engineering Principles", url: "https://principlesofchaos.org/" },
-      { title: "Google SRE Book: Addressing Cascading Failures", url: "https://sre.google/sre-book/addressing-cascading-failures/" }
+      { title: "The Senior / Staff Engineering Interview Rubric", url: "#/dashboard" }
     ]
   }
 ];
@@ -599,20 +876,20 @@ export const SYSTEM_DESIGN_30_DAY_ROADMAP = [
 export function renderSystemDesignRoadmapView(weekFilter = 'all', statusFilter = 'all', searchQuery = '') {
   const roadmapState = state.sysDesignRoadmap || {};
 
-  // Calculate statistics
+  // Calculate statistics across 42 days
   let completedCount = 0;
-  SYSTEM_DESIGN_30_DAY_ROADMAP.forEach(d => {
+  SYSTEM_DESIGN_6_WEEK_ROADMAP.forEach(d => {
     if (roadmapState[d.day]?.completed) {
       completedCount++;
     }
   });
 
-  const totalDays = SYSTEM_DESIGN_30_DAY_ROADMAP.length;
+  const totalDays = SYSTEM_DESIGN_6_WEEK_ROADMAP.length; // 42
   const pct = Math.round((completedCount / totalDays) * 100);
-  const estTotalHours = Math.round((completedCount * 1.3));
+  const estTotalHours = Math.round(completedCount * 1.35);
 
   // Filter roadmap days
-  let filtered = [...SYSTEM_DESIGN_30_DAY_ROADMAP];
+  let filtered = [...SYSTEM_DESIGN_6_WEEK_ROADMAP];
 
   if (weekFilter !== 'all') {
     const targetWeek = parseInt(weekFilter, 10);
@@ -637,8 +914,8 @@ export function renderSystemDesignRoadmapView(weekFilter = 'all', statusFilter =
     );
   }
 
-  const weeksSummary = [1, 2, 3, 4, 5].map(w => {
-    const weekDays = SYSTEM_DESIGN_30_DAY_ROADMAP.filter(d => d.week === w);
+  const weeksSummary = [1, 2, 3, 4, 5, 6].map(w => {
+    const weekDays = SYSTEM_DESIGN_6_WEEK_ROADMAP.filter(d => d.week === w);
     const weekDone = weekDays.filter(d => roadmapState[d.day]?.completed).length;
     return {
       week: w,
@@ -660,16 +937,16 @@ export function renderSystemDesignRoadmapView(weekFilter = 'all', statusFilter =
             <div class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
               <span class="material-symbols-outlined text-[18px]">alt_route</span>
             </div>
-            <h1 class="font-sans text-[20px] font-bold text-white tracking-tight">30-Day System Design Roadmap</h1>
+            <h1 class="font-sans text-[20px] font-bold text-white tracking-tight">6-Week System Design Roadmap</h1>
             <span class="px-2 py-0.5 rounded-full text-[10px] font-code bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-semibold uppercase">
-              30 Days • L5/L6 Focus
+              42 Days • 6 Weeks • L5/L6 Focus
             </span>
           </div>
           <p class="text-[13px] text-slate-300 leading-relaxed">
-            An opinionated, day-by-day 30-day curriculum taking you from networking fundamentals and storage engines to high-frequency production blueprints, consensus math, and Staff-level whiteboard mastery.
+            A comprehensive 6-week curriculum covering Parts 0 to 13 with weekly revision days every 7th day, leading into the 20 production specs in the last 18 study days paired with architectural theory.
           </p>
 
-          <!-- Week-by-Week Micro Progress Indicator -->
+          <!-- Week-by-Week Progress Indicator -->
           <div class="flex flex-wrap items-center gap-2 pt-2">
             ${weeksSummary.map(w => `
               <button
@@ -693,7 +970,7 @@ export function renderSystemDesignRoadmapView(weekFilter = 'all', statusFilter =
           <div class="flex flex-col text-[11px] font-code">
             <span class="text-slate-300">Days: <strong class="text-white">${completedCount} / ${totalDays}</strong></span>
             <span class="text-slate-400 mt-0.5">Study Time: <strong class="text-emerald-400">~${estTotalHours}h logged</strong></span>
-            <span class="text-indigo-400 font-semibold mt-0.5">Target: 30 Days</span>
+            <span class="text-indigo-400 font-semibold mt-0.5">Duration: 6 Weeks</span>
           </div>
         </div>
       </div>
@@ -706,7 +983,7 @@ export function renderSystemDesignRoadmapView(weekFilter = 'all', statusFilter =
           <input
             id="sys-roadmap-search"
             type="text"
-            placeholder="Search topic, protocol, storage engine (e.g. Kafka, Redis, Paxos)..."
+            placeholder="Search topic, concept, spec (e.g. Kafka, Redis, Paxos, S3, Rate Limiter)..."
             value="${escapeHtml(searchQuery)}"
             class="w-full pl-9 pr-3 py-1.5 bg-[#141C2E] border border-[#24314A] rounded-lg text-white text-[13px] placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
           />
@@ -718,37 +995,49 @@ export function renderSystemDesignRoadmapView(weekFilter = 'all', statusFilter =
             class="sys-roadmap-filter-week px-2.5 py-1 rounded-md text-[12px] font-code cursor-pointer transition-colors ${weekFilter === 'all' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
             data-week="all"
           >
-            All 30 Days
+            All 42 Days
           </button>
           <button
-            class="sys-roadmap-filter-week px-2.5 py-1 rounded-md text-[12px] font-code cursor-pointer transition-colors ${weekFilter === '1' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
+            class="sys-roadmap-filter-week px-2 py-1 rounded-md text-[11.5px] font-code cursor-pointer transition-colors ${weekFilter === '1' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
             data-week="1"
+            title="Week 1: Frameworks, Compute & Core Ingress"
           >
-            Week 1: Fundamentals
+            W1: Ingress
           </button>
           <button
-            class="sys-roadmap-filter-week px-2.5 py-1 rounded-md text-[12px] font-code cursor-pointer transition-colors ${weekFilter === '2' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
+            class="sys-roadmap-filter-week px-2 py-1 rounded-md text-[11.5px] font-code cursor-pointer transition-colors ${weekFilter === '2' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
             data-week="2"
+            title="Week 2: Security, Data Modeling & Database Internals"
           >
-            Week 2: Patterns
+            W2: Databases
           </button>
           <button
-            class="sys-roadmap-filter-week px-2.5 py-1 rounded-md text-[12px] font-code cursor-pointer transition-colors ${weekFilter === '3' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
+            class="sys-roadmap-filter-week px-2 py-1 rounded-md text-[11.5px] font-code cursor-pointer transition-colors ${weekFilter === '3' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
             data-week="3"
+            title="Week 3: Storage, Messaging & Distributed Foundations"
           >
-            Week 3: Storage
+            W3: Distributed
           </button>
           <button
-            class="sys-roadmap-filter-week px-2.5 py-1 rounded-md text-[12px] font-code cursor-pointer transition-colors ${weekFilter === '4' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
+            class="sys-roadmap-filter-week px-2 py-1 rounded-md text-[11.5px] font-code cursor-pointer transition-colors ${weekFilter === '4' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
             data-week="4"
+            title="Week 4: Applied Designs: Ingress, Caching & Search"
           >
-            Week 4: Geospatial & Scale
+            W4: Ingress Specs
           </button>
           <button
-            class="sys-roadmap-filter-week px-2.5 py-1 rounded-md text-[12px] font-code cursor-pointer transition-colors ${weekFilter === '5' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
+            class="sys-roadmap-filter-week px-2 py-1 rounded-md text-[11.5px] font-code cursor-pointer transition-colors ${weekFilter === '5' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
             data-week="5"
+            title="Week 5: Applied Designs: Storage, Messaging & Real-Time"
           >
-            Week 5: Staff Mastery
+            W5: Storage Specs
+          </button>
+          <button
+            class="sys-roadmap-filter-week px-2 py-1 rounded-md text-[11.5px] font-code cursor-pointer transition-colors ${weekFilter === '6' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
+            data-week="6"
+            title="Week 6: Applied Designs: Media, Geospatial & Staff Capstone"
+          >
+            W6: Scale Specs
           </button>
         </div>
 
@@ -770,7 +1059,7 @@ export function renderSystemDesignRoadmapView(weekFilter = 'all', statusFilter =
         <div class="p-12 text-center bg-[#141C2E] border border-[#24314A] rounded-xl flex flex-col items-center gap-2">
           <span class="material-symbols-outlined text-slate-500 text-[36px]">filter_list_off</span>
           <h3 class="text-white text-[15px] font-semibold">No System Design days matched your filter.</h3>
-          <p class="text-slate-400 text-[13px]">Try clearing your search query or selecting "All 30 Days".</p>
+          <p class="text-slate-400 text-[13px]">Try clearing your search query or selecting "All 42 Days".</p>
         </div>
       ` : `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -789,19 +1078,20 @@ function renderRoadmapDayCard(item, progress) {
     'Foundations': 'text-[#38BDF8] bg-[#38BDF8]/10 border-[#38BDF8]/30',
     'Medium': 'text-amber-400 bg-amber-500/10 border-amber-500/30',
     'Hard': 'text-rose-400 bg-rose-500/10 border-rose-500/30',
-    'Staff Level': 'text-purple-400 bg-purple-500/15 border-purple-500/30'
+    'Staff Level': 'text-purple-400 bg-purple-500/15 border-purple-500/30',
+    'Review & Mock': 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30'
   };
 
   const badgeColor = diffColors[item.difficulty] || 'text-slate-300 bg-slate-800 border-slate-700';
 
   return `
-    <div class="bg-[#141C2E] border ${isDone ? 'border-emerald-500/40 shadow-xs shadow-emerald-500/10' : 'border-[#24314A]'} rounded-xl p-5 flex flex-col justify-between gap-4 transition-all hover:border-[#38BDF8]/40 shadow-sm relative group">
+    <div class="bg-[#141C2E] border ${item.isRevision ? 'border-indigo-500/40 bg-[#161D32]' : isDone ? 'border-emerald-500/40 shadow-xs shadow-emerald-500/10' : 'border-[#24314A]'} rounded-xl p-5 flex flex-col justify-between gap-4 transition-all hover:border-[#38BDF8]/40 shadow-sm relative group">
       
       <!-- Top Row: Day Pill, Week Domain & Difficulty -->
       <div class="flex flex-col gap-2.5">
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded font-code text-[11px] font-bold ${isDone ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-[#0F1626] text-cyan-400 border border-cyan-500/30'}">
+            <span class="px-2 py-0.5 rounded font-code text-[11px] font-bold ${item.isRevision ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40' : isDone ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-[#0F1626] text-cyan-400 border border-cyan-500/30'}">
               DAY ${String(item.day).padStart(2, '0')}
             </span>
             <span class="text-[11px] font-code text-slate-400">Week ${item.week} • ${escapeHtml(item.domain)}</span>
@@ -813,7 +1103,8 @@ function renderRoadmapDayCard(item, progress) {
         </div>
 
         <!-- Topic Title -->
-        <h3 class="font-sans text-[16px] font-bold ${isDone ? 'text-slate-300 line-through decoration-emerald-400/50' : 'text-white'} leading-snug group-hover:text-cyan-300 transition-colors">
+        <h3 class="font-sans text-[16px] font-bold ${isDone ? 'text-slate-300 line-through decoration-emerald-400/50' : 'text-white'} leading-snug group-hover:text-cyan-300 transition-colors flex items-center gap-2">
+          ${item.isRevision ? `<span class="material-symbols-outlined text-[18px] text-indigo-400">replay</span>` : ''}
           ${escapeHtml(item.topic)}
         </h3>
 
@@ -824,9 +1115,9 @@ function renderRoadmapDayCard(item, progress) {
 
         <!-- Key Architectural Trade-offs -->
         <div class="bg-[#0F1626] border border-[#24314A]/70 rounded-lg p-3 flex flex-col gap-1.5 mt-1">
-          <span class="font-code text-[10px] text-cyan-400 uppercase font-semibold tracking-wider flex items-center gap-1">
-            <span class="material-symbols-outlined text-[13px]">tune</span>
-            Key Architectural Trade-offs &amp; Invariants:
+          <span class="font-code text-[10px] ${item.isRevision ? 'text-indigo-300' : 'text-cyan-400'} uppercase font-semibold tracking-wider flex items-center gap-1">
+            <span class="material-symbols-outlined text-[13px]">${item.isRevision ? 'checklist' : 'tune'}</span>
+            ${item.isRevision ? 'Revision & Drill Targets:' : 'Key Architectural Trade-offs & Invariants:'}
           </span>
           <ul class="flex flex-col gap-1 text-[11.5px] text-slate-300 list-disc list-inside">
             ${item.keyTradeoffs.map(t => `<li class="leading-relaxed text-slate-300">${escapeHtml(t)}</li>`).join('')}
@@ -857,11 +1148,16 @@ function renderRoadmapDayCard(item, progress) {
             class="open-spec-modal-btn px-2.5 py-1 rounded-md bg-[#182238] border border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/20 text-[11.5px] font-code font-medium flex items-center gap-1 transition-all cursor-pointer"
             data-open-problem="${item.specId}"
             data-is-spec="true"
-            title="Inspect deep-dive production blueprint"
+            title="Inspect full production blueprint"
           >
             <span>Launch Spec</span>
             <span class="material-symbols-outlined text-[14px]">arrow_outward</span>
           </button>
+        ` : item.isRevision ? `
+          <div class="flex items-center gap-1 text-[11px] font-code text-indigo-400 font-medium">
+            <span class="material-symbols-outlined text-[14px]">psychology</span>
+            <span>Active Recall</span>
+          </div>
         ` : `
           <div class="flex items-center gap-1 text-[11px] font-code text-slate-500">
             <span>Fundamental</span>
