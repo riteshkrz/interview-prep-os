@@ -98,7 +98,7 @@ export function renderDailyChecklist() {
     }
 
     // Confidence Stars Label
-    const confidenceText = confidence > 0 
+    const confidenceText = confidence > 0
       ? `${confidence}/5 Stars: ${getConfidenceDescriptor(confidence)}`
       : 'Click 1–5 stars to set confidence';
 

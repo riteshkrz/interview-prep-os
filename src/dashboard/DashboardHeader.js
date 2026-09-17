@@ -9,6 +9,7 @@ export function renderDashboardHeader(activeTab = 'daily-dashboard', isCollapsed
     'dsa-tracker': '100 Core DSA Problems',
     'system-design': '12 Production System Specs',
     'system-design-roadmap': '6-Week System Design Roadmap',
+    'curated-database': 'Curated Question Catalog',
     'revision-hub': 'SM-2 Revision Hub',
     'readiness-assessment': 'Readiness Radar'
   };

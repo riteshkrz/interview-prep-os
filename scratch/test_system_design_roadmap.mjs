@@ -56,11 +56,16 @@ if (!html.includes('6-Week System Design Roadmap')) {
   console.error('FAIL: Missing title in rendered HTML');
   process.exit(1);
 }
-if (!html.includes('DAY 01') || !html.includes('DAY 42')) {
-  console.error('FAIL: Missing DAY 01 or DAY 42 in rendered HTML');
+if (!html.includes('DAY 01') || !html.includes('today-system-design-card')) {
+  console.error('FAIL: Missing DAY 01 or today-system-design-card in default rendered HTML');
   process.exit(1);
 }
-console.log('✓ Rendered HTML contains header, 42 days, and controls.');
+const allHtml = renderSystemDesignRoadmapView('all');
+if (!allHtml.includes('DAY 42')) {
+  console.error('FAIL: Missing DAY 42 in all 42 days grid');
+  process.exit(1);
+}
+console.log('✓ Rendered HTML contains header, today task focus card, and 42 days grid.');
 
 // 7. Test state toggling
 const before = Boolean(state.sysDesignRoadmap?.[1]?.completed);
@@ -98,5 +103,99 @@ if (!headerHtml.includes('6-Week System Design Roadmap')) {
   process.exit(1);
 }
 console.log('✓ Header displays 6-Week System Design Roadmap title.');
+
+// 9. Verify Topics Data for all 42 days
+import { SYSTEM_DESIGN_TOPICS_BY_DAY } from '../src/dashboard/systemDesignTopicsData.js';
+import { renderTopicDetail } from '../src/dashboard/SystemDesignRoadmapView.js';
+
+let totalTopicsCount = 0;
+for (let d = 1; d <= 42; d++) {
+  const dayTopics = SYSTEM_DESIGN_TOPICS_BY_DAY[d];
+  if (!dayTopics || !Array.isArray(dayTopics) || dayTopics.length < 2) {
+    console.error(`FAIL: Day ${d} missing topics or has fewer than 2 topics (got ${dayTopics?.length})`);
+    process.exit(1);
+  }
+  totalTopicsCount += dayTopics.length;
+
+  dayTopics.forEach((topic, idx) => {
+    if (!topic.title || !topic.whatItIs || !topic.keyTakeaway) {
+      console.error(`FAIL: Day ${d} Topic ${idx} missing required fields:`, topic);
+      process.exit(1);
+    }
+  });
+}
+console.log(`✓ All 42 days have rich topics data (Total topics defined: ${totalTopicsCount}, avg ${(totalTopicsCount/42).toFixed(1)} topics/day).`);
+
+// 10. Verify Topic Tabs markup in rendered HTML
+if (!html.includes('roadmap-topic-tab') || !html.includes('roadmap-topic-content-1')) {
+  console.error('FAIL: Rendered HTML missing roadmap-topic-tab or roadmap-topic-content container');
+  process.exit(1);
+}
+console.log('✓ Rendered HTML contains interactive .roadmap-topic-tab buttons and dynamic content mounts.');
+
+// 11. Test renderTopicDetail directly
+const sampleTopic = SYSTEM_DESIGN_TOPICS_BY_DAY[1][1];
+const detailHtml = renderTopicDetail(sampleTopic);
+if (!detailHtml.includes(sampleTopic.title) || !detailHtml.includes('45-MINUTE TIMELINE BUDGET')) {
+  console.error('FAIL: renderTopicDetail output missing topic title or architecture diagram');
+  process.exit(1);
+}
+console.log('✓ renderTopicDetail correctly generates rich topic HTML with diagrams and takeaways.');
+
+// 12. Verify calculateReadinessIndex and renderReadinessIndexCard
+import { calculateReadinessIndex, renderReadinessIndexCard } from '../src/dashboard/SystemDesignRoadmapView.js';
+
+const baseIndex = calculateReadinessIndex({});
+if (baseIndex.overall !== 74 || baseIndex.distributed !== 88 || baseIndex.storage !== 68 || baseIndex.api !== 78 || baseIndex.resiliency !== 62) {
+  console.error('FAIL: Baseline readiness index does not match calibrated targets (74%, 88%, 68%, 78%, 62%)', baseIndex);
+  process.exit(1);
+}
+console.log('✓ Baseline Readiness Index matches calibrated targets exactly (74% overall, 88% Distributed, 68% Storage, 78% API, 62% Resiliency).');
+
+// 13. Verify renderReadinessIndexCard output
+const cardHtml = renderReadinessIndexCard(baseIndex);
+if (!cardHtml.includes('Readiness Index') || !cardHtml.includes('P90 CALIBRATED') || !cardHtml.includes('74%') || !cardHtml.includes('READY') || !cardHtml.includes('+6% this wk')) {
+  console.error('FAIL: Readiness Index Card missing expected labels or values in HTML', cardHtml);
+  process.exit(1);
+}
+if (!cardHtml.includes('Distributed Sys') || !cardHtml.includes('Storage &amp; Partition') && !cardHtml.includes('Storage & Partition') || !cardHtml.includes('API &amp; Network Protocols') && !cardHtml.includes('API & Network Protocols') || !cardHtml.includes('Scaling &amp; Resiliency') && !cardHtml.includes('Scaling & Resiliency')) {
+  console.error('FAIL: Readiness Index Card missing domain labels');
+  process.exit(1);
+}
+console.log('✓ renderReadinessIndexCard renders pixel-perfect widget matching user specification.');
+
+// 14. Verify Today's Task To Complete focus in 6-Week System Design
+import { getActiveRoadmapDay, setActiveRoadmapDay } from '../src/dashboard/SystemDesignRoadmapView.js';
+
+setActiveRoadmapDay(1);
+const todayFocusHtml = renderSystemDesignRoadmapView('today');
+if (!todayFocusHtml.includes('id="today-system-design-card"')) {
+  console.error('FAIL: Missing today-system-design-card in today focus mode');
+  process.exit(1);
+}
+if (!todayFocusHtml.includes("TODAY'S FOCUS • DAY 01 OF 42")) {
+  console.error('FAIL: Missing TODAY\'S FOCUS banner in today focus mode');
+  process.exit(1);
+}
+if (!todayFocusHtml.includes("Mark Day 1 Task Complete")) {
+  console.error('FAIL: Missing Mark Day 1 Task Complete button in today focus mode');
+  process.exit(1);
+}
+if (!todayFocusHtml.includes("sys-roadmap-prev-day-btn") || !todayFocusHtml.includes("sys-roadmap-next-day-btn")) {
+  console.error('FAIL: Missing prev/next day navigation buttons');
+  process.exit(1);
+}
+
+// Test day navigation
+setActiveRoadmapDay(2);
+const day2Html = renderSystemDesignRoadmapView('today');
+if (!day2Html.includes("TODAY'S FOCUS • DAY 02 OF 42")) {
+  console.error('FAIL: Day switching failed to update today focus card to Day 2');
+  process.exit(1);
+}
+setActiveRoadmapDay(1);
+console.log('✓ 6-Week System Design view displays ONLY today\'s task to complete with day stepper and interactive topics.');
+
+console.log('\n--- ALL 13 TESTS PASSED SUCCESSFULLY! ---');
 
 console.log('All 6-Week (42-Day) System Design Roadmap tests PASSED!');

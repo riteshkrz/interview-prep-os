@@ -31,7 +31,8 @@ import { renderPdfStore, renderPdfCheckoutModal, downloadProductGuide, PDF_PRODU
 import { renderProblemDetailModal } from './ProblemDetailModal.js';
 import { renderDsaTrackerView } from './DsaTrackerView.js';
 import { renderSystemDesignView } from './SystemDesignView.js';
-import { renderSystemDesignRoadmapView } from './SystemDesignRoadmapView.js';
+import { renderSystemDesignRoadmapView, renderTopicDetail, getActiveRoadmapDay, setActiveRoadmapDay } from './SystemDesignRoadmapView.js';
+import { SYSTEM_DESIGN_TOPICS_BY_DAY } from './systemDesignTopicsData.js';
 import { renderRevisionHubView } from './RevisionHubView.js';
 import { renderReadinessView } from './ReadinessView.js';
 import {
@@ -56,7 +57,7 @@ function getInitialSidebarCollapsed() {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem(STORAGE_SIDEBAR_COLLAPSED_KEY);
     }
-  } catch (e) {}
+  } catch (e) { }
   return false;
 }
 let isSidebarCollapsed = getInitialSidebarCollapsed();
@@ -79,9 +80,10 @@ let sysDiff = 'all';
 let sysSearch = '';
 
 // Filters for 30-Day System Design Roadmap Workspace
-let sysRoadmapWeek = 'all';
+let sysRoadmapWeek = 'today';
 let sysRoadmapStatus = 'all';
 let sysRoadmapSearch = '';
+let sysRoadmapReadiness = 'all';
 
 let focusTimerInterval = null;
 let mockTimerInterval = null;
@@ -96,7 +98,7 @@ export function renderDashboardApp() {
   } else if (currentTab === 'system-design') {
     mainWorkspaceContent = renderSystemDesignView(sysTab, sysSearch, sysDiff);
   } else if (currentTab === 'system-design-roadmap') {
-    mainWorkspaceContent = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch);
+    mainWorkspaceContent = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch, sysRoadmapReadiness);
   } else if (currentTab === 'revision-hub') {
     mainWorkspaceContent = renderRevisionHubView();
   } else if (currentTab === 'readiness-assessment') {
@@ -293,7 +295,7 @@ export function attachDashboardListeners() {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem(STORAGE_SIDEBAR_COLLAPSED_KEY, String(collapsed));
       }
-    } catch (e) {}
+    } catch (e) { }
 
     const sidebar = document.getElementById('dash-sidebar');
     const backdrop = document.getElementById('dash-sidebar-backdrop');
@@ -706,8 +708,8 @@ export function attachDashboardListeners() {
       const catType = viewDetailsBtn.getAttribute('data-catalog-type');
       if (catId) {
         const isSpec = catType === 'SYS DESIGN' || String(catId).startsWith('sd-');
-        const item = isSpec 
-          ? state.systemSpecs.find(x => String(x.id) === String(catId)) 
+        const item = isSpec
+          ? state.systemSpecs.find(x => String(x.id) === String(catId))
           : state.dsaProblems.find(x => String(x.id) === String(catId));
         if (item) {
           openDetailModal(item);
@@ -806,7 +808,7 @@ export function attachDashboardListeners() {
       return;
     }
 
-    // 30-Day System Design Roadmap Week filter
+    // 30-Day / 6-Week System Design Roadmap Week filter
     const weekBtn = e.target.closest('.sys-roadmap-filter-week, .roadmap-week-chip');
     if (weekBtn) {
       e.preventDefault();
@@ -815,10 +817,242 @@ export function attachDashboardListeners() {
       refreshWorkspaceView();
       return;
     }
+
+    // System Design Roadmap Readiness Index chip / badge click
+    const readinessBtn = e.target.closest('.sys-roadmap-filter-readiness, .sys-roadmap-readiness-chip');
+    if (readinessBtn) {
+      e.preventDefault();
+      const rId = readinessBtn.getAttribute('data-readiness-filter') || readinessBtn.getAttribute('data-readiness-id');
+      if (rId) {
+        if (sysRoadmapReadiness === rId) {
+          sysRoadmapReadiness = 'all'; // toggle off
+        } else {
+          sysRoadmapReadiness = rId;
+          // When filtering by a specific competency, show all cards matching it instead of just today
+          if (sysRoadmapWeek === 'today') {
+            sysRoadmapWeek = 'all';
+          }
+        }
+        refreshWorkspaceView();
+        return;
+      }
+    }
+
+    // Start the Day button in small roadmap cards (directs to complete big card for that day)
+    const startDayBtn = e.target.closest('.start-roadmap-day-btn');
+    if (startDayBtn) {
+      e.preventDefault();
+      const day = parseInt(startDayBtn.getAttribute('data-day'), 10);
+      if (!isNaN(day) && day >= 1 && day <= 42) {
+        setActiveRoadmapDay(day);
+        sysRoadmapWeek = 'today';
+        refreshWorkspaceView();
+        setTimeout(() => {
+          const card = document.getElementById('today-system-design-card');
+          if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 30);
+      }
+      return;
+    }
+
+    // System Design Roadmap Topic Tab click (Switches displayed topic content within day card)
+    const topicTab = e.target.closest('.roadmap-topic-tab');
+    if (topicTab) {
+      e.preventDefault();
+      e.stopPropagation();
+      const day = topicTab.getAttribute('data-day');
+      const topicIdx = parseInt(topicTab.getAttribute('data-topic-idx'), 10);
+      const card = topicTab.closest('.roadmap-day-card');
+      if (card && !isNaN(topicIdx)) {
+        // Update active styling on all sibling tabs
+        const allTabs = card.querySelectorAll('.roadmap-topic-tab');
+        allTabs.forEach(t => {
+          t.classList.remove('bg-cyan-500/20', 'text-cyan-300', 'border-cyan-500/40', 'shadow-xs', 'active');
+          t.classList.add('bg-[#0F1626]', 'text-slate-400', 'border-[#24314A]');
+        });
+        topicTab.classList.remove('bg-[#0F1626]', 'text-slate-400', 'border-[#24314A]');
+        topicTab.classList.add('bg-cyan-500/20', 'text-cyan-300', 'border-cyan-500/40', 'shadow-xs', 'active');
+
+        // Dynamically update the content container with the selected topic
+        const contentEl = card.querySelector(`#roadmap-topic-content-${day}`);
+        if (contentEl) {
+          const topics = SYSTEM_DESIGN_TOPICS_BY_DAY[day] || [];
+          if (topics[topicIdx]) {
+            contentEl.innerHTML = renderTopicDetail(topics[topicIdx]);
+          }
+        }
+      }
+      return;
+    }
+
+    // Course Mastery Checklist item toggle (0.1 How to Use This Course)
+    const checkItem = e.target.closest('.course-mastery-checkbox');
+    if (checkItem) {
+      const idx = checkItem.getAttribute('data-idx');
+      let saved = {};
+      try {
+        const raw = localStorage.getItem('sysdesign_mastery_checklist');
+        if (raw) saved = JSON.parse(raw);
+      } catch (err) {}
+      saved[idx] = checkItem.checked;
+      localStorage.setItem('sysdesign_mastery_checklist', JSON.stringify(saved));
+
+      const parentLabel = checkItem.closest('.mastery-check-item');
+      if (parentLabel) {
+        if (checkItem.checked) {
+          parentLabel.classList.add('border-emerald-500/50', 'bg-emerald-950/15', 'text-emerald-200');
+          parentLabel.classList.remove('border-[#24314A]', 'text-slate-300');
+        } else {
+          parentLabel.classList.remove('border-emerald-500/50', 'bg-emerald-950/15', 'text-emerald-200');
+          parentLabel.classList.add('border-[#24314A]', 'text-slate-300');
+        }
+      }
+      return;
+    }
+
+    // 0.2 The 7-Step Interview Framework Checklist item toggle
+    const sevenStepCheck = e.target.closest('.sevenstep-checkbox');
+    if (sevenStepCheck) {
+      const idx = sevenStepCheck.getAttribute('data-idx');
+      let saved = {};
+      try {
+        const raw = localStorage.getItem('sysdesign_7step_checklist');
+        if (raw) saved = JSON.parse(raw);
+      } catch (err) {}
+      saved[idx] = sevenStepCheck.checked;
+      localStorage.setItem('sysdesign_7step_checklist', JSON.stringify(saved));
+
+      const parentLabel = sevenStepCheck.closest('.sevenstep-check-item');
+      if (parentLabel) {
+        if (sevenStepCheck.checked) {
+          parentLabel.classList.add('border-emerald-500/50', 'bg-emerald-950/15', 'text-emerald-200');
+          parentLabel.classList.remove('border-[#24314A]', 'text-slate-300');
+        } else {
+          parentLabel.classList.remove('border-emerald-500/50', 'bg-emerald-950/15', 'text-emerald-200');
+          parentLabel.classList.add('border-[#24314A]', 'text-slate-300');
+        }
+      }
+      return;
+    }
+
+    // Reset 7-Step Checklist
+    const reset7StepBtn = e.target.closest('.reset-7step-checklist-btn');
+    if (reset7StepBtn) {
+      e.preventDefault();
+      try {
+        localStorage.removeItem('sysdesign_7step_checklist');
+      } catch (err) {}
+      const card = reset7StepBtn.closest('.roadmap-topic-content') || document;
+      card.querySelectorAll('.sevenstep-checkbox').forEach(cb => {
+        cb.checked = false;
+        const parentLabel = cb.closest('.sevenstep-check-item');
+        if (parentLabel) {
+          parentLabel.classList.remove('border-emerald-500/50', 'bg-emerald-950/15', 'text-emerald-200');
+          parentLabel.classList.add('border-[#24314A]', 'text-slate-300');
+        }
+      });
+      return;
+    }
+
+    // Copy Trade-off Formula Button
+    const copyFormulaBtn = e.target.closest('.copy-tradeoff-formula-btn');
+    if (copyFormulaBtn) {
+      e.preventDefault();
+      const formula = copyFormulaBtn.getAttribute('data-formula') || 'I chose X over Y because of Z; if the requirement changed to W I would revisit it.';
+      navigator.clipboard.writeText(formula).then(() => {
+        const origHtml = copyFormulaBtn.innerHTML;
+        copyFormulaBtn.innerHTML = `
+          <span class="material-symbols-outlined text-[14px] text-emerald-400">check</span>
+          <span class="text-emerald-300">Copied!</span>
+        `;
+        setTimeout(() => {
+          copyFormulaBtn.innerHTML = origHtml;
+        }, 2000);
+      }).catch(() => {});
+      return;
+    }
+
+    // 0.3 Back-of-the-Envelope Estimation Q&A Accordion toggle
+    const estQaToggle = e.target.closest('.est-qa-toggle');
+    if (estQaToggle) {
+      e.preventDefault();
+      const targetId = estQaToggle.getAttribute('data-target');
+      const body = document.getElementById(`est-qa-${targetId}`);
+      const icon = estQaToggle.querySelector('.est-qa-icon');
+      if (body) {
+        const isHidden = body.classList.contains('hidden');
+        if (isHidden) {
+          body.classList.remove('hidden');
+          if (icon) icon.textContent = 'expand_less';
+        } else {
+          body.classList.add('hidden');
+          if (icon) icon.textContent = 'expand_more';
+        }
+      }
+      return;
+    }
+
+    // Toggle Roadmap Day via button (Complete / Reopen Day)
+    const toggleDayBtn = e.target.closest('.toggle-roadmap-day-btn');
+    if (toggleDayBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const day = toggleDayBtn.getAttribute('data-day');
+      if (day) {
+        toggleSysDesignRoadmapDay(day);
+        refreshWorkspaceView();
+      }
+      return;
+    }
+
+    // Prev / Next day buttons for Today's System Design Task
+    const roadmapPrevBtn = e.target.closest('.sys-roadmap-prev-day-btn');
+    if (roadmapPrevBtn) {
+      e.preventDefault();
+      const cur = getActiveRoadmapDay();
+      if (cur > 1) {
+        setActiveRoadmapDay(cur - 1);
+        refreshWorkspaceView();
+      }
+      return;
+    }
+
+    const roadmapNextBtn = e.target.closest('.sys-roadmap-next-day-btn, .sys-roadmap-jump-day');
+    if (roadmapNextBtn) {
+      e.preventDefault();
+      const target = roadmapNextBtn.getAttribute('data-day')
+        ? parseInt(roadmapNextBtn.getAttribute('data-day'), 10)
+        : getActiveRoadmapDay() + 1;
+      if (target >= 1 && target <= 42) {
+        setActiveRoadmapDay(target);
+        refreshWorkspaceView();
+      }
+      return;
+    }
+
+    // (Card sections are non-clickable; only topic tabs and explicit buttons trigger actions)
   };
 
   // 3. Global Delegated Change Handler (Checkboxes, Status Selects, Dropdowns)
   root.onchange = (e) => {
+    // 0.3 Estimation Scratchpad live calculation
+    if (e.target.matches('#est-dau-input, #est-actions-input, #est-multiplier-input')) {
+      updateEstimationScratchpad();
+      return;
+    }
+
+    // 30-Day / 6-Week System Design Roadmap jump day select
+    if (e.target.matches('.sys-roadmap-jump-select')) {
+      const day = parseInt(e.target.value, 10);
+      if (!isNaN(day)) {
+        setActiveRoadmapDay(day);
+        refreshWorkspaceView();
+      }
+      return;
+    }
+
     // 30-Day System Design Roadmap day toggle
     if (e.target.matches('.sys-roadmap-toggle-checkbox')) {
       const day = e.target.getAttribute('data-roadmap-day');
@@ -830,6 +1064,16 @@ export function attachDashboardListeners() {
     // 30-Day System Design Roadmap status select
     if (e.target.id === 'sys-roadmap-status-select') {
       sysRoadmapStatus = e.target.value;
+      refreshWorkspaceView();
+      return;
+    }
+
+    // System Design Roadmap readiness index select
+    if (e.target.id === 'sys-roadmap-readiness-select') {
+      sysRoadmapReadiness = e.target.value;
+      if (sysRoadmapReadiness !== 'all' && sysRoadmapWeek === 'today') {
+        sysRoadmapWeek = 'all';
+      }
       refreshWorkspaceView();
       return;
     }
@@ -876,6 +1120,14 @@ export function attachDashboardListeners() {
     if (e.target.id === 'sys-diff-filter') {
       sysDiff = e.target.value;
       refreshWorkspaceView();
+      return;
+    }
+  };
+
+  // 4. Global Delegated Input Handler (Live scratchpad arithmetic)
+  root.oninput = (e) => {
+    if (e.target.matches('#est-dau-input, #est-actions-input, #est-multiplier-input')) {
+      updateEstimationScratchpad();
       return;
     }
   };
@@ -1018,7 +1270,7 @@ function openDetailModal(item) {
 
 function openQuickSearch() {
   openModal(renderQuickSearchModal(), 'close-quick-search-modal-btn');
-  
+
   const searchInput = document.getElementById('modal-search-input');
   const resultsContainer = document.getElementById('modal-search-results');
   if (!searchInput || !resultsContainer) return;
@@ -1363,7 +1615,7 @@ function refreshWorkspaceView() {
   } else if (currentTab === 'system-design') {
     html = renderSystemDesignView(sysTab, sysSearch, sysDiff);
   } else if (currentTab === 'system-design-roadmap') {
-    html = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch);
+    html = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch, sysRoadmapReadiness);
   } else if (currentTab === 'revision-hub') {
     html = renderRevisionHubView();
   } else if (currentTab === 'readiness-assessment') {
@@ -1387,4 +1639,39 @@ function refreshFullDashboard() {
 function escapeHtml(str) {
   if (!str) return '';
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function updateEstimationScratchpad() {
+  const dauInput = document.getElementById('est-dau-input');
+  const actionsInput = document.getElementById('est-actions-input');
+  const multInput = document.getElementById('est-multiplier-input');
+  const outReq = document.getElementById('est-out-requests');
+  const outAvg = document.getElementById('est-out-avg-qps');
+  const outPeak = document.getElementById('est-out-peak-qps');
+  const outRec = document.getElementById('est-out-recommendation');
+
+  if (!dauInput || !actionsInput || !multInput) return;
+  const dau = parseFloat(dauInput.value) || 0;
+  const actions = parseFloat(actionsInput.value) || 0;
+  const mult = parseFloat(multInput.value) || 2;
+
+  const totalReqM = dau * actions;
+  const avgQps = Math.round((totalReqM * 1000000) / 86400);
+  const peakQps = Math.round(avgQps * mult);
+
+  if (outReq) outReq.textContent = totalReqM >= 1000 ? `${(totalReqM / 1000).toFixed(1)} B / day` : `${totalReqM.toLocaleString()} M / day`;
+  if (outAvg) outAvg.textContent = `~${avgQps.toLocaleString()} QPS`;
+  if (outPeak) outPeak.textContent = `~${peakQps.toLocaleString()} QPS`;
+  if (outRec) {
+    if (peakQps < 10000) {
+      outRec.textContent = '1 Primary DB fits writes';
+      outRec.className = 'font-code text-[11px] font-bold text-emerald-300 leading-snug';
+    } else if (peakQps < 50000) {
+      outRec.textContent = 'Primary + Read Replicas';
+      outRec.className = 'font-code text-[11px] font-bold text-cyan-300 leading-snug';
+    } else {
+      outRec.textContent = 'Sharded DB / Kafka needed';
+      outRec.className = 'font-code text-[11px] font-bold text-amber-300 leading-snug';
+    }
+  }
 }

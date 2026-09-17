@@ -19,10 +19,9 @@ export function renderDashboardProgress() {
     const isActive = dayNum === state.activeDay;
     const isPast = dayNum < state.activeDay;
     return `
-      <button class="day-chip shrink-0 px-2 py-0.5 rounded text-[10px] font-code transition-all ${
-        isActive
-          ? 'bg-[#6366F1] text-white font-semibold shadow-xs shadow-[#6366F1]/50 border border-indigo-400/50 scale-105'
-          : isPast
+      <button class="day-chip shrink-0 px-2 py-0.5 rounded text-[10px] font-code transition-all ${isActive
+        ? 'bg-[#6366F1] text-white font-semibold shadow-xs shadow-[#6366F1]/50 border border-indigo-400/50 scale-105'
+        : isPast
           ? 'bg-[#182238] text-[#94A3B8] hover:text-[#F8FAFC] border border-[#24314A]'
           : 'bg-[#0F1626] text-[#64748B] hover:text-[#94A3B8] border border-[#24314A]/60'
       }" data-jump-day="${dayNum}" title="Day ${dayNum}: ${escapeHtml(state.curriculum[dayNum]?.topic || '')}">
