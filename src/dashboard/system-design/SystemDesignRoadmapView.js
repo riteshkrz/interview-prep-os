@@ -41,7 +41,9 @@ import {
   renderSsoOAuthOidcContent,
   renderRbacVsAbacContent,
   renderEncryptionFundamentalsContent,
-  renderSqlVsNosqlContent
+  renderSqlVsNosqlContent,
+  renderRateLimitingContent,
+  renderLog4ShellContent
 } from '../weeks/index.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
@@ -1552,6 +1554,12 @@ export function renderTopicDetail(topic) {
   }
   if (topic.id === '3.3') {
     return renderSsoOAuthOidcContent(topic);
+  }
+  if (topic.title?.includes('Rate Limiting') || topic.id === '3.6') {
+    return renderRateLimitingContent(topic);
+  }
+  if (topic.title?.includes('Log4Shell') || topic.id === '3.7') {
+    return renderLog4ShellContent(topic);
   }
   if (topic.id === '3.4') {
     return renderRbacVsAbacContent(topic);

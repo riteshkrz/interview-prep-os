@@ -260,6 +260,8 @@ export const TOPIC_READINESS_MAP = {
   "3.3": ["security-auth", "api-networking"],
   "3.4": ["security-auth", "api-networking", "distributed-systems"],
   "3.5": ["security-auth", "resiliency-availability"],
+  "3.6": ["security-auth", "resiliency-availability", "api-networking"],
+  "3.7": ["security-auth", "resiliency-availability"],
 
   // Day 9: Part 4 · Database Foundations & Isolation
   "4.1": ["storage-partitioning", "consistency-transactions", "distributed-systems"],
