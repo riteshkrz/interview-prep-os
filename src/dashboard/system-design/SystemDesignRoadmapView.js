@@ -51,7 +51,10 @@ import {
   renderReadReplicaPatternContent,
   renderDatabaseShardingContent,
   renderConsistentHashingContent,
-  renderChoosingRightDatabaseContent
+  renderChoosingRightDatabaseContent,
+  renderStorageEnginesContent,
+  renderCacheStrategiesContent,
+  renderCacheEvictionStampedeContent
 } from '../weeks/index.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
@@ -1601,6 +1604,15 @@ export function renderTopicDetail(topic) {
   }
   if (topic.id === '4.8' || topic.title?.includes('Choosing the Right Database') || topic.title?.includes('Choosing DB')) {
     return renderChoosingRightDatabaseContent(topic);
+  }
+  if (topic.id === '4.9' || topic.title?.includes('Storage Engine') || topic.title?.includes('B-Tree vs. LSM-Tree')) {
+    return renderStorageEnginesContent(topic);
+  }
+  if (topic.id === '5.1' || topic.title?.includes('Cache Strategies') || topic.title?.includes('Caching Strategies') || topic.title?.includes('Cache-Aside')) {
+    return renderCacheStrategiesContent(topic);
+  }
+  if (topic.id === '5.2' || topic.title?.includes('Eviction') || topic.title?.includes('Thundering Herd') || topic.title?.includes('Stampede')) {
+    return renderCacheEvictionStampedeContent(topic);
   }
   if (topic.customHtml) {
     return typeof topic.customHtml === 'function' ? topic.customHtml(topic) : topic.customHtml;
