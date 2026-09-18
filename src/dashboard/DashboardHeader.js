@@ -1,19 +1,14 @@
 import { state, getMetrics } from './state.js';
 import { stateSyncService, SyncStatus } from '../services/stateSyncService.js';
 
-export function renderDashboardHeader(activeTab = 'daily-dashboard', isCollapsed = false) {
+export function renderDashboardHeader(activeTab = 'system-design-roadmap', isCollapsed = false) {
   const syncBadge = renderHeaderSyncStatusBadge();
 
   const tabTitles = {
-    'daily-dashboard': 'Daily Sprint',
-    'dsa-tracker': '100 Core DSA Problems',
-    'system-design': '12 Production System Specs',
     'system-design-roadmap': '6-Week System Design Roadmap',
-    'curated-database': 'Curated Question Catalog',
-    'revision-hub': 'SM-2 Revision Hub',
-    'readiness-assessment': 'Readiness Radar'
+    'dsa-tracker': '100 Core DSA Problems'
   };
-  const activeTitle = tabTitles[activeTab] || 'Daily Sprint';
+  const activeTitle = tabTitles[activeTab] || '6-Week System Design Roadmap';
 
   return `
     <header id="dash-header" class="fixed top-0 ${isCollapsed ? 'left-0 sidebar-collapsed-header' : 'left-0 md:left-60'} right-0 h-12 bg-[#0F1626]/90 backdrop-blur-md border-b border-[#24314A] z-40 flex items-center justify-between px-4 md:px-6 transition-all duration-300">
@@ -25,7 +20,7 @@ export function renderDashboardHeader(activeTab = 'daily-dashboard', isCollapsed
         </button>
 
         <div class="flex items-center gap-1.5 text-[12px] text-[#94A3B8] font-code truncate">
-          <a href="#/dashboard" data-nav-target="daily-dashboard" class="sidebar-nav-item hover:text-[#F8FAFC] cursor-pointer">Workspace</a>
+          <a href="#/dashboard" data-nav-target="system-design-roadmap" class="sidebar-nav-item hover:text-[#F8FAFC] cursor-pointer">Workspace</a>
           <span class="material-symbols-outlined text-[13px] text-[#64748B]">chevron_right</span>
           <span class="text-[#38BDF8] font-medium font-sans truncate">${escapeHtml(activeTitle)}</span>
         </div>

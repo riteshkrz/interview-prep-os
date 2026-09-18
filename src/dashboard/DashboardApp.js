@@ -1,16 +1,6 @@
 import {
   state,
   setDay,
-  resetState,
-  startCleanSprint,
-  loadDemoData,
-  toggleTask,
-  completeTask,
-  reopenTask,
-  setTaskConfidence,
-  setTaskTimer,
-  addTask,
-  deleteTask,
   updateProblemStatus,
   updateProblemStars,
   subscribeState,
@@ -20,39 +10,26 @@ import {
 } from './state.js';
 import { renderDashboardSidebar } from './DashboardSidebar.js';
 import { renderDashboardHeader, renderHeaderSyncStatusBadge, renderHeaderUserProfile } from './DashboardHeader.js';
-import { renderDashboardProgress } from './DashboardProgress.js';
-import { renderDashboardKPIs } from './DashboardKPIs.js';
-import { renderDailyChecklist } from './DailyChecklist.js';
-import { renderCuratedDatabase } from './CuratedDatabase.js';
-import { renderReadinessRadar } from './ReadinessRadar.js';
-import { renderRevisionHub } from './RevisionHub.js';
-import { renderQuickActions } from './QuickActions.js';
-import { renderPdfStore, renderPdfCheckoutModal, downloadProductGuide, PDF_PRODUCTS, recordPurchase } from './PdfStore.js';
 import { renderProblemDetailModal } from './ProblemDetailModal.js';
 import { renderDsaTrackerView } from './DsaTrackerView.js';
-import { renderSystemDesignView } from './SystemDesignView.js';
 import { renderSystemDesignRoadmapView, renderTopicDetail, getActiveRoadmapDay, setActiveRoadmapDay } from './SystemDesignRoadmapView.js';
 import { SYSTEM_DESIGN_TOPICS_BY_DAY } from './systemDesignTopicsData.js';
-import { renderRevisionHubView } from './RevisionHubView.js';
-import { renderReadinessView } from './ReadinessView.js';
 import {
   renderQuickSearchModal,
   renderLogEntryModal,
   renderMockDesignModal,
-  renderCheatsheetModal,
-  renderDrillModal
+  renderCheatsheetModal
 } from './DashboardModals.js';
 import { renderCloudSyncModal, attachCloudSyncModalListeners } from './CloudSyncModal.js';
 import { stateSyncService, SyncStatus } from '../services/stateSyncService.js';
 import { catalogService } from '../services/catalogService.js';
 import { signOut } from '../lib/supabase.js';
 
-// Workspace Navigation & Layout State
-let currentTab = 'daily-dashboard';
+// Workspace Navigation & Layout State (Default: 6-Week System Design Roadmap)
+let currentTab = 'system-design-roadmap';
 
 const STORAGE_SIDEBAR_COLLAPSED_KEY = 'prep_os_sidebar_collapsed';
 function getInitialSidebarCollapsed() {
-  // Navigation sidebar is always visible by default on dashboard load
   try {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem(STORAGE_SIDEBAR_COLLAPSED_KEY);
@@ -62,30 +39,18 @@ function getInitialSidebarCollapsed() {
 }
 let isSidebarCollapsed = getInitialSidebarCollapsed();
 
-// Filters for Daily Dashboard Curated Database
-let currentDbTab = 'all';
-let currentSearch = '';
-let currentDiff = 'all';
-let currentDbPage = 1;
-
 // Filters for dedicated DSA Tracker Workspace
 let dsaStatusFilter = 'all';
 let dsaPatternFilter = 'all';
 let dsaDiffFilter = 'all';
 let dsaSearch = '';
 
-// Filters for dedicated System Design Workspace
-let sysTab = 'all';
-let sysDiff = 'all';
-let sysSearch = '';
-
-// Filters for 30-Day System Design Roadmap Workspace
+// Filters for 6-Week System Design Roadmap Workspace
 let sysRoadmapWeek = 'today';
 let sysRoadmapStatus = 'all';
 let sysRoadmapSearch = '';
 let sysRoadmapReadiness = 'all';
 
-let focusTimerInterval = null;
 let mockTimerInterval = null;
 let unsubscribeSync = null;
 let unsubscribeRemote = null;
@@ -95,67 +60,9 @@ export function renderDashboardApp() {
 
   if (currentTab === 'dsa-tracker') {
     mainWorkspaceContent = renderDsaTrackerView(dsaStatusFilter, dsaPatternFilter, dsaDiffFilter, dsaSearch);
-  } else if (currentTab === 'system-design') {
-    mainWorkspaceContent = renderSystemDesignView(sysTab, sysSearch, sysDiff);
-  } else if (currentTab === 'system-design-roadmap') {
-    mainWorkspaceContent = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch, sysRoadmapReadiness);
-  } else if (currentTab === 'revision-hub') {
-    mainWorkspaceContent = renderRevisionHubView();
-  } else if (currentTab === 'readiness-assessment') {
-    mainWorkspaceContent = renderReadinessView();
   } else {
-    // Default: 'daily-dashboard'
-    mainWorkspaceContent = `
-      <div class="flex flex-col w-full gap-5 pb-16">
-        <!-- 1. Top Welcome Banner & Sprint Progression Ribbon -->
-        <div id="dash-progress-mount">
-          ${renderDashboardProgress()}
-        </div>
-
-        <!-- 2. Daily Target & KPI Cards Row (4 Dynamic Metric Widgets) -->
-        <div id="dash-kpis-mount">
-          ${renderDashboardKPIs()}
-        </div>
-
-        <!-- 3. Today's Execution Checklist (Full Width) -->
-        <div id="checklist-mount" class="w-full">
-          ${renderDailyChecklist()}
-        </div>
-
-        <!-- 4. Core Workspace Area (Curated Database on Left alongside Readiness Radar, Revision Hub & Quick Actions on Right) -->
-        <section class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-          <!-- LEFT COLUMN (col-span-7): Curated Preparation Database (height matches Quick Actions) -->
-          <div class="lg:col-span-7 flex flex-col w-full h-full">
-            <div id="curated-db-mount" class="h-full flex flex-col">
-              ${renderCuratedDatabase(currentDbTab, currentSearch, currentDiff, currentDbPage)}
-            </div>
-          </div>
-
-          <!-- RIGHT COLUMN (col-span-5): Readiness Radar, Revision Hub, Quick Actions -->
-          <div class="lg:col-span-5 flex flex-col gap-5 w-full">
-            <!-- a) Interview Readiness Radar (Pulled below the full-width checklist) -->
-            <div id="radar-mount">
-              ${renderReadinessRadar()}
-            </div>
-
-            <!-- b) Revision Hub (Spaced Repetition SM-2) -->
-            <div id="revision-mount">
-              ${renderRevisionHub()}
-            </div>
-
-            <!-- c) Quick-Action Launcher -->
-            <div id="quick-actions-mount">
-              ${renderQuickActions()}
-            </div>
-          </div>
-        </section>
-
-        <!-- 5. Premium Interview Cheat Sheets & Guides (Full Width at Bottom) -->
-        <section id="pdf-store-mount" class="w-full">
-          ${renderPdfStore()}
-        </section>
-      </div>
-    `;
+    currentTab = 'system-design-roadmap';
+    mainWorkspaceContent = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch, sysRoadmapReadiness);
   }
 
   return `
@@ -180,60 +87,6 @@ export function renderDashboardApp() {
       <div id="modal-mount"></div>
     </div>
   `;
-}
-
-// Active live task timer state
-let activeTaskTimer = {
-  taskId: null,
-  interval: null
-};
-
-function toggleTaskTimer(taskId) {
-  // If this task is already running, pause it
-  if (activeTaskTimer.taskId === taskId) {
-    clearInterval(activeTaskTimer.interval);
-    activeTaskTimer.taskId = null;
-    activeTaskTimer.interval = null;
-    setTaskTimer(taskId, undefined, false);
-    refreshFullDashboard();
-    return;
-  }
-
-  // If another task was running, pause it first
-  if (activeTaskTimer.taskId) {
-    clearInterval(activeTaskTimer.interval);
-    setTaskTimer(activeTaskTimer.taskId, undefined, false);
-  }
-
-  // Start timer for this task
-  activeTaskTimer.taskId = taskId;
-  setTaskTimer(taskId, undefined, true);
-
-  // Live timer tick without destroying DOM
-  activeTaskTimer.interval = setInterval(() => {
-    const dayNum = state.activeDay;
-    const task = (state.dailyTasks[dayNum] || []).find(t => t.id === taskId);
-    if (task) {
-      task.timerSeconds = (task.timerSeconds || 0) + 1;
-      const el = document.querySelector(`[data-timer-display="${taskId}"]`);
-      if (el) {
-        const m = Math.floor(task.timerSeconds / 60);
-        const s = task.timerSeconds % 60;
-        el.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-      }
-    }
-  }, 1000);
-
-  refreshFullDashboard();
-}
-
-function stopTaskTimer(taskId) {
-  if (activeTaskTimer.taskId === taskId) {
-    clearInterval(activeTaskTimer.interval);
-    activeTaskTimer.taskId = null;
-    activeTaskTimer.interval = null;
-    setTaskTimer(taskId, undefined, false);
-  }
 }
 
 let isDashboardServicesInitialized = false;
@@ -446,54 +299,6 @@ export function attachDashboardListeners() {
       return;
     }
 
-    // Day Stepper & Chips
-    if (e.target.closest('#day-prev-btn')) {
-      e.preventDefault();
-      if (state.activeDay > 1) {
-        setDay(state.activeDay - 1);
-        refreshFullDashboard();
-      }
-      return;
-    }
-
-    if (e.target.closest('#day-next-btn')) {
-      e.preventDefault();
-      if (state.activeDay < state.totalDays) {
-        setDay(state.activeDay + 1);
-        refreshFullDashboard();
-      }
-      return;
-    }
-
-    const dayChip = e.target.closest('.day-chip, .jump-day-btn, [data-jump-day]');
-    if (dayChip) {
-      e.preventDefault();
-      const targetDay = Number(dayChip.getAttribute('data-jump-day'));
-      if (targetDay >= 1 && targetDay <= state.totalDays) {
-        setDay(targetDay);
-        refreshFullDashboard();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-      return;
-    }
-
-    // Clean Day 1 vs Sample Demo Sprint Mode Toggle
-    const sprintBtn = e.target.closest('#toggle-sprint-mode-btn');
-    if (sprintBtn) {
-      e.preventDefault();
-      const isDemo = sprintBtn.getAttribute('data-is-demo') === 'true';
-      if (isDemo) {
-        if (confirm('Reset to clean, uncompleted sprint (Day 1, 0 problems solved)?')) {
-          startCleanSprint();
-          refreshFullDashboard();
-        }
-      } else {
-        loadDemoData();
-        refreshFullDashboard();
-      }
-      return;
-    }
-
     // Cloud Sync Modal Trigger & Header Profile Trigger
     if (e.target.closest('#cloud-sync-trigger, #header-profile-btn')) {
       e.preventDefault();
@@ -522,54 +327,6 @@ export function attachDashboardListeners() {
       return;
     }
 
-    // Focus Block 45-min Button
-    if (e.target.closest('#focus-btn')) {
-      e.preventDefault();
-      toggleFocusBlock();
-      return;
-    }
-
-    // Active Recall Drill Triggers
-    const drillBtn = e.target.closest('.test-drill-btn, #start-review-drill-btn, #launch-recall-drill-btn, #start-full-review-btn');
-    if (drillBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      const type = drillBtn.getAttribute('data-drill') || drillBtn.getAttribute('data-topic') || (drillBtn.id === 'start-full-review-btn' ? 'top-k' : 'spaced-recall');
-      openDrillModal(type);
-      return;
-    }
-
-    // Open full database button -> switches to DSA Tracker workspace
-    if (e.target.closest('#open-full-database-btn, #open-all-syllabus-btn')) {
-      e.preventDefault();
-      currentTab = 'dsa-tracker';
-      refreshFullDashboard();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-
-    // Curated Database Pagination Click
-    const dbPageBtn = e.target.closest('.db-page-btn');
-    if (dbPageBtn && !dbPageBtn.hasAttribute('disabled')) {
-      e.preventDefault();
-      const targetPage = parseInt(dbPageBtn.getAttribute('data-page'), 10);
-      if (targetPage && !isNaN(targetPage) && targetPage !== currentDbPage) {
-        currentDbPage = targetPage;
-        refreshDatabaseView();
-      }
-      return;
-    }
-
-    // Curated Database Tab Filters (Daily Dashboard)
-    const dbTabBtn = e.target.closest('[data-dbtab], .table-tab');
-    if (dbTabBtn && dbTabBtn.closest('#curated-db-mount')) {
-      e.preventDefault();
-      currentDbTab = dbTabBtn.getAttribute('data-dbtab') || dbTabBtn.getAttribute('data-tab') || 'all';
-      currentDbPage = 1;
-      refreshDatabaseView();
-      return;
-    }
-
     // Dedicated DSA Tracker Tab Filters
     const dsaTabBtn = e.target.closest('.dsa-tab');
     if (dsaTabBtn) {
@@ -579,209 +336,7 @@ export function attachDashboardListeners() {
       return;
     }
 
-    // Dedicated System Design Tab Filters
-    const sysTabBtn = e.target.closest('.sys-tab');
-    if (sysTabBtn) {
-      e.preventDefault();
-      sysTab = sysTabBtn.getAttribute('data-tab') || 'all';
-      refreshWorkspaceView();
-      return;
-    }
-
-    // Checklist Task Deletion
-    const delTaskBtn = e.target.closest('.delete-task-btn');
-    if (delTaskBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      const id = delTaskBtn.getAttribute('data-task-id') || delTaskBtn.getAttribute('data-delete-id');
-      deleteTask(id);
-      refreshFullDashboard();
-      return;
-    }
-
-    // 1. Checklist Confidence Star Rating click
-    const taskStarBtn = e.target.closest('.task-star-btn');
-    if (taskStarBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      const taskId = taskStarBtn.getAttribute('data-task-id');
-      const star = Number(taskStarBtn.getAttribute('data-star'));
-      if (taskId && star) {
-        setTaskConfidence(taskId, star);
-
-        // Update star visuals in the task card immediately for snappy zero-latency feel
-        const starContainer = document.querySelector(`[data-task-confidence-stars="${taskId}"]`);
-        if (starContainer) {
-          const buttons = starContainer.querySelectorAll('.task-star-btn');
-          buttons.forEach((btn, idx) => {
-            const icon = btn.querySelector('.material-symbols-outlined');
-            if (icon) {
-              if (idx + 1 <= star) {
-                icon.className = 'material-symbols-outlined text-[19px] text-[#F59E0B]';
-              } else {
-                icon.className = 'material-symbols-outlined text-[19px] text-[#334155] hover:text-[#F59E0B]/70';
-              }
-            }
-          });
-        }
-
-        // Update text label
-        const label = document.getElementById(`confidence-label-${taskId}`);
-        if (label) {
-          label.className = 'text-[11px] font-code text-[#F59E0B] font-semibold';
-          const descriptors = ['', 'Struggled / Needed Solution', 'Needed Hints', 'Solved with Effort', 'Clean Optimal Solve', 'Mastered Instantly'];
-          label.textContent = `${star}/5 Stars: ${descriptors[star] || 'Rated'}`;
-        }
-
-        // Hide warning if visible
-        const warning = document.getElementById(`confidence-warning-${taskId}`);
-        if (warning) {
-          warning.classList.add('hidden');
-          warning.classList.remove('flex');
-        }
-      }
-      return;
-    }
-
-    // 2. Complete Task Button click (validates confidence rating)
-    const completeBtn = e.target.closest('.complete-task-btn');
-    if (completeBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      const taskId = completeBtn.getAttribute('data-task-id');
-      if (taskId) {
-        const res = completeTask(taskId);
-        if (!res.success && res.reason === 'NEEDS_CONFIDENCE') {
-          // Show validation warning
-          const warning = document.getElementById(`confidence-warning-${taskId}`);
-          if (warning) {
-            warning.classList.remove('hidden');
-            warning.classList.add('flex');
-          }
-          const wrap = document.getElementById(`confidence-wrap-${taskId}`);
-          if (wrap) {
-            wrap.classList.add('ring-1', 'ring-rose-500/50', 'p-1', 'rounded');
-          }
-          return;
-        }
-
-        // Stop running timer on this task if any
-        stopTaskTimer(taskId);
-
-        // Refresh dashboard immediately to reflect updated KPIs & Readiness Radar
-        refreshFullDashboard();
-      }
-      return;
-    }
-
-    // 3. Reopen Task Button click
-    const reopenBtn = e.target.closest('.reopen-task-btn');
-    if (reopenBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      const taskId = reopenBtn.getAttribute('data-task-id');
-      if (taskId) {
-        reopenTask(taskId);
-        refreshFullDashboard();
-      }
-      return;
-    }
-
-    // 4. Live Task Timer Button click
-    const timerBtn = e.target.closest('.task-timer-btn');
-    if (timerBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      const taskId = timerBtn.getAttribute('data-task-id');
-      if (taskId) {
-        toggleTaskTimer(taskId);
-      }
-      return;
-    }
-
-    // 5. View Task Specs & Code Modal Button click
-    const viewDetailsBtn = e.target.closest('.view-task-details-btn');
-    if (viewDetailsBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      const catId = viewDetailsBtn.getAttribute('data-catalog-id');
-      const catType = viewDetailsBtn.getAttribute('data-catalog-type');
-      if (catId) {
-        const isSpec = catType === 'SYS DESIGN' || String(catId).startsWith('sd-');
-        const item = isSpec
-          ? state.systemSpecs.find(x => String(x.id) === String(catId))
-          : state.dsaProblems.find(x => String(x.id) === String(catId));
-        if (item) {
-          openDetailModal(item);
-        }
-      }
-      return;
-    }
-
-    // 6. Checklist Add Task Button (with Category selection)
-    if (e.target.closest('#add-task-btn')) {
-      e.preventDefault();
-      const addInput = document.getElementById('new-task-input');
-      const catSelect = document.getElementById('new-task-cat');
-      if (addInput) {
-        const val = addInput.value.trim();
-        const cat = catSelect ? catSelect.value : 'DSA';
-        if (val) {
-          addTask(val, cat);
-          addInput.value = '';
-          refreshFullDashboard();
-        }
-      }
-      return;
-    }
-
-    // PDF Guides & Cheat Sheets Store Actions
-    const pdfBtn = e.target.closest('.open-pdf-checkout-btn');
-    if (pdfBtn) {
-      e.preventDefault();
-      const prodId = pdfBtn.getAttribute('data-product-id');
-      const prod = PDF_PRODUCTS.find(p => p.id === prodId);
-      if (prod) {
-        openModal(renderPdfCheckoutModal(prod), 'close-pdf-modal-btn');
-      }
-      return;
-    }
-
-    const buyPdfBtn = e.target.closest('#confirm-buy-pdf-btn');
-    if (buyPdfBtn) {
-      e.preventDefault();
-      const prodId = buyPdfBtn.getAttribute('data-product-id');
-      const prod = PDF_PRODUCTS.find(p => p.id === prodId);
-      if (prod) {
-        recordPurchase(prodId);
-        // Re-render modal to unlocked state with Download button
-        const mount = document.getElementById('modal-mount');
-        if (mount) {
-          mount.innerHTML = renderPdfCheckoutModal(prod);
-          const closeBtn = document.getElementById('close-pdf-modal-btn');
-          if (closeBtn) closeBtn.onclick = () => { mount.innerHTML = ''; };
-        }
-        // Refresh PDF store card in the dashboard
-        const storeMount = document.getElementById('pdf-store-mount');
-        if (storeMount) {
-          storeMount.innerHTML = renderPdfStore();
-        }
-      }
-      return;
-    }
-
-    const downloadPdfBtn = e.target.closest('#download-purchased-pdf-btn');
-    if (downloadPdfBtn) {
-      e.preventDefault();
-      const prodId = downloadPdfBtn.getAttribute('data-product-id');
-      const prod = PDF_PRODUCTS.find(p => p.id === prodId);
-      if (prod) {
-        downloadProductGuide(prod);
-      }
-      return;
-    }
-
-    // Star Rating click across all views
+    // Star Rating click across problems and specs
     const starBtn = e.target.closest('.star, .dsa-star-btn, .spec-star-btn');
     if (starBtn) {
       e.preventDefault();
@@ -794,9 +349,9 @@ export function attachDashboardListeners() {
     }
 
     // Open Problem or Spec Detail Modal
-    const openItem = e.target.closest('[data-open-problem], .open-spec-modal-btn, .db-item-row');
+    const openItem = e.target.closest('[data-open-problem], .open-spec-modal-btn');
     if (openItem) {
-      if (e.target.closest('.status-select, .dsa-status-select, .spec-status-select, .star, .dsa-star-btn, .spec-star-btn, select, button.delete-task-btn, input')) return;
+      if (e.target.closest('.status-select, .dsa-status-select, .spec-status-select, .star, .dsa-star-btn, .spec-star-btn, select, button, input')) return;
       const id = openItem.getAttribute('data-open-problem') || openItem.getAttribute('data-item-id');
       if (id) {
         const isSpec = String(id).startsWith('sd-') || openItem.getAttribute('data-is-spec') === 'true';
@@ -808,7 +363,7 @@ export function attachDashboardListeners() {
       return;
     }
 
-    // 30-Day / 6-Week System Design Roadmap Week filter
+    // 6-Week System Design Roadmap Week filter
     const weekBtn = e.target.closest('.sys-roadmap-filter-week, .roadmap-week-chip');
     if (weekBtn) {
       e.preventDefault();
@@ -828,7 +383,6 @@ export function attachDashboardListeners() {
           sysRoadmapReadiness = 'all'; // toggle off
         } else {
           sysRoadmapReadiness = rId;
-          // When filtering by a specific competency, show all cards matching it instead of just today
           if (sysRoadmapWeek === 'today') {
             sysRoadmapWeek = 'all';
           }
@@ -1031,8 +585,6 @@ export function attachDashboardListeners() {
       }
       return;
     }
-
-    // (Card sections are non-clickable; only topic tabs and explicit buttons trigger actions)
   };
 
   // 3. Global Delegated Change Handler (Checkboxes, Status Selects, Dropdowns)
@@ -1043,7 +595,7 @@ export function attachDashboardListeners() {
       return;
     }
 
-    // 30-Day / 6-Week System Design Roadmap jump day select
+    // 6-Week System Design Roadmap jump day select
     if (e.target.matches('.sys-roadmap-jump-select')) {
       const day = parseInt(e.target.value, 10);
       if (!isNaN(day)) {
@@ -1053,7 +605,7 @@ export function attachDashboardListeners() {
       return;
     }
 
-    // 30-Day System Design Roadmap day toggle
+    // 6-Week System Design Roadmap day toggle
     if (e.target.matches('.sys-roadmap-toggle-checkbox')) {
       const day = e.target.getAttribute('data-roadmap-day');
       toggleSysDesignRoadmapDay(day);
@@ -1061,7 +613,7 @@ export function attachDashboardListeners() {
       return;
     }
 
-    // 30-Day System Design Roadmap status select
+    // 6-Week System Design Roadmap status select
     if (e.target.id === 'sys-roadmap-status-select') {
       sysRoadmapStatus = e.target.value;
       refreshWorkspaceView();
@@ -1078,27 +630,11 @@ export function attachDashboardListeners() {
       return;
     }
 
-    // Checklist item toggle checkbox
-    if (e.target.matches('.task-checkbox')) {
-      const id = e.target.getAttribute('data-task-id');
-      toggleTask(id);
-      refreshFullDashboard();
-      return;
-    }
-
-    // Status dropdowns across all views (Curated DB, DSA Tracker, System Design)
-    if (e.target.matches('.status-select, .dsa-status-select, .spec-status-select')) {
-      const id = e.target.getAttribute('data-item-id') || e.target.getAttribute('data-problem-id') || e.target.getAttribute('data-spec-id');
+    // Status dropdowns for DSA Problems
+    if (e.target.matches('.status-select, .dsa-status-select')) {
+      const id = e.target.getAttribute('data-item-id') || e.target.getAttribute('data-problem-id');
       updateProblemStatus(id, e.target.value);
       refreshFullDashboard();
-      return;
-    }
-
-    // Curated DB Difficulty filter
-    if (e.target.id === 'db-diff-filter') {
-      currentDiff = e.target.value;
-      currentDbPage = 1;
-      refreshDatabaseView();
       return;
     }
 
@@ -1112,13 +648,6 @@ export function attachDashboardListeners() {
     // DSA Tracker Difficulty filter
     if (e.target.id === 'dsa-diff-filter') {
       dsaDiffFilter = e.target.value;
-      refreshWorkspaceView();
-      return;
-    }
-
-    // System Design Difficulty filter
-    if (e.target.id === 'sys-diff-filter') {
-      sysDiff = e.target.value;
       refreshWorkspaceView();
       return;
     }
@@ -1137,37 +666,6 @@ export function attachDashboardListeners() {
 }
 
 function attachWorkspaceListeners() {
-  // Input handler for Checklist Enter key
-  const addInput = document.getElementById('new-task-input');
-  if (addInput) {
-    addInput.onkeydown = (e) => {
-      if (e.key === 'Enter') {
-        const val = addInput.value.trim();
-        if (val) {
-          addTask(val, 'DSA');
-          addInput.value = '';
-          refreshFullDashboard();
-        }
-      }
-    };
-  }
-
-  // Live Search Input for Curated DB
-  const dbSearchInput = document.getElementById('db-search-input');
-  if (dbSearchInput) {
-    dbSearchInput.oninput = (e) => {
-      currentSearch = e.target.value;
-      currentDbPage = 1;
-      const cursorPos = e.target.selectionStart;
-      refreshDatabaseView();
-      const nextInput = document.getElementById('db-search-input');
-      if (nextInput) {
-        nextInput.focus();
-        nextInput.setSelectionRange(cursorPos, cursorPos);
-      }
-    };
-  }
-
   // Live Search Input for DSA Tracker Workspace
   const dsaSearchInput = document.getElementById('dsa-search-input');
   if (dsaSearchInput) {
@@ -1183,22 +681,7 @@ function attachWorkspaceListeners() {
     };
   }
 
-  // Live Search Input for System Design Workspace
-  const sysSearchInput = document.getElementById('sys-search-input');
-  if (sysSearchInput) {
-    sysSearchInput.oninput = (e) => {
-      sysSearch = e.target.value;
-      const cursorPos = e.target.selectionStart;
-      refreshWorkspaceView();
-      const nextInput = document.getElementById('sys-search-input');
-      if (nextInput) {
-        nextInput.focus();
-        nextInput.setSelectionRange(cursorPos, cursorPos);
-      }
-    };
-  }
-
-  // Live Search Input for 30-Day System Design Roadmap
+  // Live Search Input for 6-Week System Design Roadmap
   const sysRoadmapSearchInput = document.getElementById('sys-roadmap-search');
   if (sysRoadmapSearchInput) {
     sysRoadmapSearchInput.oninput = (e) => {
@@ -1280,15 +763,15 @@ function openQuickSearch() {
     if (!q) {
       resultsContainer.innerHTML = `
         <div class="p-3 text-slate-400 text-[12px]">
-          Start typing to search 100 problems, 20 system design specs, and the 45-day curriculum.
+          Start typing to search 100 problems, 20 system design specs, and roadmap topics.
         </div>
       `;
       return;
     }
 
-    const matchedDSA = state.dsaProblems.filter(p => p.title.toLowerCase().includes(q) || p.pattern.toLowerCase().includes(q)).slice(0, 4);
+    const matchedDSA = state.dsaProblems.filter(p => p.title.toLowerCase().includes(q) || (p.pattern && p.pattern.toLowerCase().includes(q))).slice(0, 4);
     const matchedSpecs = state.systemSpecs.filter(s => s.title.toLowerCase().includes(q) || (s.pattern && s.pattern.toLowerCase().includes(q)) || (s.domain && s.domain.toLowerCase().includes(q))).slice(0, 3);
-    const matchedDays = Object.values(state.curriculum).filter(c => c.topic.toLowerCase().includes(q) || c.objective.toLowerCase().includes(q)).slice(0, 3);
+    const matchedDays = Object.values(state.curriculum || {}).filter(c => (c.topic && c.topic.toLowerCase().includes(q)) || (c.objective && c.objective.toLowerCase().includes(q))).slice(0, 3);
 
     if (matchedDSA.length === 0 && matchedSpecs.length === 0 && matchedDays.length === 0) {
       resultsContainer.innerHTML = `<div class="p-4 text-center text-slate-400 text-[13px]">No matches found for "${escapeHtml(q)}"</div>`;
@@ -1367,9 +850,10 @@ function openQuickSearch() {
     resultsContainer.querySelectorAll('[data-day-num]').forEach(el => {
       el.addEventListener('click', () => {
         const day = Number(el.getAttribute('data-day-num'));
-        setDay(day);
+        setActiveRoadmapDay(day);
         document.getElementById('modal-mount').innerHTML = '';
-        currentTab = 'daily-dashboard';
+        currentTab = 'system-design-roadmap';
+        sysRoadmapWeek = 'today';
         refreshFullDashboard();
       });
     });
@@ -1394,9 +878,6 @@ function openLogModal() {
       const pattern = document.getElementById('log-pattern-input')?.value.trim() || 'General';
 
       if (title) {
-        // Add to active day's checklist
-        addTask(title, cat);
-        // Also prepend to state.dsaProblems
         const newId = Date.now();
         state.dsaProblems.unshift({
           id: newId,
@@ -1438,13 +919,11 @@ async function handleHeaderSignOut() {
   }
 
   try {
-    // 1. Sign out of Supabase Auth
     await signOut();
   } catch (err) {
     console.warn('[Auth] Supabase signOut error:', err);
   }
 
-  // 2. Clear local session tokens & sync storage
   try {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('prep_os_pending_sync');
@@ -1461,7 +940,6 @@ async function handleHeaderSignOut() {
     console.warn('[Auth] LocalStorage clean error:', e);
   }
 
-  // 3. Update StateSyncService in memory
   if (stateSyncService) {
     stateSyncService.currentUser = null;
     stateSyncService.status = SyncStatus.UNAUTHENTICATED;
@@ -1471,7 +949,6 @@ async function handleHeaderSignOut() {
     stateSyncService._notifySubscribers();
   }
 
-  // 4. Redirect immediately to the Sign In page
   if (window.location.hash === '#/signin' || window.location.hash.startsWith('#/signin?')) {
     window.location.reload();
   } else {
@@ -1534,74 +1011,6 @@ function openMockModal() {
   }
 }
 
-function openDrillModal(drillType) {
-  openModal(renderDrillModal(drillType), 'close-drill-modal-btn');
-
-  const revealBtn = document.getElementById('reveal-drill-answer-btn');
-  const answerBox = document.getElementById('drill-answer-box');
-  const ratingBtns = document.getElementById('drill-rating-btns');
-
-  if (revealBtn) {
-    revealBtn.addEventListener('click', () => {
-      revealBtn.classList.add('hidden');
-      answerBox?.classList.remove('hidden');
-      ratingBtns?.classList.remove('hidden');
-    });
-  }
-
-  ratingBtns?.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('modal-mount').innerHTML = '';
-    });
-  });
-}
-
-function toggleFocusBlock() {
-  const btn = document.getElementById('focus-btn');
-  const text = document.getElementById('focus-btn-text');
-  if (!btn || !text) return;
-
-  if (focusTimerInterval) {
-    clearInterval(focusTimerInterval);
-    focusTimerInterval = null;
-    btn.classList.remove('bg-secondary');
-    btn.classList.add('bg-[#6366F1]');
-    text.textContent = 'Start 45-min Focus Block';
-  } else {
-    let secondsLeft = 45 * 60;
-    btn.classList.remove('bg-[#6366F1]');
-    btn.classList.add('bg-secondary');
-    text.textContent = '45:00 Active';
-
-    focusTimerInterval = setInterval(() => {
-      secondsLeft--;
-      if (secondsLeft <= 0) {
-        clearInterval(focusTimerInterval);
-        focusTimerInterval = null;
-        btn.classList.remove('bg-secondary');
-        btn.classList.add('bg-[#6366F1]');
-        text.textContent = 'Focus Completed!';
-        alert('45-minute Focus Block complete! Take a 5-minute break.');
-      } else {
-        const m = Math.floor(secondsLeft / 60);
-        const s = secondsLeft % 60;
-        text.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')} Active`;
-      }
-    }, 1000);
-  }
-}
-
-function refreshKPIs() {
-  const kpisMount = document.getElementById('dash-kpis-mount');
-  if (kpisMount) kpisMount.innerHTML = renderDashboardKPIs();
-}
-
-function refreshDatabaseView() {
-  const dbMount = document.getElementById('curated-db-mount');
-  if (dbMount) dbMount.innerHTML = renderCuratedDatabase(currentDbTab, currentSearch, currentDiff, currentDbPage);
-  attachWorkspaceListeners();
-}
-
 function refreshWorkspaceView() {
   const mount = document.getElementById('main-workspace-mount');
   if (!mount) {
@@ -1612,17 +1021,9 @@ function refreshWorkspaceView() {
   let html = '';
   if (currentTab === 'dsa-tracker') {
     html = renderDsaTrackerView(dsaStatusFilter, dsaPatternFilter, dsaDiffFilter, dsaSearch);
-  } else if (currentTab === 'system-design') {
-    html = renderSystemDesignView(sysTab, sysSearch, sysDiff);
-  } else if (currentTab === 'system-design-roadmap') {
-    html = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch, sysRoadmapReadiness);
-  } else if (currentTab === 'revision-hub') {
-    html = renderRevisionHubView();
-  } else if (currentTab === 'readiness-assessment') {
-    html = renderReadinessView();
   } else {
-    refreshDatabaseView();
-    return;
+    currentTab = 'system-design-roadmap';
+    html = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch, sysRoadmapReadiness);
   }
 
   mount.innerHTML = html;
