@@ -47,7 +47,11 @@ import {
   renderDatabaseIsolationMvccContent,
   renderOptimisticVsPessimisticLockingContent,
   renderCapVsPacelcContent,
-  renderReplicationTradeoffsContent
+  renderReplicationTradeoffsContent,
+  renderReadReplicaPatternContent,
+  renderDatabaseShardingContent,
+  renderConsistentHashingContent,
+  renderChoosingRightDatabaseContent
 } from '../weeks/index.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
@@ -1580,11 +1584,23 @@ export function renderTopicDetail(topic) {
   if (topic.id === '4.3' || topic.title?.includes('Locking')) {
     return renderOptimisticVsPessimisticLockingContent(topic);
   }
+  if (topic.id === '4.5-read-replica' || topic.title?.includes('Read-Replica') || topic.title?.includes('Read Replica')) {
+    return renderReadReplicaPatternContent(topic);
+  }
   if (topic.title?.includes('Latency / Consistency Trade-off') || topic.title?.includes('Trade-off in Replication') || topic.title?.includes('Replication Modes') || topic.id === '4.5') {
     return renderReplicationTradeoffsContent(topic);
   }
   if (topic.id === '4.4' || topic.title?.includes('PACELC') || topic.title?.includes('CAP')) {
     return renderCapVsPacelcContent(topic);
+  }
+  if (topic.id === '4.6' || topic.title?.includes('Sharding') || topic.title?.includes('Partitioning')) {
+    return renderDatabaseShardingContent(topic);
+  }
+  if (topic.id === '4.7' || topic.title?.includes('Consistent Hashing')) {
+    return renderConsistentHashingContent(topic);
+  }
+  if (topic.id === '4.8' || topic.title?.includes('Choosing the Right Database') || topic.title?.includes('Choosing DB')) {
+    return renderChoosingRightDatabaseContent(topic);
   }
   if (topic.customHtml) {
     return typeof topic.customHtml === 'function' ? topic.customHtml(topic) : topic.customHtml;
