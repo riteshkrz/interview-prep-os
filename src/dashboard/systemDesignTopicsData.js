@@ -180,31 +180,31 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
     },
     {
       "id": "2.2",
-      "tabTitle": "2.2 How HTTPS Works",
-      "title": "2.2 How HTTPS Works",
+      "tabTitle": "2.2 Forward vs Reverse Proxy",
+      "title": "2.2 Forward Proxy vs. Reverse Proxy",
       "section": "Part 2 · Networking & Protocols",
-      "whatItIs": "HTTP layered on Transport Layer Security (TLS), combining asymmetric cryptography for key exchange with fast symmetric encryption for payload data.",
-      "architecture": "TLS 1.3 HANDSHAKE (1 RTT):\nClient ── ClientHello (cipher suites, key share) ──► Server\nClient ◄── ServerHello + Certificate + Finished ──── Server (1 RTT)\nClient ══ Symmetric AES-GCM Encrypted Data ════════► Server (0 extra RTT)\nModern TLS uses ECDHE (Elliptic Curve Diffie-Hellman Ephemeral) for Forward Secrecy.",
+      "whatItIs": "A forward proxy acts on behalf of clients to access external resources, hiding client identity. A reverse proxy sits in front of backend web servers to intercept incoming requests, hiding internal infrastructure and providing load balancing, TLS termination, and security buffering.",
+      "architecture": "FORWARD PROXY: [Clients] ──► [Forward Proxy] ──► (Internet) ──► [Origin Server]\nREVERSE PROXY: [Clients] ──► (Internet) ──► [Reverse Proxy] ──► [Backend App Pool]\nMnemonic: A forward proxy hides the client from the server; a reverse proxy hides the server from the client.",
       "tradeoffs": [
-        "Asymmetric encryption (RSA/ECC, expensive CPU, used only for key establishment) vs. Symmetric (AES-NI, hardware-accelerated, bulk data)",
-        "TLS Termination at Edge (Enables CDN caching, compression, WAF inspection) vs. End-to-End mTLS (Zero-trust security across microservices)"
+        "Forward Proxy (Client privacy/Tor, corporate DLP, outbound content filtering, egress caching) vs. Reverse Proxy (Ingress load balancing, TLS offload, WAF/DDoS defense, edge caching)",
+        "TLS Termination (Decrypts at edge, enables header inspection & L7 routing) vs. TLS Pass-Through (End-to-end zero trust encryption, but loses header inspection and caching)"
       ],
-      "keyTakeaway": "Asymmetric crypto establishes trust and a key; symmetric crypto does the work. TLS 1.3 uses ECDHE for forward secrecy in 1 RTT."
+      "keyTakeaway": "A forward proxy acts for the client; a reverse proxy acts for the server. In system design interviews, reverse proxies are ingress workhorses: place them at the perimeter for TLS offload, load distribution, and security buffering before traffic touches application code."
     }
   ],
   "5": [
     {
       "id": "2.3",
       "tabTitle": "2.3 DNS Lookup",
-      "title": "2.3 DNS Lookup",
+      "title": "2.3 Domain Name System (DNS)",
       "section": "Part 2 · Networking & Protocols",
-      "whatItIs": "Hierarchical, globally distributed phonebook translating human-readable hostnames (google.com) into machine-routable IP addresses.",
-      "architecture": "RECURSIVE RESOLUTION FLOW:\nClient → Browser Cache → OS Cache → Recursive Resolver (ISP/8.8.8.8) → Root Nameserver (.) → TLD Nameserver (.com) → Authoritative Nameserver (ns1.google.com) → IP (142.251.46.238)\nCache hierarchy checked cheapest first. Real resolution takes 20–120 ms.",
+      "whatItIs": "The hierarchical, distributed phonebook of the Internet. Translates human-readable domain names into machine-routable IP addresses across 4 resolution tiers: Recursive Resolver, Root Nameserver, TLD Nameserver, and Authoritative Nameserver.",
+      "architecture": "DNS RESOLUTION HIERARCHY:\nClient ──(1)──► Recursive Resolver (8.8.8.8) ──(2)──► Root Nameserver (.) ──► TLD NS (.com) ──(3)──► Authoritative NS (ns1.awsdns.com) ──(4)──► IP 198.51.100.1 (TTL 300s)\nRouting policies: Latency-Based, Geolocation (GeoDNS), Weighted Round-Robin, Failover.",
       "tradeoffs": [
-        "DNS as Routing vs. Failover (GeoDNS routes to closest region, but client/ISP TTL disrespect makes DNS failover take minutes, not seconds)",
-        "TTL Tuning (Short TTL: 30s enables fast failover but increases query volume; Long TTL: hours improves cache hit rate)"
+        "High TTL (Sub-millisecond cached responses, minimal nameserver queries) vs. Low TTL (Agile traffic routing and fast failover, high query volume)",
+        "The TTL Disrespect Problem (Intermediate resolvers and client runtimes enforce minimum TTL floors, making DNS alone inadequate for sub-minute RTO)"
       ],
-      "keyTakeaway": "DNS is a hierarchical, aggressively cached lookup service and routing tool, not a real-time failover switch. For sub-second failover, do it below DNS."
+      "keyTakeaway": "DNS is a hierarchical, distributed, aggressively cached lookup system and global routing engine. It is not an instant failover mechanism due to TTL disrespect across intermediate caches. For sub-second failover, use BGP Anycast and Layer 4 load balancers below DNS."
     },
     {
       "id": "2.4",

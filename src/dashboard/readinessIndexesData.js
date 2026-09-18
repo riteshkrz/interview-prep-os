@@ -236,10 +236,10 @@ export const TOPIC_READINESS_MAP = {
   // Day 4: Part 11 & Part 2 · Transport & Protocols
   "11.1": ["api-networking"],
   "2.1": ["api-networking", "caching-latency"],
-  "2.2": ["security-auth", "api-networking"],
+  "2.2": ["security-auth", "api-networking", "resiliency-availability"],
 
   // Day 5: Part 2 · Ingress & Browser
-  "2.3": ["api-networking", "caching-latency"],
+  "2.3": ["api-networking", "caching-latency", "resiliency-availability"],
   "2.4": ["api-networking", "caching-latency"],
   "2.9": ["api-networking", "caching-latency"],
 

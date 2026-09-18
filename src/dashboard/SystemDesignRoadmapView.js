@@ -27,6 +27,10 @@ import { renderCloudModelsContent } from './CloudModelsDetail.js';
 import { renderAwsLambdaContent } from './AwsLambdaDetail.js';
 import { renderScalingWebsiteContent } from './ScalingWebsiteDetail.js';
 import { renderBigDataCloudContent } from './BigDataCloudDetail.js';
+import { renderTcpUdpFundamentalsContent } from './TcpUdpFundamentalsDetail.js';
+import { renderHttpGenerationsContent } from './HttpGenerationsDetail.js';
+import { renderForwardVsReverseProxyContent } from './ForwardVsReverseProxyDetail.js';
+import { renderDnsLookupContent } from './DnsLookupDetail.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
   // =========================================================================
@@ -96,16 +100,16 @@ export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
     day: 4,
     week: 1,
     weekTitle: "Frameworks, Compute & Core Ingress",
-    topic: "Transport Protocols & Security: TCP, UDP, HTTP/3 & HTTPS",
+    topic: "Transport Protocols, Ingress & Security: TCP, UDP, HTTP/3, Forward & Reverse Proxies",
     domain: "Networking & Security",
     difficulty: "Medium",
     estTime: "80 mins",
     isRevision: false,
-    objective: "Master connection lifecycles, flow control, head-of-line blocking, and the cryptographic mechanics of TLS 1.3.",
+    objective: "Master connection lifecycles, flow control, head-of-line blocking, HTTP generations, and forward vs. reverse proxy boundaries.",
     keyTradeoffs: [
       "TCP (reliable byte stream, 3-way handshake, sliding window flow control) vs. UDP (datagrams, connectionless, zero handshake, loss-tolerant audio/video)",
       "HTTP/1.1 (pipelining HOL blocking) → HTTP/2 (single TCP stream multiplexing) → HTTP/3 QUIC (UDP transport, 0-RTT resumption, independent streams)",
-      "TLS 1.3 Handshake: 1-RTT connection setup, Diffie-Hellman ephemeral key exchange, forward secrecy, and certificate chain validation"
+      "Forward Proxy (Client privacy, corporate DLP, egress filtering) vs. Reverse Proxy (Ingress load balancing, TLS termination, WAF/DDoS, edge caching)"
     ],
     readingLinks: [
       { title: "Cloudflare: HTTP/3 vs. HTTP/2 Performance Benchmarks", url: "https://blog.cloudflare.com/http-3-vs-http-2/" },
@@ -1503,6 +1507,18 @@ export function renderTopicDetail(topic) {
   }
   if (topic.id === '1.6') {
     return renderBigDataCloudContent(topic);
+  }
+  if (topic.id === '11.1') {
+    return renderTcpUdpFundamentalsContent(topic);
+  }
+  if (topic.id === '2.1') {
+    return renderHttpGenerationsContent(topic);
+  }
+  if (topic.id === '2.2') {
+    return renderForwardVsReverseProxyContent(topic);
+  }
+  if (topic.id === '2.3') {
+    return renderDnsLookupContent(topic);
   }
   if (topic.customHtml) {
     return typeof topic.customHtml === 'function' ? topic.customHtml(topic) : topic.customHtml;
