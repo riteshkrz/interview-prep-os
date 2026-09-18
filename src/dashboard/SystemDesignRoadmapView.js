@@ -24,6 +24,9 @@ import { renderNumbersToMemoriseContent } from './NumbersToMemoriseDetail.js';
 import { renderProcessVsThreadContent } from './ProcessVsThreadDetail.js';
 import { renderVirtualizationVsContainersContent } from './VirtualizationVsContainersDetail.js';
 import { renderCloudModelsContent } from './CloudModelsDetail.js';
+import { renderAwsLambdaContent } from './AwsLambdaDetail.js';
+import { renderScalingWebsiteContent } from './ScalingWebsiteDetail.js';
+import { renderBigDataCloudContent } from './BigDataCloudDetail.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
   // =========================================================================
@@ -1491,6 +1494,15 @@ export function renderTopicDetail(topic) {
   }
   if (topic.id === '1.3') {
     return renderCloudModelsContent(topic);
+  }
+  if (topic.id === '1.4') {
+    return renderAwsLambdaContent(topic);
+  }
+  if (topic.id === '1.5') {
+    return renderScalingWebsiteContent(topic);
+  }
+  if (topic.id === '1.6') {
+    return renderBigDataCloudContent(topic);
   }
   if (topic.customHtml) {
     return typeof topic.customHtml === 'function' ? topic.customHtml(topic) : topic.customHtml;

@@ -116,39 +116,39 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
       "tabTitle": "1.4 Serverless Internals",
       "title": "1.4 AWS Lambda Behind the Scenes",
       "section": "Part 1 · Compute Foundations",
-      "whatItIs": "Serverless event-driven execution runtime that runs code in sandboxed Firecracker microVMs with sub-second provisioning and scale-to-zero billing.",
+      "whatItIs": "A serverless event-driven execution runtime that runs code in sandboxed Firecracker microVMs with sub-second provisioning and scale-to-zero billing.",
       "architecture": "INVOCATION PATHWAYS:\n• Sync: Client → Frontend Worker → Worker Manager → Placement Service (Provisions MicroVM) → Init (download S3 bundle) → Invoke\n• Async: Client → ALB → Frontend → Internal SQS Queue → Pollers → Worker MicroVM\n• Cold Start: Sandbox placement + download code + runtime bootstrap + init code (avoid heavy VM runtimes, use Provisioned Concurrency)",
       "tradeoffs": [
         "Serverless (Spiky, unpredictable traffic, event glue, zero idle cost) vs. Containers (Steady high-throughput, predictable p99 latency)",
         "Connection exhaustion (1,000 concurrent Lambdas exhaust DB connections; requires RDS Proxy or PgBouncer)"
       ],
-      "keyTakeaway": "Serverless does not remove servers; it moves capacity planning to the vendor. Judge it on traffic shape: bursty favors functions, steady favors containers."
+      "keyTakeaway": "Serverless does not remove servers; it moves capacity planning to the vendor. Judge it on traffic shape: bursty favors functions, steady favors containers. Always name the connection exhaustion problem when pairing serverless with relational databases."
     },
     {
       "id": "1.5",
       "tabTitle": "1.5 Scaling Ladder",
       "title": "1.5 Scaling a Website to Millions of Users",
       "section": "Part 1 · Compute Foundations",
-      "whatItIs": "The canonical 6-step evolution ladder from a single monolith server to a global distributed microservice platform.",
-      "architecture": "THE 6-STEP EVOLUTION LADDER:\nStep 1: Split Web Server & Database (Removes CPU contention)\nStep 2: Add Stateless App Server Cluster (Requires pushing session state to Redis/tokens)\nStep 3: Introduce Load Balancers (L4/L7 health checks, even distribution)\nStep 4: Separate Reads & Writes (Read-replicas for 10:1 read ratios)\nStep 5: Partition & Cache (Memcached/Redis cache-aside, horizontal database sharding)\nStep 6: Decompose into Microservices (Solves team velocity and organizational scaling)",
+      "whatItIs": "The canonical 9-stage evolution ladder from a single monolith server to a global distributed microservice platform with database sharding and async message queues.",
+      "architecture": "THE 9-STAGE EVOLUTION LADDER:\nStage 1: Single Server (All-in-one)\nStage 2: Separate Web and Database Tiers\nStage 3: Horizontal Scaling with Load Balancer\nStage 4: Database Replication (Read Replicas)\nStage 5: Caching and Content Delivery Network (CDN)\nStage 6: Stateless Architecture (Session in Redis/tokens)\nStage 7: Multiple Data Centers (GeoDNS routing)\nStage 8: Message Queues for Async Processing (Kafka/SQS)\nStage 9: Database Sharding (Horizontal partition)",
       "tradeoffs": [
         "Read Replicas (Cheap read scale, but introduces replication lag breaking read-after-write)",
         "Monolith vs. Microservices (Microservices solve team coordination problems, not performance problems; adds 20 network hops on critical path)"
       ],
-      "keyTakeaway": "Scaling is not a ladder you recite — it is: find the bottleneck, remove it, name what breaks next. Replicas scale reads; only sharding scales writes."
+      "keyTakeaway": "Scaling is not a ladder you recite — it is: find the bottleneck, remove it, name what breaks next. Replicas scale reads; only sharding scales writes. Never introduce distributed complexity before exhausting simpler primitives."
     },
     {
       "id": "1.6",
       "tabTitle": "1.6 Big Data Cloud",
-      "title": "1.6 Choosing a Cloud Provider for Big Data",
+      "title": "1.6 Choosing a Cloud Vendor for Big Data Solutions",
       "section": "Part 1 · Compute Foundations",
-      "whatItIs": "Standard 5-stage big data reference architecture and the corresponding tool equivalents across AWS, Google Cloud, and Microsoft Azure.",
-      "architecture": "THE 5-STAGE PIPELINE:\n1. Serverless Ingest: AWS Lambda | GCP Cloud Functions | Azure Functions\n2. Streaming Ingest: Kinesis/MSK | Pub/Sub | Event Hubs\n3. Raw Data Lake: S3 | Cloud Storage | Azure Blob\n4. Batch/Stream Processing: EMR/Glue | Dataproc/Dataflow | Databricks/HDInsight\n5. OLAP Warehouse: Redshift | BigQuery | Synapse",
+      "whatItIs": "Modern big data architectures follow a vendor-neutral 5-stage pipeline pattern: Ingestion → Storage → Processing → Analytical Warehouse → Visualization. Every major cloud provider offers a suite of managed services that map to these pipeline stages.",
+      "architecture": "THE 5-STAGE PIPELINE:\n1. Serverless Ingest: AWS Lambda | GCP Cloud Functions | Azure Functions\n2. Streaming Ingest: Kinesis/MSK | Pub/Sub | Event Hubs\n3. Raw Data Lake: S3 | Cloud Storage | Azure Blob (ADLS)\n4. Batch/Stream Processing: EMR/Glue | Dataproc/Dataflow | Synapse/HDInsight\n5. OLAP Warehouse: Redshift | BigQuery | Synapse",
       "tradeoffs": [
         "Data Warehouse (Known schema, BI reporting, fast joins) vs. Data Lakehouse (Delta/Iceberg on object storage, raw schema-on-read, ML)",
         "Batch (Cheap, hourly tolerance, simple replay) vs. Streaming (Sub-second fraud/alerting, requires watermarking and stateful windowing)"
       ],
-      "keyTakeaway": "Big data architecture is vendor-neutral: Ingest → Lake → Process → Warehouse → Present. Differentiate on query pricing models and cross-cloud egress costs."
+      "keyTakeaway": "Big data architectures are vendor-neutral: Ingestion → Lake → Processing → Warehouse → Presentation. Focus on data gravity, query pricing models (serverless vs. provisioned), and schema governance. Never move petabytes across cloud boundaries — compute must travel to the data."
     }
   ],
   "4": [
