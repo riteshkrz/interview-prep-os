@@ -241,11 +241,13 @@ export const TOPIC_READINESS_MAP = {
   // Day 5: Part 2 · Ingress & Browser
   "2.3": ["api-networking", "caching-latency", "resiliency-availability"],
   "2.4": ["api-networking", "caching-latency"],
+  "2.5": ["api-networking", "resiliency-availability"],
   "2.9": ["api-networking", "caching-latency"],
 
   // Day 6: Part 2 & Part 11 · Load Balancing & API Styles
   "2.8": ["api-networking", "resiliency-availability"],
-  "2.6": ["api-networking"],
+  "2.6": ["api-networking", "distributed-systems"],
+  "2.7": ["api-networking", "caching-latency", "resiliency-availability"],
   "11.2": ["api-networking", "resiliency-availability"],
 
   // Day 7: Revision Day 1
@@ -253,7 +255,7 @@ export const TOPIC_READINESS_MAP = {
   "rev-1-checklist": ["capacity-math", "api-networking", "resiliency-availability"],
 
   // Day 8: Part 3 · Security, Auth & Access
-  "3.1": ["security-auth", "api-networking"],
+  "3.1": ["security-auth", "api-networking", "distributed-systems"],
   "3.2": ["security-auth", "storage-partitioning"],
   "3.3": ["security-auth", "api-networking"],
   "3.5": ["security-auth", "resiliency-availability"],

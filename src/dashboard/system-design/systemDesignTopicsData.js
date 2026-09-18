@@ -209,15 +209,28 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
     {
       "id": "2.4",
       "tabTitle": "2.4 URL Lifecycle",
-      "title": "2.4 What Happens When You Type a URL",
+      "title": "2.4 What Happens When You Type a URL in a Browser?",
       "section": "Part 2 · Networking & Protocols",
-      "whatItIs": "The complete browser request lifecycle from URL entry to rendering: URL parsing → DNS lookup → TCP handshake → TLS negotiation → HTTP GET → HTML response → DOM rendering.",
-      "architecture": "THE END-TO-END FLOW:\n1. URL Parsing (Scheme, host, port, path)\n2. DNS Resolution (Recursive lookup or local cache)\n3. Transport Connection (SYN → SYN-ACK → ACK)\n4. TLS Handshake (Cipher negotiation & session key)\n5. HTTP Request (GET /path HTTP/2 with headers)\n6. Server Ingress (CDN Edge → L4 LB → L7 Gateway → Microservice)\n7. Browser Rendering (DOM + CSSOM = Render Tree → Layout → Paint)",
+      "whatItIs": "The complete browser request lifecycle from keystroke to pixels: URL parsing → DNS resolution → TCP 3-way handshake → TLS 1.3 negotiation → HTTP/2 request → TTFB server execution → HTML streaming → Critical Rendering Path (DOM + CSSOM = Render Tree → Layout → Paint).",
+      "architecture": "END-TO-END SEQUENCE:\n[ URL Input ] ──► [ DNS (20-120ms) ] ──► [ TCP SYN (1 RTT) ] ──► [ TLS 1.3 (1 RTT) ] ──► [ HTTP Request ] ──► [ Reverse Proxy / App / DB ] ──► [ 200 OK Response ] ──► [ HTML Parser → DOM ] + [ CSS Parser → CSSOM ] ──► [ Render Tree ] ──► [ Layout (Reflow) ] ──► [ Paint & GPU Composite ]",
       "tradeoffs": [
-        "Cold Visit Latency (Dominated by round-trips: DNS + TCP + TLS handshakes before first byte arrives)",
-        "Server Compute vs. Subresources (HTML transfer is fast; network waterfall of blocking CSS/JS subresources determines user perceived speed)"
+        "Cold Visit Latency (Dominated by sequential round-trips: DNS + TCP + TLS before first byte arrives; mitigate via preconnect/preload)",
+        "Blocking Resources (CSS blocks rendering to prevent FOUC; synchronous JS blocks HTML parsing unless deferred/async)"
       ],
-      "keyTakeaway": "Tell the story as: resolve → connect → secure → request → serve-from-nearest-cache → render. Every arrow is a cache and failure boundary."
+      "keyTakeaway": "Tell the story as: parse → resolve → connect → secure → request → serve → render. Every arrow is a network round-trip, a failure boundary, and an edge caching opportunity."
+    },
+    {
+      "id": "2.5",
+      "tabTitle": "2.5 Status Codes",
+      "title": "2.5 HTTP Status Codes: 200 vs 201, 301 vs 302, 401 vs 403, 502 vs 503 vs 504",
+      "section": "Part 2 · Networking & Protocols",
+      "whatItIs": "Standardized 3-digit status codes indicating request outcomes. Precision with status codes governs how reverse proxies cache, how clients retry, and how distributed telemetry alerts fire.",
+      "architecture": "STATUS CLASSES & CRITICAL PAIRINGS:\n• 1xx: 100 Continue, 101 Switching Protocols, 103 Early Hints\n• 2xx: 200 OK, 201 Created (with Location), 202 Accepted (async job), 204 No Content (DELETE)\n• 3xx: 301/308 (Permanent) vs 302/307 (Temporary; 307/308 preserve HTTP method strictly)\n• 4xx: 401 Unauthorized (AuthN identity failure) vs 403 Forbidden (AuthZ permission failure), 409 Conflict, 429 Rate Limit\n• 5xx: 500 Internal, 502 Bad Gateway (Upstream crashed), 503 Unavailable (Overload), 504 Gateway Timeout (Upstream read timeout)",
+      "tradeoffs": [
+        "The '200 OK with Error Body' Antipattern (Breaks CDN/proxy caching, confuses API gateways, blinds SLO telemetry dashboards)",
+        "Async API Design (Return 202 Accepted with polling job URI instead of holding open long synchronous connections)"
+      ],
+      "keyTakeaway": "Never return 200 OK for errors. Use 201 for sync creates, 202 for async jobs, 401 for who you are, 403 for what you can do, 502 for upstream crashes, and 504 for upstream timeouts."
     },
     {
       "id": "2.9",
@@ -235,6 +248,32 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
   ],
   "6": [
     {
+      "id": "2.6",
+      "tabTitle": "2.6 API Styles",
+      "title": "2.6 REST vs. GraphQL vs. gRPC vs. WebSockets",
+      "section": "Part 2 · Networking & Protocols",
+      "whatItIs": "The four dominant API communication paradigms in modern distributed systems, balancing contract strictness, CPU serialization overhead, edge cacheability, and network duplexity.",
+      "architecture": "PARADIGM MATRIX:\n• REST: Resource-oriented, HTTP methods, JSON, stateless, native CDN edge caching\n• GraphQL: Single POST endpoint, client-specified query tree, solves over/under-fetching, N+1 query vulnerability\n• gRPC: Binary Protocol Buffers over HTTP/2, compiled type-safe stubs, high-throughput microservice RPC\n• WebSockets: Full-duplex bidirectional persistent TCP socket via HTTP 101 upgrade, 2-10 byte frame overhead",
+      "tradeoffs": [
+        "Public APIs (REST for caching and universal client simplicity) vs. Internal Microservices (gRPC for compact binary serialization and low CPU)",
+        "BFF Pattern (Backend-for-Frontend with GraphQL/REST at perimeter translating to internal gRPC calls)"
+      ],
+      "keyTakeaway": "Use REST for public cacheable endpoints, gRPC for internal microservice communication, GraphQL for heterogeneous client UI aggregation, and WebSockets for real-time bidirectional push."
+    },
+    {
+      "id": "2.7",
+      "tabTitle": "2.7 Real-Time Protocols",
+      "title": "2.7 Short Polling vs. Long Polling vs. WebSockets vs. SSE",
+      "section": "Part 2 · Networking & Protocols",
+      "whatItIs": "Four competing architectures for delivering asynchronous real-time server updates to clients: Short Polling, Long Polling (Comet), Server-Sent Events (SSE), and WebSockets.",
+      "architecture": "STREAMING ARCHITECTURES:\n• Short Polling: Periodic HTTP GET requests on timer; high header overhead and empty response waste\n• Long Polling: Server holds connection open until event occurs; immediate client re-connection loop\n• Server-Sent Events (SSE): Persistent unidirectional HTTP stream (`text/event-stream`); built-in auto-reconnect, native HTTP/2 multiplexing\n• WebSockets: Full-duplex bidirectional TCP socket; minimal framing overhead; requires distributed message bus (Redis Pub/Sub) to scale horizontally",
+      "tradeoffs": [
+        "SSE vs WebSockets (SSE is simpler, firewall-friendly, and multiplexed over HTTP/2; WebSockets required only for bidirectional low-latency data)",
+        "The HTTP/1.1 6-Connection Trap (SSE over HTTP/1.1 exhausts browser connection pool across 6 tabs; HTTP/2 is mandatory in production)"
+      ],
+      "keyTakeaway": "Do not choose WebSockets by default. For unidirectional server-to-client streaming (notifications, live metrics, LLM tokens), SSE over HTTP/2 is simpler and more resilient. Reserve WebSockets for true bidirectional full-duplex communication."
+    },
+    {
       "id": "2.8",
       "tabTitle": "2.8 L4 vs L7 LB",
       "title": "2.8 Load Balancing: L4 vs. L7",
@@ -247,19 +286,6 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
         "Sticky Sessions (Antipattern: breaks even load distribution and complicates rolling deploys; prefer stateless servers + Redis session store)"
       ],
       "keyTakeaway": "L4 for speed and protocol-agnostic failover; L7 for routing requiring request inspection. Always use health check floors to prevent cascading failovers."
-    },
-    {
-      "id": "2.6",
-      "tabTitle": "2.6 API Styles",
-      "title": "2.6 API Styles: SOAP, REST, GraphQL, RPC",
-      "section": "Part 2 · Networking & Protocols",
-      "whatItIs": "The four primary API paradigms for contract standardization between client interfaces and distributed backend services.",
-      "architecture": "PARADIGM MATRIX:\n• REST: Resource-oriented, HTTP verbs (GET/POST/PUT/DELETE), status codes, universally understood, highly cacheable\n• GraphQL: Single POST endpoint, client-specified query over typed schema, eliminates over/under-fetching, harder to cache\n• gRPC: Remote procedure calls, HTTP/2 binary Protobuf framing, code-generated client stubs, high-throughput internal microservices\n• SOAP: XML envelopes, WSDL strict contracts, WS-Security, legacy enterprise banking integrations",
-      "tradeoffs": [
-        "Public APIs (REST for caching and consumer simplicity) vs. Internal Microservices (gRPC for compact binary serialization and low CPU)",
-        "BFF Pattern (Backend-for-Frontend with GraphQL aggregating multiple microservice calls for mobile apps with constrained bandwidth)"
-      ],
-      "keyTakeaway": "Choose API style by consumer and coupling: REST for public cacheable endpoints, gRPC for fast internal communication, GraphQL for heterogeneous UI clients."
     },
     {
       "id": "11.2",
@@ -306,17 +332,16 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
   "8": [
     {
       "id": "3.1",
-      "tabTitle": "3.1 Single Sign-On",
-      "title": "3.1 Single Sign-On (SSO)",
+      "tabTitle": "3.1 JWT vs Sessions",
+      "title": "3.1 Token-Based Authentication: JWT vs. Session-Based Authentication",
       "section": "Part 3 · Security, Auth & API Access",
-      "whatItIs": "Authentication scheme allowing a user to log in once and access multiple independent applications via a central Identity Provider (IdP).",
-      "architecture": "SSO (OIDC) PROTOCOL FLOW:\nUser → App (Gmail) → 302 Redirect to IdP Auth Server → User enters credentials → IdP creates Global Session & issues Token → App validates token with IdP JWKS → Access granted.\nUser navigates to App 2 (YouTube) → Redirect to IdP → Global Session recognized → Token issued with 0 extra credential prompts!",
+      "whatItIs": "Stateful Session-Based Authentication (opaque session ID in cookie, server-side Redis lookup on every request) vs. Stateless Token-Based Authentication (JSON Web Token signed with cryptographic keys, verified offline by microservices without database queries).",
+      "architecture": "STATEFUL VS. STATELESS:\n• Stateful Session: Client ──Cookie: session_id──► Server ──Lookup──► [ Redis Session Store ] (1 DB/cache hit per request! Instant revocation via DELETE)\n• Stateless JWT: Client ──Bearer JWT──► Microservice ──Verify Signature with Public Key──► OK (0 DB hits! Verification in microseconds; revocation requires blacklisting/versioning)",
       "tradeoffs": [
-        "SAML 2.0 (XML assertions, enterprise IT legacy) vs. OIDC / OAuth 2.0 (JSON Web Tokens, browser/mobile native, Authorization Code + PKCE)",
-        "Local Signature Validation (cache JWKS keys; sub-ms verification, no hot IdP dependency) vs. Token Introspection (network call per request, immediate revocation capability)",
-        "Single Logout (SLO): The hardest part in practice — notifying all relying parties via back-channel endpoints"
+        "Scalability vs Revocation (Sessions allow instant user logout but burden Redis; JWTs scale infinitely across microservices but cannot be easily revoked before expiration)",
+        "Where to Store Tokens (Never store JWT in localStorage due to XSS vulnerability; keep access tokens in JS memory and refresh tokens in HttpOnly cookies)"
       ],
-      "keyTakeaway": "SSO trades distributed credential risk for centralised session risk. Say: 'OIDC on top of OAuth 2.0 with PKCE, short-lived access tokens, revocable refresh tokens, and back-channel logout.'"
+      "keyTakeaway": "Sessions give you instant revocation at the cost of centralized storage lookups. JWTs give you zero-lookup stateless scalability across microservices at the cost of difficult revocation. In production, use the hybrid model: 15-minute access tokens validated offline + revokable refresh tokens in HttpOnly cookies."
     },
     {
       "id": "3.2",

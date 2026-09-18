@@ -31,8 +31,13 @@ import {
   renderTcpUdpFundamentalsContent,
   renderHttpGenerationsContent,
   renderForwardVsReverseProxyContent,
-  renderDnsLookupContent
-} from '../weeks/week-1/index.js';
+  renderDnsLookupContent,
+  renderUrlLifecycleContent,
+  renderHttpStatusCodesContent,
+  renderApiStylesContent,
+  renderRealtimeProtocolsContent,
+  renderJwtVsSessionContent
+} from '../weeks/index.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
   // =========================================================================
@@ -1521,6 +1526,21 @@ export function renderTopicDetail(topic) {
   }
   if (topic.id === '2.3') {
     return renderDnsLookupContent(topic);
+  }
+  if (topic.id === '2.4') {
+    return renderUrlLifecycleContent(topic);
+  }
+  if (topic.id === '2.5') {
+    return renderHttpStatusCodesContent(topic);
+  }
+  if (topic.id === '2.6') {
+    return renderApiStylesContent(topic);
+  }
+  if (topic.id === '2.7') {
+    return renderRealtimeProtocolsContent(topic);
+  }
+  if (topic.id === '3.1') {
+    return renderJwtVsSessionContent(topic);
   }
   if (topic.customHtml) {
     return typeof topic.customHtml === 'function' ? topic.customHtml(topic) : topic.customHtml;
