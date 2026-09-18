@@ -488,8 +488,8 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
   "10": [
     {
       "id": "4.5",
-      "tabTitle": "4.5 Replication Modes",
-      "title": "4.5 The Latency / Consistency Trade-off in Replication",
+      "tabTitle": "4.4 Replication Trade-off",
+      "title": "4.4 The Latency / Consistency Trade-off in Replication",
       "section": "Part 4 · Databases & Consistency",
       "whatItIs": "The fundamental trade-off between write acknowledgement latency and data durability across replicated database nodes.",
       "architecture": "THREE REPLICATION MODES:\n1. Synchronous: Client → Primary → Replica 1 & 2 persist → Primary ACKs (Zero data loss RPO=0, write latency = slowest replica)\n2. Asynchronous: Client → Primary persists → Primary ACKs immediately → Replicates in background (Fastest, data loss window on leader crash)\n3. Semi-Synchronous (The Pragmatic Default): ACK after $k$ of $n$ replicas persist (e.g. MySQL semi-sync, Kafka acks=all with min.insync.replicas=2)",
@@ -498,7 +498,7 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
         "Availability penalty of sync replication (Shared fate: any slow or dead replica stalls all writes; quorum mitigates slowest node)",
         "Leader-based (Single write bottleneck, simple consistency) vs. Leaderless (Cassandra: writes anywhere, requires read repair and anti-entropy)"
       ],
-      "keyTakeaway": "You cannot have a local-latency write and a globally consistent read of it. Default to semi-synchronous within a region plus asynchronous across regions."
+      "keyTakeaway": "You cannot have a local-latency write and a globally consistent read of it. Pick per data flow using RPO/RTO language, and default to semi-synchronous within a region plus asynchronous across regions — that is what most production systems actually do."
     },
     {
       "id": "4.5-read-replica",

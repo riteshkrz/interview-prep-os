@@ -95,7 +95,7 @@ export function renderReplicationTradeoffsContent(topic) {
           <div class="flex items-center gap-3">
             <div class="w-1.5 h-7 bg-[#6366F1] rounded-sm shrink-0"></div>
             <h2 class="font-sans text-[22px] sm:text-[26px] font-bold text-white tracking-tight leading-snug">
-              4.5 The Latency / Consistency Trade-off in Replication
+              4.4 The Latency / Consistency Trade-off in Replication
             </h2>
           </div>
         </div>
@@ -273,7 +273,7 @@ export function renderReplicationTradeoffsContent(topic) {
             KEY INTERVIEW TAKEAWAY
           </span>
           <p class="text-[13.5px] font-sans font-medium text-white leading-relaxed">
-            You cannot have a local-latency write and an immediately consistent global read. Default to semi-synchronous replication within a region (to achieve RPO=0 without slowest-replica bottleneck) paired with asynchronous replication cross-region. Always pair read replicas with an explicit read-your-own-writes routing story.
+            You cannot have a local-latency write and a globally consistent read of it. Pick per data flow using RPO/RTO language, and default to semi-synchronous within a region plus asynchronous across regions — that is what most production systems actually do.
           </p>
         </div>
 

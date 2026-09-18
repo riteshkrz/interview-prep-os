@@ -1580,11 +1580,11 @@ export function renderTopicDetail(topic) {
   if (topic.id === '4.3' || topic.title?.includes('Locking')) {
     return renderOptimisticVsPessimisticLockingContent(topic);
   }
+  if (topic.title?.includes('Latency / Consistency Trade-off') || topic.title?.includes('Trade-off in Replication') || topic.title?.includes('Replication Modes') || topic.id === '4.5') {
+    return renderReplicationTradeoffsContent(topic);
+  }
   if (topic.id === '4.4' || topic.title?.includes('PACELC') || topic.title?.includes('CAP')) {
     return renderCapVsPacelcContent(topic);
-  }
-  if (topic.id === '4.5' || topic.title?.includes('Replication Modes') || topic.title?.includes('Trade-off in Replication')) {
-    return renderReplicationTradeoffsContent(topic);
   }
   if (topic.customHtml) {
     return typeof topic.customHtml === 'function' ? topic.customHtml(topic) : topic.customHtml;
