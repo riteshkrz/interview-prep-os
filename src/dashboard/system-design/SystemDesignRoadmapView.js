@@ -54,7 +54,9 @@ import {
   renderChoosingRightDatabaseContent,
   renderStorageEnginesContent,
   renderCacheStrategiesContent,
-  renderCacheEvictionStampedeContent
+  renderCacheEvictionStampedeContent,
+  renderMetricsDatabaseContent,
+  renderBigDataEvolutionContent
 } from '../weeks/index.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
@@ -1613,6 +1615,12 @@ export function renderTopicDetail(topic) {
   }
   if (topic.id === '5.2' || topic.title?.includes('Eviction') || topic.title?.includes('Thundering Herd') || topic.title?.includes('Stampede')) {
     return renderCacheEvictionStampedeContent(topic);
+  }
+  if (topic.id === '4.11' || topic.title?.includes('Metrics') || topic.title?.includes('Time Series')) {
+    return renderMetricsDatabaseContent(topic);
+  }
+  if (topic.id === '4.12' || topic.title?.includes('Big Data') || topic.title?.includes('Papers and the Evolution')) {
+    return renderBigDataEvolutionContent(topic);
   }
   if (topic.customHtml) {
     return typeof topic.customHtml === 'function' ? topic.customHtml(topic) : topic.customHtml;
