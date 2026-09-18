@@ -75,7 +75,7 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
       "tabTitle": "1.1 Process vs Thread",
       "title": "1.1 Process vs. Thread",
       "section": "Part 1 · Compute Foundations",
-      "whatItIs": "A program is code on disk. A process is a program in execution with its own isolated virtual memory address space. A thread is the smallest schedulable unit of execution sharing the process heap and code segment.",
+      "whatItIs": "A program is an executable file that contains a set of instructions and is stored passively on disk. A process is a program in execution. A thread is the smallest unit of execution within a process.",
       "architecture": "ADDRESS-SPACE MODEL:\nProcess A: [Code | Data | Heap] ── Threads T1, T2 share Heap & Code (cheap comms, race risk)\nProcess B: [Code | Data | Heap] ── Process A & B share NOTHING (IPC needed, full fault isolation)",
       "tradeoffs": [
         "Processes (Strong isolation, memory safety boundary, Chrome tabs) vs. Threads (Shared heap, ~1 MB stack, thread pool limits)",
