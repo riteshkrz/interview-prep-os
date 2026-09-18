@@ -265,13 +265,13 @@ export const TOPIC_READINESS_MAP = {
 
   // Day 9: Part 4 · Database Foundations & Isolation
   "4.1": ["storage-partitioning", "consistency-transactions", "distributed-systems"],
-  "4.1-mvcc": ["storage-partitioning", "consistency-transactions"],
-  "4.2": ["consistency-transactions", "storage-partitioning"],
-  "4.3": ["distributed-systems", "consistency-transactions", "resiliency-availability"],
+  "4.2": ["storage-partitioning", "consistency-transactions"],
+  "4.3": ["consistency-transactions", "storage-partitioning"],
+  "4.4": ["distributed-systems", "consistency-transactions", "resiliency-availability"],
 
   // Day 10: Part 4 · Replication & Database Selection
-  "4.4": ["distributed-systems", "consistency-transactions", "storage-partitioning"],
-  "4.5": ["storage-partitioning", "consistency-transactions", "caching-latency"],
+  "4.5": ["distributed-systems", "consistency-transactions", "storage-partitioning"],
+  "4.5-read-replica": ["storage-partitioning", "consistency-transactions", "caching-latency"],
   "4.8": ["storage-partitioning", "distributed-systems"],
 
   // Day 11: Part 4 · Sharding & Storage Engines

@@ -443,9 +443,9 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
       "keyTakeaway": "Never pick a database based on hype. Choose SQL when ACID transactions, relational integrity, and ad-hoc joins are non-negotiable. Choose NoSQL when horizontal write throughput, high partition availability, and predictable key-value access patterns dominate. In modern enterprise systems, propose Polyglot Persistence synchronized via Change Data Capture (CDC)."
     },
     {
-      "id": "4.1-mvcc",
-      "tabTitle": "Isolation & MVCC",
-      "title": "Database Isolation Levels and MVCC",
+      "id": "4.2",
+      "tabTitle": "4.2 Isolation & MVCC",
+      "title": "4.2 Database Isolation Levels and MVCC",
       "section": "Part 4 · Databases & Consistency",
       "whatItIs": "Database isolation levels govern how concurrent transactions observe each other's writes, balancing transactional correctness against engine throughput.",
       "architecture": "MVCC VERSION CHAIN (Undo Log):\nRow: balance=100 (txn_id=200 committed)\nTxn A starts (Read View 201) → writes balance=200 (uncommitted)\nUndo log: [balance=200, txn_id=201] ──roll_pointer──► [balance=100, txn_id=200]\nTxn B starts (Read View 202) → reads balance=100 (skips uncommitted 201!)\nReaders NEVER block writers, writers NEVER block readers!",
@@ -457,9 +457,9 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
       "keyTakeaway": "Isolation level is a dial between anomalies and throughput, and MVCC is the trick that lets readers and writers not block each other. Know your engine's default (MySQL: Repeatable Read, Postgres: Read Committed)."
     },
     {
-      "id": "4.2",
-      "tabTitle": "4.2 Locking Models",
-      "title": "4.2 Optimistic vs. Pessimistic Locking",
+      "id": "4.3",
+      "tabTitle": "4.3 Locking Models",
+      "title": "4.3 Optimistic vs. Pessimistic Locking",
       "section": "Part 4 · Databases & Consistency",
       "whatItIs": "Two fundamental concurrency control strategies for preventing double-booking and race conditions when multiple clients mutate shared state.",
       "architecture": "OPTIMISTIC CONDITIONAL UPDATE:\nSELECT available_rooms, version FROM hotel_rooms WHERE id = 42; -- version=7\nUPDATE hotel_rooms\n   SET available_rooms = 0, version = 8\n WHERE id = 42 AND version = 7; -- Optimistic check\n-- rows_affected = 1 → SUCCESS | rows_affected = 0 → RETRY",
@@ -471,9 +471,9 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
       "keyTakeaway": "Optimistic locking is cheap when conflicts are rare and pathological when they are not. Say 'contention determines the choice', then show the atomic conditional update escape hatch."
     },
     {
-      "id": "4.3",
-      "tabTitle": "4.3 CAP & PACELC",
-      "title": "4.3 CAP and PACELC",
+      "id": "4.4",
+      "tabTitle": "4.4 CAP & PACELC",
+      "title": "4.4 CAP and PACELC Theorems",
       "section": "Part 4 · Databases & Consistency",
       "whatItIs": "The theoretical boundaries of distributed data stores under network partitions and normal operational latency.",
       "architecture": "CAP & PACELC THEOREM FORMULATION:\nif (Partition P):\n    choose Availability (AP: accept writes, risk inconsistency)\n    or Consistency (CP: refuse writes, return error)\nelse (Normal State):\n    choose Latency (EL: fast local read, replication lag)\n    or Consistency (EC: wait for quorum ACK, high write latency)",
@@ -487,9 +487,9 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
   ],
   "10": [
     {
-      "id": "4.4",
-      "tabTitle": "4.4 Replication Modes",
-      "title": "4.4 The Latency / Consistency Trade-off in Replication",
+      "id": "4.5",
+      "tabTitle": "4.5 Replication Modes",
+      "title": "4.5 The Latency / Consistency Trade-off in Replication",
       "section": "Part 4 · Databases & Consistency",
       "whatItIs": "The fundamental trade-off between write acknowledgement latency and data durability across replicated database nodes.",
       "architecture": "THREE REPLICATION MODES:\n1. Synchronous: Client → Primary → Replica 1 & 2 persist → Primary ACKs (Zero data loss RPO=0, write latency = slowest replica)\n2. Asynchronous: Client → Primary persists → Primary ACKs immediately → Replicates in background (Fastest, data loss window on leader crash)\n3. Semi-Synchronous (The Pragmatic Default): ACK after $k$ of $n$ replicas persist (e.g. MySQL semi-sync, Kafka acks=all with min.insync.replicas=2)",
@@ -501,9 +501,9 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
       "keyTakeaway": "You cannot have a local-latency write and a globally consistent read of it. Default to semi-synchronous within a region plus asynchronous across regions."
     },
     {
-      "id": "4.5",
-      "tabTitle": "4.5 Read-Replica Pattern",
-      "title": "4.5 The Read-Replica Pattern & Replication Lag",
+      "id": "4.5-read-replica",
+      "tabTitle": "Read-Replica Pattern",
+      "title": "The Read-Replica Pattern & Replication Lag",
       "section": "Part 4 · Databases & Consistency",
       "whatItIs": "Distributing read traffic across read-only replica nodes while routing writes to a single primary database, and mitigating replication lag anomalies.",
       "architecture": "READ-AFTER-WRITE ROUTING:\nOrder Service ──write──► Primary DB ──async replication (lag!)──► Replicas (R1, R2)\nClient reads: If read-sensitive / 'just wrote' → Route to Primary for N seconds\nIf read-tolerant (browse catalog) → Route to Replicas (offload 90% DB load)",

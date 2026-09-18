@@ -43,7 +43,11 @@ import {
   renderEncryptionFundamentalsContent,
   renderSqlVsNosqlContent,
   renderRateLimitingContent,
-  renderLog4ShellContent
+  renderLog4ShellContent,
+  renderDatabaseIsolationMvccContent,
+  renderOptimisticVsPessimisticLockingContent,
+  renderCapVsPacelcContent,
+  renderReplicationTradeoffsContent
 } from '../weeks/index.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
@@ -1569,6 +1573,18 @@ export function renderTopicDetail(topic) {
   }
   if (topic.id === '4.1') {
     return renderSqlVsNosqlContent(topic);
+  }
+  if (topic.id === '4.2' || topic.title?.includes('Isolation') || topic.title?.includes('MVCC')) {
+    return renderDatabaseIsolationMvccContent(topic);
+  }
+  if (topic.id === '4.3' || topic.title?.includes('Locking')) {
+    return renderOptimisticVsPessimisticLockingContent(topic);
+  }
+  if (topic.id === '4.4' || topic.title?.includes('PACELC') || topic.title?.includes('CAP')) {
+    return renderCapVsPacelcContent(topic);
+  }
+  if (topic.id === '4.5' || topic.title?.includes('Replication Modes') || topic.title?.includes('Trade-off in Replication')) {
+    return renderReplicationTradeoffsContent(topic);
   }
   if (topic.customHtml) {
     return typeof topic.customHtml === 'function' ? topic.customHtml(topic) : topic.customHtml;
