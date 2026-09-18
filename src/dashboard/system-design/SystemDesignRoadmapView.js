@@ -5,7 +5,7 @@
  * executed in the last 18 study days paired with key architectural concepts.
  */
 
-import { state, toggleSysDesignRoadmapDay } from './state.js';
+import { state, toggleSysDesignRoadmapDay } from '../state.js';
 import { SYSTEM_DESIGN_TOPICS_BY_DAY } from './systemDesignTopicsData.js';
 import {
   READINESS_INDEXES,
@@ -17,20 +17,22 @@ import {
   getReadinessIndexesForSpec,
   calculateAllReadinessIndexes
 } from './readinessIndexesData.js';
-import { renderHowToUseCourseContent } from './HowToUseCourseDetail.js';
-import { renderSevenStepFrameworkContent } from './SevenStepFrameworkDetail.js';
-import { renderEstimationMathContent } from './EstimationMathDetail.js';
-import { renderNumbersToMemoriseContent } from './NumbersToMemoriseDetail.js';
-import { renderProcessVsThreadContent } from './ProcessVsThreadDetail.js';
-import { renderVirtualizationVsContainersContent } from './VirtualizationVsContainersDetail.js';
-import { renderCloudModelsContent } from './CloudModelsDetail.js';
-import { renderAwsLambdaContent } from './AwsLambdaDetail.js';
-import { renderScalingWebsiteContent } from './ScalingWebsiteDetail.js';
-import { renderBigDataCloudContent } from './BigDataCloudDetail.js';
-import { renderTcpUdpFundamentalsContent } from './TcpUdpFundamentalsDetail.js';
-import { renderHttpGenerationsContent } from './HttpGenerationsDetail.js';
-import { renderForwardVsReverseProxyContent } from './ForwardVsReverseProxyDetail.js';
-import { renderDnsLookupContent } from './DnsLookupDetail.js';
+import {
+  renderHowToUseCourseContent,
+  renderSevenStepFrameworkContent,
+  renderEstimationMathContent,
+  renderNumbersToMemoriseContent,
+  renderProcessVsThreadContent,
+  renderVirtualizationVsContainersContent,
+  renderCloudModelsContent,
+  renderAwsLambdaContent,
+  renderScalingWebsiteContent,
+  renderBigDataCloudContent,
+  renderTcpUdpFundamentalsContent,
+  renderHttpGenerationsContent,
+  renderForwardVsReverseProxyContent,
+  renderDnsLookupContent
+} from '../weeks/week-1/index.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
   // =========================================================================

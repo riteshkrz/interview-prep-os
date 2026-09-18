@@ -1,4 +1,4 @@
-import { state } from './state.js';
+import { state } from '../state.js';
 
 export function renderDashboardSidebar(activeTab = 'system-design-roadmap', isCollapsed = false) {
   const completedRoadmapDays = state.sysDesignRoadmap ? Object.values(state.sysDesignRoadmap).filter(d => d && d.completed).length : 0;

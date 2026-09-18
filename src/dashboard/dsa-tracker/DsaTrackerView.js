@@ -4,7 +4,7 @@
  * with real-time category filtering, difficulty selection, live search, and confidence tracking.
  */
 
-import { state, getMetrics } from './state.js';
+import { state, getMetrics } from '../state.js';
 
 export function renderDsaTrackerView(statusFilter = 'all', patternFilter = 'all', diffFilter = 'all', searchQuery = '') {
   const problems = state.dsaProblems || [];

@@ -4,8 +4,8 @@
  * and JSON state export/import.
  */
 
-import { stateSyncService, SyncStatus } from '../services/stateSyncService.js';
-import { signIn, signUp, signOut, isSupabaseConfigured } from '../lib/supabase.js';
+import { stateSyncService, SyncStatus } from '../../services/stateSyncService.js';
+import { signIn, signUp, signOut, isSupabaseConfigured } from '../../lib/supabase.js';
 
 export function renderCloudSyncModal() {
   const syncInfo = stateSyncService.getStatus();

@@ -8,19 +8,19 @@ import {
   updateCatalogFromRemote,
   toggleSysDesignRoadmapDay
 } from './state.js';
-import { renderDashboardSidebar } from './DashboardSidebar.js';
-import { renderDashboardHeader, renderHeaderSyncStatusBadge, renderHeaderUserProfile } from './DashboardHeader.js';
-import { renderProblemDetailModal } from './ProblemDetailModal.js';
-import { renderDsaTrackerView } from './DsaTrackerView.js';
-import { renderSystemDesignRoadmapView, renderTopicDetail, getActiveRoadmapDay, setActiveRoadmapDay } from './SystemDesignRoadmapView.js';
-import { SYSTEM_DESIGN_TOPICS_BY_DAY } from './systemDesignTopicsData.js';
+import { renderDashboardSidebar } from './components/DashboardSidebar.js';
+import { renderDashboardHeader, renderHeaderSyncStatusBadge, renderHeaderUserProfile } from './components/DashboardHeader.js';
+import { renderProblemDetailModal } from './dsa-tracker/ProblemDetailModal.js';
+import { renderDsaTrackerView } from './dsa-tracker/DsaTrackerView.js';
+import { renderSystemDesignRoadmapView, renderTopicDetail, getActiveRoadmapDay, setActiveRoadmapDay } from './system-design/SystemDesignRoadmapView.js';
+import { SYSTEM_DESIGN_TOPICS_BY_DAY } from './system-design/systemDesignTopicsData.js';
 import {
   renderQuickSearchModal,
   renderLogEntryModal,
   renderMockDesignModal,
   renderCheatsheetModal
-} from './DashboardModals.js';
-import { renderCloudSyncModal, attachCloudSyncModalListeners } from './CloudSyncModal.js';
+} from './components/DashboardModals.js';
+import { renderCloudSyncModal, attachCloudSyncModalListeners } from './components/CloudSyncModal.js';
 import { stateSyncService, SyncStatus } from '../services/stateSyncService.js';
 import { catalogService } from '../services/catalogService.js';
 import { signOut } from '../lib/supabase.js';

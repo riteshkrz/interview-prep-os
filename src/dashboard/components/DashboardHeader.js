@@ -1,5 +1,5 @@
-import { state, getMetrics } from './state.js';
-import { stateSyncService, SyncStatus } from '../services/stateSyncService.js';
+import { state, getMetrics } from '../state.js';
+import { stateSyncService, SyncStatus } from '../../services/stateSyncService.js';
 
 export function renderDashboardHeader(activeTab = 'system-design-roadmap', isCollapsed = false) {
   const syncBadge = renderHeaderSyncStatusBadge();
