@@ -22,6 +22,8 @@ import { renderSevenStepFrameworkContent } from './SevenStepFrameworkDetail.js';
 import { renderEstimationMathContent } from './EstimationMathDetail.js';
 import { renderNumbersToMemoriseContent } from './NumbersToMemoriseDetail.js';
 import { renderProcessVsThreadContent } from './ProcessVsThreadDetail.js';
+import { renderVirtualizationVsContainersContent } from './VirtualizationVsContainersDetail.js';
+import { renderCloudModelsContent } from './CloudModelsDetail.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
   // =========================================================================
@@ -1483,6 +1485,12 @@ export function renderTopicDetail(topic) {
   }
   if (topic.id === '1.1') {
     return renderProcessVsThreadContent(topic);
+  }
+  if (topic.id === '1.2') {
+    return renderVirtualizationVsContainersContent(topic);
+  }
+  if (topic.id === '1.3') {
+    return renderCloudModelsContent(topic);
   }
   if (topic.customHtml) {
     return typeof topic.customHtml === 'function' ? topic.customHtml(topic) : topic.customHtml;

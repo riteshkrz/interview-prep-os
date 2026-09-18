@@ -88,26 +88,26 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
       "tabTitle": "1.2 VMs vs Containers",
       "title": "1.2 Virtualization vs. Containerization",
       "section": "Part 1 · Compute Foundations",
-      "whatItIs": "Virtualization uses a hypervisor to abstract physical hardware into multiple guest operating systems. Containerization virtualizes the host OS kernel using namespaces, cgroups, and overlayfs.",
+      "whatItIs": "Virtualization is a technology that allows you to create multiple simulated environments or dedicated resources from a single, physical hardware system. Containerization is the packaging together of software code with all its necessary components like libraries, frameworks, and other dependencies so that they are isolated in their own container.",
       "architecture": "ISOLATION MECHANISMS:\n• VMs: Hardware Isolation (Guest OS + Hypervisor) → Minutes start-up, GBs image, 5–15% CPU overhead\n• Containers: Linux kernel namespaces (PID, net, mount) + cgroups (CPU, RAM limits) + overlayfs → Milliseconds start-up, MBs image\n• MicroVMs (AWS Firecracker): Container density with hardware virtualization security boundary (~125 ms boot)",
       "tradeoffs": [
         "Virtual Machines (Hardware boundary, multi-tenant untrusted code) vs. Containers (Shared kernel, high host density, CI/CD speed)",
         "Container escapes (A shared kernel vulnerability compromises the entire host; containers are a configuration boundary, not security)"
       ],
-      "keyTakeaway": "Virtualization abstracts hardware; containerization abstracts the OS. MicroVMs exist precisely because some workloads refuse to trade security for density."
+      "keyTakeaway": "Containers abstract the OS; VMs abstract the hardware. Containers buy speed and density; VMs buy hardware-grade isolation. MicroVMs exist because some workloads refuse to compromise on either."
     },
     {
       "id": "1.3",
       "tabTitle": "1.3 Cloud Models",
       "title": "1.3 Cloud Service Models: IaaS, PaaS, SaaS",
       "section": "Part 1 · Compute Foundations",
-      "whatItIs": "The three standard tiers of cloud abstraction defining the boundary of operational responsibility between cloud vendor and engineering team.",
+      "whatItIs": "For on-prem applications, you are responsible for the entire stack: hardware, OS, virtualization, runtime, data, and application. With cloud computing, providers take on varying degrees of responsibility: IaaS provides fundamental infrastructure, PaaS provides managed platforms, and SaaS provides complete delivered software.",
       "architecture": "RESPONSIBILITY SPECTRUM:\n• On-Prem: You manage hardware, virtualization, OS, runtime, and app\n• IaaS (EC2, S3, VPC): Vendor owns hardware & hypervisor; you manage OS, middleware, app\n• PaaS (Heroku, App Engine, RDS): Vendor manages OS & runtime; you own code & data\n• SaaS (Gmail, Datadog): Vendor manages everything; you consume via web/API",
       "tradeoffs": [
         "Control vs. Operational Headcount (IaaS gives kernel tuning but requires dedicated SRE team; PaaS speeds time to market)",
         "Proprietary PaaS lock-in vs. Portability (Keep business logic in portable containers, wrap cloud services behind interfaces)"
       ],
-      "keyTakeaway": "Anchor choice on three axes: control, operational headcount, and lock-in vs. time-to-market."
+      "keyTakeaway": "Anchor choice on three axes: control, operational headcount, and lock-in vs. time-to-market. A senior engineer never says 'PaaS is too expensive' without factoring in the headcount cost of running IaaS."
     }
   ],
   "3": [
