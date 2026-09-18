@@ -36,7 +36,12 @@ import {
   renderHttpStatusCodesContent,
   renderApiStylesContent,
   renderRealtimeProtocolsContent,
-  renderJwtVsSessionContent
+  renderJwtVsSessionContent,
+  renderPasswordHashingContent,
+  renderSsoOAuthOidcContent,
+  renderRbacVsAbacContent,
+  renderEncryptionFundamentalsContent,
+  renderSqlVsNosqlContent
 } from '../weeks/index.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
@@ -1541,6 +1546,21 @@ export function renderTopicDetail(topic) {
   }
   if (topic.id === '3.1') {
     return renderJwtVsSessionContent(topic);
+  }
+  if (topic.id === '3.2') {
+    return renderPasswordHashingContent(topic);
+  }
+  if (topic.id === '3.3') {
+    return renderSsoOAuthOidcContent(topic);
+  }
+  if (topic.id === '3.4') {
+    return renderRbacVsAbacContent(topic);
+  }
+  if (topic.id === '3.5') {
+    return renderEncryptionFundamentalsContent(topic);
+  }
+  if (topic.id === '4.1') {
+    return renderSqlVsNosqlContent(topic);
   }
   if (topic.customHtml) {
     return typeof topic.customHtml === 'function' ? topic.customHtml(topic) : topic.customHtml;

