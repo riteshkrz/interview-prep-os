@@ -754,6 +754,20 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
         "Irreversible Steps (Sending an email or charging a card cannot be rolled back; order saga steps so irreversible actions happen LAST)"
       ],
       "keyTakeaway": "2PC buys atomicity with availability; sagas buy availability with isolation. Across microservices, choose sagas: orchestrated, idempotent, with a transactional outbox."
+    },
+    {
+      "id": "6.4",
+      "tabTitle": "6.4 Event-Driven",
+      "title": "6.4 Event-Driven Architecture",
+      "section": "Part 7 · Messaging & Streaming",
+      "whatItIs": "Decoupled asynchronous state changes, event streams, choreography vs. orchestration, and CQRS/Event Sourcing.",
+      "architecture": "EVENT SOURCING & CQRS:\nCommand → Write Model (Append-Only Event Store) → CDC/Kafka Stream → Projections → Read Model (Materialized Views in Elasticsearch/PostgreSQL/Redis).\n• Event Immutability: Past facts cannot be edited.\n• Dual-Write Solution: Transactional Outbox Pattern.\n• GDPR Compliance: Crypto-Shredding per-user encryption keys.",
+      "tradeoffs": [
+        "Choreography vs. Orchestration: Choreography has no single coordinator but risks event spaghetti; Orchestration (Temporal) provides centralized state and timeouts",
+        "Thin vs. Fat Events: Event Notification requires synchronous RPC callbacks; Event-Carried State Transfer provides full autonomy but larger messages",
+        "CQRS Eventual Consistency: Read model projection lag requires optimistic UI updates or sticky version tokens"
+      ],
+      "keyTakeaway": "Event-driven architecture provides temporal and spatial decoupling, but shifts complexity to eventual consistency, schema evolution, and distributed observability. Use the Transactional Outbox Pattern and Schema Registry."
     }
   ],
   "17": [

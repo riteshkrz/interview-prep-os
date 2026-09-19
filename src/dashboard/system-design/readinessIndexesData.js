@@ -301,6 +301,7 @@ export const TOPIC_READINESS_MAP = {
   "7.1": ["streaming-queues", "consistency-transactions"],
   "7.2": ["streaming-queues", "caching-latency", "storage-partitioning"],
   "7.4": ["consistency-transactions", "distributed-systems"],
+  "6.4": ["streaming-queues", "consistency-transactions", "distributed-systems"],
 
   // Day 17: Part 10 · Distributed Consensus & Time
   "10.1": ["distributed-systems", "consistency-transactions"],
