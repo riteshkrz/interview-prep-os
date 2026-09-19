@@ -55,6 +55,10 @@ import {
   renderStorageEnginesContent,
   renderCacheStrategiesContent,
   renderCacheEvictionStampedeContent,
+  renderRedisVsMemcachedContent,
+  renderAsyncProcessingQueuesContent,
+  renderRabbitMqVsKafkaContent,
+  renderDistributedTransactionsSagaContent,
   renderMetricsDatabaseContent,
   renderBigDataEvolutionContent
 } from '../weeks/index.js';
@@ -1615,6 +1619,18 @@ export function renderTopicDetail(topic) {
   }
   if (topic.id === '5.2' || topic.title?.includes('Eviction') || topic.title?.includes('Thundering Herd') || topic.title?.includes('Stampede')) {
     return renderCacheEvictionStampedeContent(topic);
+  }
+  if (topic.id === '5.3' || topic.title?.includes('Redis vs') || topic.title?.includes('Memcached')) {
+    return renderRedisVsMemcachedContent(topic);
+  }
+  if (topic.id === '6.1' || topic.id === '7.1' || topic.title?.includes('Asynchronous Processing') || topic.title?.includes('Delivery Semantics') || topic.title?.includes('Message Queues')) {
+    return renderAsyncProcessingQueuesContent(topic);
+  }
+  if (topic.id === '6.2' || topic.id === '7.2' || topic.title?.includes('RabbitMQ') || topic.title?.includes('Why Kafka Is Fast') || topic.title?.includes('Why Kafka Fast')) {
+    return renderRabbitMqVsKafkaContent(topic);
+  }
+  if (topic.id === '6.3' || topic.id === '7.4' || topic.title?.includes('2PC vs') || topic.title?.includes('Saga')) {
+    return renderDistributedTransactionsSagaContent(topic);
   }
   if (topic.id === '4.11' || topic.title?.includes('Metrics') || topic.title?.includes('Time Series')) {
     return renderMetricsDatabaseContent(topic);
