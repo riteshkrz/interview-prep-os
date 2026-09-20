@@ -60,6 +60,8 @@ import {
   renderRabbitMqVsKafkaContent,
   renderDistributedTransactionsSagaContent,
   renderEventDrivenArchitectureContent,
+  renderDeliverySemanticsContent,
+  renderWhyKafkaIsFastContent,
   renderBlockVsFileVsObjectContent,
   renderWhySsdsAreFastContent,
   renderErasureCodingVsReplicationContent,
@@ -1639,10 +1641,16 @@ export function renderTopicDetail(topic) {
   if (topic.id === '6.4' || topic.title?.includes('Event-Driven Architecture') || topic.title?.includes('Event-Driven')) {
     return renderEventDrivenArchitectureContent(topic);
   }
-  if (topic.title?.includes('Asynchronous Processing') || topic.title?.includes('Delivery Semantics') || topic.title?.includes('Message Queues') || topic.id === '6.1' || topic.id === '7.1') {
+  if (topic.title?.includes('Delivery Semantics') || (topic.id === '7.1' && !topic.section?.includes('Storage'))) {
+    return renderDeliverySemanticsContent(topic);
+  }
+  if (topic.title?.includes('Why Kafka Is Fast') || topic.title?.includes('Why Kafka Fast') || (topic.id === '7.2' && !topic.section?.includes('Storage'))) {
+    return renderWhyKafkaIsFastContent(topic);
+  }
+  if (topic.title?.includes('Asynchronous Processing') || topic.title?.includes('Message Queues') || topic.id === '6.1') {
     return renderAsyncProcessingQueuesContent(topic);
   }
-  if (topic.title?.includes('RabbitMQ') || topic.title?.includes('Why Kafka Is Fast') || topic.title?.includes('Why Kafka Fast') || topic.id === '6.2' || topic.id === '7.2') {
+  if (topic.title?.includes('RabbitMQ') || topic.id === '6.2') {
     return renderRabbitMqVsKafkaContent(topic);
   }
   if (topic.id === '6.3' || topic.id === '7.4' || topic.title?.includes('2PC vs') || topic.title?.includes('Saga')) {
