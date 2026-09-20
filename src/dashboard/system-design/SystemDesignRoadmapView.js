@@ -1525,13 +1525,13 @@ export function renderTopicDetail(topic) {
   if (topic.id === '0.4') {
     return renderNumbersToMemoriseContent(topic);
   }
-  if (topic.id === '1.1') {
+  if (topic.id === '1.1' || topic.title?.includes('Process vs. Thread') || topic.title?.includes('Process vs Thread')) {
     return renderProcessVsThreadContent(topic);
   }
-  if (topic.id === '1.2') {
+  if (topic.id === '1.2' || topic.title?.includes('Virtualization vs. Containerization') || topic.title?.includes('VMs vs Containers')) {
     return renderVirtualizationVsContainersContent(topic);
   }
-  if (topic.id === '1.3') {
+  if (topic.id === '1.3' || topic.title?.includes('Cloud Service Models') || topic.title?.includes('Cloud Models')) {
     return renderCloudModelsContent(topic);
   }
   if (topic.id === '1.4') {
