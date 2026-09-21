@@ -843,6 +843,20 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
       "keyTakeaway": "DNS steers in minutes; anycast steers in seconds. Use DNS for policy and anycast for fast edge evacuation. Moving traffic is easy; moving the stateful write path is hard."
     },
     {
+      "id": "11.5",
+      "tabTitle": "11.5 Long-Lived Conn",
+      "title": "11.5 Scaling Long-Lived Connections",
+      "section": "Part 11 · Networking",
+      "whatItIs": "Web applications designed to maintain persistent network connections for seconds to hours (WebSocket, SSE, gRPC streaming, TCP) rather than single-request HTTP.",
+      "architecture": "THE C10M CONNECTION ARCHITECTURE:\n1M Sockets ──► Layer 4 LB (Maglev/NLB) ──► Connection Gateway Tier (epoll/kqueue) ──► Pub/Sub Backplane (Redis/Kafka) ──► Stateless Application Workers.\nKernel Tunings: fs.file-max (2M), tcp_rmem/tcp_wmem (min 4KB), somaxconn (65535).\nReconnection Storm: Exponential backoff with full jitter to avoid crushing servers after restart.",
+      "tradeoffs": [
+        "WebSocket (Full duplex, binary framing, manual reconnect) vs SSE (HTTP/2 streaming, native auto-reconnect, text stream)",
+        "Decouple stateful connection proxies from stateless business logic; never run business code in the socket process",
+        "Tuning socket buffers down to 4KB shrinks 1M idle socket RAM from 128GB to ~14GB"
+      ],
+      "keyTakeaway": "Scaling long-lived connections is an OS and architecture problem, not a code problem. Use non-blocking event loops (epoll), tune socket memory buffers down to 4KB, isolate connections in a dedicated gateway tier, and route messages across a pub/sub backplane. Always protect reconnects with exponential backoff and full jitter."
+    },
+    {
       "id": "11.6",
       "tabTitle": "11.6 WebRTC Media",
       "title": "11.6 WebRTC and Real-Time Media",

@@ -68,7 +68,13 @@ import {
   renderMetricsDatabaseContent,
   renderBigDataEvolutionContent,
   renderMicroserviceCollaborationContent,
-  renderConsensusRaftContent
+  renderConsensusRaftContent,
+  renderDistributedTimeOrderingContent,
+  renderFailureDetectionContent,
+  renderServiceMeshSidecarContent,
+  renderGlobalTrafficManagementContent,
+  renderScalingLongLivedConnectionsContent,
+  renderWebRtcRealTimeMediaContent
 } from '../weeks/index.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
@@ -1654,6 +1660,24 @@ export function renderTopicDetail(topic) {
   }
   if (topic.id === '10.1' || topic.title?.includes('Consensus and Coordination') || topic.title?.includes('Consensus & Raft') || topic.title?.includes('Consensus') || topic.title?.includes('Raft')) {
     return renderConsensusRaftContent(topic);
+  }
+  if (topic.id === '10.2' || topic.title?.includes('Distributed Time') || topic.title?.includes('Time and Ordering') || topic.title?.includes('Time & Ordering')) {
+    return renderDistributedTimeOrderingContent(topic);
+  }
+  if (topic.id === '10.4' || topic.title?.includes('Failure Detection') || topic.title?.includes('Grey Failures') || topic.title?.includes('Grey Failure')) {
+    return renderFailureDetectionContent(topic);
+  }
+  if (topic.id === '11.3' || topic.title?.includes('Service Mesh') || topic.title?.includes('Sidecar Model')) {
+    return renderServiceMeshSidecarContent(topic);
+  }
+  if (topic.id === '11.4' || topic.title?.includes('Global Traffic Management') || topic.title?.includes('Anycast') || topic.title?.includes('BGP and GSLB')) {
+    return renderGlobalTrafficManagementContent(topic);
+  }
+  if (topic.id === '11.5' || topic.title?.includes('Scaling Long-Lived') || topic.title?.includes('Long-Lived Connections') || topic.title?.includes('Long-Lived Conn')) {
+    return renderScalingLongLivedConnectionsContent(topic);
+  }
+  if (topic.id === '11.6' || topic.title?.includes('WebRTC') || topic.title?.includes('Real-Time Media')) {
+    return renderWebRtcRealTimeMediaContent(topic);
   }
   if (topic.title?.includes('Asynchronous Processing') || topic.title?.includes('Message Queues') || topic.id === '6.1') {
     return renderAsyncProcessingQueuesContent(topic);
