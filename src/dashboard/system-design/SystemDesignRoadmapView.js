@@ -66,7 +66,9 @@ import {
   renderWhySsdsAreFastContent,
   renderErasureCodingVsReplicationContent,
   renderMetricsDatabaseContent,
-  renderBigDataEvolutionContent
+  renderBigDataEvolutionContent,
+  renderMicroserviceCollaborationContent,
+  renderConsensusRaftContent
 } from '../weeks/index.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
@@ -1646,6 +1648,12 @@ export function renderTopicDetail(topic) {
   }
   if (topic.title?.includes('Why Kafka Is Fast') || topic.title?.includes('Why Kafka Fast') || (topic.id === '7.2' && !topic.section?.includes('Storage'))) {
     return renderWhyKafkaIsFastContent(topic);
+  }
+  if (topic.title?.includes('Microservice Collaboration') || topic.title?.includes('Orchestration vs') || topic.title?.includes('Choreography') || (topic.id === '7.3' && !topic.section?.includes('Storage'))) {
+    return renderMicroserviceCollaborationContent(topic);
+  }
+  if (topic.id === '10.1' || topic.title?.includes('Consensus and Coordination') || topic.title?.includes('Consensus & Raft') || topic.title?.includes('Consensus') || topic.title?.includes('Raft')) {
+    return renderConsensusRaftContent(topic);
   }
   if (topic.title?.includes('Asynchronous Processing') || topic.title?.includes('Message Queues') || topic.id === '6.1') {
     return renderAsyncProcessingQueuesContent(topic);

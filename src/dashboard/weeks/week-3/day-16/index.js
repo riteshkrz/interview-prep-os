@@ -4,4 +4,4 @@ export { renderDistributedTransactionsSagaContent } from './DistributedTransacti
 export { renderEventDrivenArchitectureContent } from './EventDrivenArchitectureDetail.js';
 export { renderDeliverySemanticsContent } from './DeliverySemanticsDetail.js';
 export { renderWhyKafkaIsFastContent } from './WhyKafkaIsFastDetail.js';
-
+export { renderMicroserviceCollaborationContent } from './MicroserviceCollaborationDetail.js';
