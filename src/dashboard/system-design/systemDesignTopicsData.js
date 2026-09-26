@@ -179,6 +179,19 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
       "keyTakeaway": "Each HTTP generation removed one blocking layer: 1.1 removed per-request handshakes, 2.0 removed app HOL, 3.0 removed transport HOL."
     },
     {
+      "id": "2.2-https",
+      "tabTitle": "2.2 How HTTPS Works",
+      "title": "2.2 How HTTPS Works",
+      "section": "Part 2 · Networking & Protocols",
+      "whatItIs": "Hypertext Transfer Protocol Secure (HTTPS) transmits encrypted binary ciphertext using Transport Layer Security (TLS). Asymmetric cryptography establishes trust and derives ephemeral session keys; hardware-accelerated symmetric cryptography (AES-GCM) encrypts all subsequent application data.",
+      "architecture": "TLS 1.3 1-RTT HANDSHAKE:\nClient ──TCP SYN──► Server ──TCP SYN-ACK──► Client ──ACK (1 RTT)──►\nClient ──ClientHello (cipher suites, key_share)──► Server\nServer ◄──ServerHello (chosen suite, key_share) + Cert (1 RTT)── Client\nClient validates Cert (Root CA, SAN, OCSP) → ECDHE derives session key → AES-GCM encrypted data!",
+      "tradeoffs": [
+        "Asymmetric vs. Symmetric (Asymmetric used strictly for initial key derivation; symmetric AES-NI handles bulk transfer at gigabits/sec)",
+        "Forward Secrecy: TLS 1.3 removed RSA key transport because stealing server private key later decrypts recorded traffic; modern TLS enforces ECDHE where past sessions remain secure"
+      ],
+      "keyTakeaway": "Asymmetric crypto establishes trust and a key; symmetric crypto does the work. If you remember only one line, make it that — and add that TLS 1.3 uses ECDHE for forward secrecy in 1 RTT."
+    },
+    {
       "id": "2.2",
       "tabTitle": "2.2 Forward vs Reverse Proxy",
       "title": "2.2 Forward Proxy vs. Reverse Proxy",
@@ -320,6 +333,7 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
       "tabTitle": "Week 1 Checklist",
       "title": "Week 1 Core Mastery Checklist",
       "section": "Week 1 Review & Active Recall",
+      "whatItIs": "A comprehensive self-assessment checklist covering the 5 foundational competencies of Week 1: estimation math, transport protocols, virtualization boundaries, load balancing topologies, and ingress gateways.",
       "architecture": "CHECKLIST OF CORE CONCEPTS:\n[ ] Can you derive QPS and storage requirements on a whiteboard without hesitation?\n[ ] Can you explain why HTTP/2 single connection causes transport HOL on mobile networks?\n[ ] Can you contrast Type-1 hypervisors with Linux cgroups and namespaces?\n[ ] Can you articulate why L4 load balancing is required in front of L7 Envoy gateways?\n[ ] Can you write the Little's Law formula ($L = \\lambda \\times W$) and explain queue collapse?",
       "tradeoffs": [
         "Textbook reciting vs. Senior intuition (Always link concepts to operational failure modes)",
@@ -985,6 +999,20 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
   ],
   "22": [
     {
+      "id": "spec-1-interview",
+      "tabTitle": "Spec 1: Interview Blueprint",
+      "title": "URL Shortener — 45-Minute Interview Design",
+      "section": "Applied Design · Spec 1 (TinyURL / Bitly)",
+      "whatItIs": "45-minute end-to-end interview blueprint. Speak this sequence: clarify -> FR/NFR -> numbers -> API -> write/read path -> how short code is made -> let them grill.",
+      "tradeoffs": [
+        "Base62 7-char keys (3.5T keys, 41 bits) vs. 64-bit Snowflake (encodes to ~11 chars; do not default to full Snowflake for 7-char links)",
+        "Counter + Base62 with XOR sequence obfuscation (prevents scraping) vs. MD5/SHA URL hashing (dedup but requires collision retry loop)",
+        "HTTP 302 Found (retains full click analytics) vs. HTTP 301 Moved Permanently (browser cached, eliminates server traffic)",
+        "Single-region primary ID sequencing vs. Multi-region GeoDNS routing with read-replicas & Redis cache-aside"
+      ],
+      "keyTakeaway": "Lock scope first, state numbers before boxes, defend 7-char Base62 key space (~41 bits), obfuscate sequential counter with XOR, and default to 302 for telemetry."
+    },
+    {
       "id": "4.10",
       "tabTitle": "4.10 Unique IDs",
       "title": "4.10 Generating Globally Unique IDs",
@@ -1267,6 +1295,19 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
         "Scaling a Lagging Consumer: Add partitions and consumers; batch downstream database writes; ensure partition key does not concentrate hot keys"
       ],
       "keyTakeaway": "Kafka scales throughput horizontally by adding partitions. Ordering is strictly per-partition. Design the partition key around the entity that requires sequencing."
+    },
+    {
+      "id": "7.5-metrics",
+      "tabTitle": "7.5 & 7.6 Metrics & Alerting",
+      "title": "7.5 & 7.6 Metrics Monitoring, Alerting & Pull vs. Push",
+      "section": "Part 7 · Messaging & Streaming",
+      "whatItIs": "Architecting an enterprise metrics pipeline with Kafka buffers, TSDB Gorilla storage, and symptom-based SLO alerting.",
+      "architecture": "App/Hosts ──► Collector (Pull/Push) ──► Kafka Buffer ──► Flink Consumers ──► TSDB (Gorilla) ──► Query/Grafana ──► Alerting (PagerDuty)",
+      "tradeoffs": [
+        "Pull (Prometheus: free 'up' liveness signal, rate-limiting control) vs. Push (OTel/StatsD: NAT-friendly, ephemeral jobs, but silent failures)",
+        "Symptom vs. Cause Alerting: Alert strictly on customer-visible 4 Golden Signals (Latency, Traffic, Errors, Saturation) and multi-window burn rate; never CPU % alone"
+      ],
+      "keyTakeaway": "Buffer metrics with Kafka, size TSDB ingest with gorilla compression, and alert strictly on user-visible symptoms with SLO error budgets."
     }
   ],
   "32": [

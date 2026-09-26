@@ -1,11 +1,14 @@
 import { state, getMetrics } from '../state.js';
 import { stateSyncService, SyncStatus } from '../../services/stateSyncService.js';
+import { renderThemeToggleButton } from '../../services/themeService.js';
 
 export function renderDashboardHeader(activeTab = 'system-design-roadmap', isCollapsed = false) {
   const syncBadge = renderHeaderSyncStatusBadge();
 
   const tabTitles = {
     'system-design-roadmap': '6-Week System Design Roadmap',
+    'lld-studio': 'Machine Coding & LLD Studio',
+    'concepts-distinctions': '180+ Architectural Distinctions',
     'dsa-tracker': '100 Core DSA Problems'
   };
   const activeTitle = tabTitles[activeTab] || '6-Week System Design Roadmap';
@@ -26,7 +29,7 @@ export function renderDashboardHeader(activeTab = 'system-design-roadmap', isCol
         </div>
       </div>
 
-      <!-- Right: Search, Cloud Sync & User Profile -->
+      <!-- Right: Search, Theme Toggle, Cloud Sync & User Profile -->
       <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
         <!-- Quick Search -->
         <button id="quick-search-trigger" class="flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#141C2E] border border-[#24314A] text-[#94A3B8] hover:text-[#F8FAFC] hover:border-[#6366F1]/50 cursor-pointer transition-colors" title="Quick Search (⌘K)">
@@ -34,6 +37,9 @@ export function renderDashboardHeader(activeTab = 'system-design-roadmap', isCol
           <span class="text-[12px] hidden sm:inline">Search</span>
           <kbd class="font-code text-[10px] px-1 py-0.2 rounded bg-[#0A0E17] text-[#94A3B8] border border-[#24314A] hidden sm:inline">⌘K</kbd>
         </button>
+
+        <!-- Theme Toggle -->
+        ${renderThemeToggleButton('h-7 w-7 text-[#94A3B8] hover:text-[#F8FAFC]')}
 
         <!-- Cloud Sync Status Pill -->
         <button id="cloud-sync-trigger" class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#141C2E] border border-[#24314A] hover:border-[#6366F1]/50 cursor-pointer transition-all" title="Supabase Cloud State Sync">

@@ -1,0 +1,872 @@
+/* ==========================================================================
+   Interview Prep OS — Adaptive Light & Dark Theming Engine
+   Strict implementation of User-Specified Design Tokens & Pedagogical Accents
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. GLOBAL CANVAS & BASE RESET
+   -------------------------------------------------------------------------- */
+html:not(.dark),
+html.light {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Light Theme Canvas: #F8FAFC (Slate 50) */
+html:not(.dark) body,
+html:not(.dark) .dashboard-root,
+html:not(.dark) .roadmap-landing-wrapper {
+  background-color: #F8FAFC !important;
+  color: #1E293B !important;
+}
+
+/* Dark Theme Canvas: #0B0F17 (Deep Obsidian / Midnight Navy) */
+html.dark body,
+html.dark .dashboard-root,
+html.dark .roadmap-landing-wrapper {
+  background-color: #0B0F17 !important;
+  color: #CBD5E1 !important;
+}
+
+/* --------------------------------------------------------------------------
+   1.1 UNIVERSAL TYPOGRAPHY CONSISTENCY ENGINE
+   Enforces 'Geist' as the unified, consistent UI typeface across every screen,
+   card, button, badge, chip, tab, header, modal, table, and subtitle.
+   Reserves 'JetBrains Mono' exclusively for genuine code blocks, syntax tokens,
+   keyboard keys, and ASCII architecture diagrams.
+   -------------------------------------------------------------------------- */
+
+/* 1. Global Reset to Geist for all HTML elements and pseudo-elements */
+html,
+body,
+#app,
+.dashboard-root,
+.roadmap-landing-wrapper,
+div,
+p,
+span,
+h1, h2, h3, h4, h5, h6,
+header, footer, nav, aside, section, article, main,
+table, thead, tbody, tr, th, td,
+ul, ol, li, dl, dt, dd,
+blockquote, q, em, strong, b, i, small, sub, sup,
+form, fieldset, legend, label,
+details, summary, figure, figcaption {
+  font-family: var(--font-family-base);
+}
+
+/* 2. Form controls & interactive elements enforce Geist */
+button,
+button *,
+input,
+select,
+textarea,
+optgroup,
+option,
+label {
+  font-family: var(--font-family-base) !important;
+}
+
+/* 3. All UI utilities, badges, pills, tabs, cards & buttons enforce Geist */
+.btn,
+.btn *,
+.badge,
+.badge *,
+.chip,
+.chip *,
+.pill,
+.pill *,
+.tab,
+.tab *,
+.day-mastered-pill,
+.day-mastered-pill *,
+.reopen-day-btn,
+.reopen-day-btn *,
+.complete-day-btn,
+.complete-day-btn *,
+.sys-roadmap-jump-day,
+.sys-roadmap-jump-day *,
+.start-roadmap-day-btn,
+.start-roadmap-day-btn *,
+.roadmap-week-chip,
+.roadmap-week-chip *,
+.roadmap-topic-tab,
+.roadmap-topic-tab *,
+.rubric-section-title,
+.rubric-section-title *,
+.roadmap-small-day-card,
+.site-brand-title,
+.site-nav,
+.nav-link,
+.font-sans,
+.font-body,
+.font-headline,
+.font-code,
+.font-code-sm,
+.font-code-md,
+.font-label-md,
+.font-display {
+  font-family: var(--font-family-base) !important;
+}
+
+/* 4. Legacy .font-mono on non-code UI elements is normalized to Geist */
+.font-mono:not(pre):not(pre *):not(code):not(code *):not(kbd):not(kbd *):not([class*="whitespace-pre"]):not([class*="whitespace-pre"] *):not(.code-block):not(.code-block *):not(.ascii-diagram):not(.ascii-diagram *):not(.spec-ascii-flow):not(.spec-ascii-flow *):not(.font-mono-code):not(.font-mono-code *) {
+  font-family: var(--font-family-base) !important;
+}
+
+/* 5. Monospace strictly reserved for real code, keyboard shortcuts & ASCII diagrams */
+pre,
+code,
+kbd,
+samp,
+pre *,
+code *,
+kbd *,
+samp *,
+.code-block,
+.code-block *,
+.code-snippet,
+.code-snippet *,
+.code-editor,
+.code-editor *,
+.spec-ascii-flow,
+.spec-ascii-flow *,
+.ascii-diagram,
+.ascii-diagram *,
+[class*="whitespace-pre"],
+[class*="whitespace-pre"] *,
+.font-mono-code,
+.font-mono-code * {
+  font-family: var(--font-family-mono) !important;
+}
+
+/* 6. Material Symbols Outlined MUST render icon glyphs correctly */
+.material-symbols-outlined,
+[class*="material-symbols"] {
+  font-family: 'Material Symbols Outlined' !important;
+  font-weight: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* --------------------------------------------------------------------------
+   2. HEADERS, SIDEBARS & TOP NAVIGATION
+   -------------------------------------------------------------------------- */
+/* Light Mode Header & Top Bar */
+html:not(.dark) .site-header,
+html:not(.dark) #dash-header,
+html:not(.dark) header,
+html:not(.dark) [class*="bg-[#0B0F19]/80"],
+html:not(.dark) [class*="bg-[#0B0F19]/85"],
+html:not(.dark) [class*="bg-[#0F1626]/90"] {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Dark Mode Header & Top Bar: #111827 / #0B0F17 with rgba(255, 255, 255, 0.08) */
+html.dark .site-header,
+html.dark #dash-header,
+html.dark header,
+html.dark [class*="bg-[#0B0F19]/80"],
+html.dark [class*="bg-[#0B0F19]/85"],
+html.dark [class*="bg-[#0F1626]/90"] {
+  background-color: rgba(11, 15, 23, 0.9) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Light Mode Sidebar: #FFFFFF with #E2E8F0 border */
+html:not(.dark) .dash-sidebar,
+html:not(.dark) #dash-sidebar {
+  background-color: #FFFFFF !important;
+  border-right: 1px solid #E2E8F0 !important;
+  box-shadow: 1px 0 3px 0 rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Dark Mode Sidebar: #111827 with rgba(255, 255, 255, 0.08) border */
+html.dark .dash-sidebar,
+html.dark #dash-sidebar {
+  background-color: #111827 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. CARD & MODULE SURFACES HIERARCHY
+   -------------------------------------------------------------------------- */
+/* Neutralize dark background gradient images on layout containers & cards in Light Mode */
+html:not(.dark) div[class*="from-[#"]:not([class*="rounded-full"]):not([class*="h-1"]):not([class*="h-full"]):not(button):not(a),
+html:not(.dark) div[class*="from-indigo-950"]:not(button):not(a),
+html:not(.dark) div[class*="from-emerald-950"]:not(button):not(a),
+html:not(.dark) div[class*="from-cyan-950"]:not(button):not(a),
+html:not(.dark) div[class*="from-amber-950"]:not(button):not(a),
+html:not(.dark) div[class*="from-purple-950"]:not(button):not(a),
+html:not(.dark) div[class*="from-blue-950"]:not(button):not(a),
+html:not(.dark) div[class*="from-slate-900"]:not(button):not(a),
+html:not(.dark) div[class*="from-slate-950"]:not(button):not(a),
+html:not(.dark) section[class*="bg-gradient-to-"] {
+  background-image: none !important;
+  background-color: #FFFFFF !important;
+}
+
+/* Light Mode: All standalone dark card surfaces -> #FFFFFF (Pure White) with #E2E8F0 hairline */
+html:not(.dark) [class~="bg-[#0A0E1A]"],
+html:not(.dark) [class~="bg-[#0A0E17]"],
+html:not(.dark) [class~="bg-[#0B0F19]"],
+html:not(.dark) [class~="bg-[#0F1626]"],
+html:not(.dark) [class~="bg-[#0F172A]"],
+html:not(.dark) [class~="bg-[#080D1A]"],
+html:not(.dark) [class~="bg-[#050811]"],
+html:not(.dark) [class~="bg-[#0B1120]"],
+html:not(.dark) [class~="bg-[#0D1322]"],
+html:not(.dark) [class~="bg-[#141C2E]"],
+html:not(.dark) [class~="bg-[#151D2F]"],
+html:not(.dark) [class~="bg-[#182238]"],
+html:not(.dark) [class~="bg-[#1E293B]"],
+html:not(.dark) [class~="bg-[#111827]"],
+html:not(.dark) [class~="bg-[#161D32]"],
+html:not(.dark) [class~="bg-[#1A2644]"],
+html:not(.dark) [class~="bg-[#1C161E]"],
+html:not(.dark) [class~="bg-[#131B2E]"],
+html:not(.dark) [class~="bg-[#161D2A]"],
+html:not(.dark) [class~="bg-[#1A1A24]"],
+html:not(.dark) [class~="bg-[#0F1D27]"],
+html:not(.dark) [class~="bg-[#0A161E]"],
+html:not(.dark) [class~="bg-[#0F1E2E]"],
+html:not(.dark) [class~="bg-[#0A1620]"],
+html:not(.dark) [class~="bg-[#181F3B]"],
+html:not(.dark) [class~="bg-[#11172A]"],
+html:not(.dark) [class~="bg-[#1E1B18]"],
+html:not(.dark) [class~="bg-[#1C1A16]"],
+html:not(.dark) [class~="bg-[#0E0F14]"],
+html:not(.dark) [class~="bg-[#101932]"],
+html:not(.dark) [class~="bg-[#1E1B4B]"],
+html:not(.dark) [class~="bg-[#312E81]"] {
+  background-color: #FFFFFF !important;
+}
+
+/* Secondary / nested surfaces, table toolbars & inner cards: #F8FAFC (Slate 50) */
+html:not(.dark) .roadmap-topic-content div[class*="p-3"][class*="rounded"],
+html:not(.dark) .roadmap-topic-content div[class*="p-4"][class*="rounded"]:not([class*="border-"]),
+html:not(.dark) div[class~="bg-[#0F1626]"][class*="rounded"],
+html:not(.dark) div[class~="bg-[#0A0E1A]"][class*="rounded"] {
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+/* Topic content container in Light Mode */
+html:not(.dark) .roadmap-topic-content,
+html:not(.dark) [id^="roadmap-topic-content-"] {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Explicit pastel card mappings in Light Mode */
+html:not(.dark) [class*="bg-[#EFF6FF]"] {
+  background-color: #EFF6FF !important;
+  border-color: #BFDBFE !important;
+}
+html:not(.dark) [class*="bg-[#ECFDF5]"] {
+  background-color: #ECFDF5 !important;
+  border-color: #A7F3D0 !important;
+}
+html:not(.dark) [class*="bg-[#F0F9FF]"] {
+  background-color: #F0F9FF !important;
+  border-color: #BAE6FD !important;
+}
+html:not(.dark) [class*="bg-[#F5F3FF]"] {
+  background-color: #F5F3FF !important;
+  border-color: #DDD6FE !important;
+}
+html:not(.dark) [class*="bg-[#FFF1F2]"] {
+  background-color: #FFF1F2 !important;
+  border-color: #FECDD3 !important;
+}
+html:not(.dark) [class*="bg-[#FFFBEB]"] {
+  background-color: #FFFBEB !important;
+  border-color: #FDE68A !important;
+}
+
+/* Dark Mode: Card Surfaces: #111827 & #1E293B with translucent borders */
+html.dark [class~="bg-[#0B0F19]"],
+html.dark [class~="bg-[#0A0E17]"],
+html.dark [class~="bg-[#080D1A]"] {
+  background-color: #0B0F17 !important;
+}
+
+html.dark [class~="bg-[#0F1626]"],
+html.dark [class~="bg-[#111827]"] {
+  background-color: #111827 !important;
+}
+
+html.dark [class~="bg-[#151D2F]"],
+html.dark [class~="bg-[#141C2E]"],
+html.dark [class~="bg-[#182238]"],
+html.dark [class~="bg-[#1E293B]"] {
+  background-color: #1E293B !important;
+}
+
+/* Cards elevation & hairline borders */
+html:not(.dark) .roadmap-day-card,
+html:not(.dark) #today-system-design-card,
+html:not(.dark) .notion-window {
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.dark .roadmap-day-card,
+html.dark #today-system-design-card,
+html.dark .notion-window {
+  background-color: #111827 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. PRIMARY BRAND & HIGH-INTENT CONVERSION ACCENTS
+   Electric Royal Indigo (#4F46E5 / #4338CA) paired with #FFFFFF text
+   -------------------------------------------------------------------------- */
+.buy-access-trigger,
+.roadmap-buy-trigger,
+#header-buy-btn,
+#hero-buy-btn,
+#pricing-buy-btn,
+#closing-buy-btn,
+#mobile-buy-btn,
+.btn-primary,
+.cta-button-indigo {
+  background-color: #4F46E5 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 18px rgba(79, 70, 229, 0.35) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.buy-access-trigger:hover,
+.roadmap-buy-trigger:hover,
+#header-buy-btn:hover,
+#hero-buy-btn:hover,
+#pricing-buy-btn:hover,
+#closing-buy-btn:hover,
+#mobile-buy-btn:hover,
+.btn-primary:hover,
+.cta-button-indigo:hover {
+  background-color: #4338CA !important;
+  box-shadow: 0 0 24px rgba(79, 70, 229, 0.55) !important;
+  transform: translateY(-1px);
+}
+
+/* Active Module Pills & Navigation Highlights */
+html:not(.dark) .roadmap-day-chip.active,
+html:not(.dark) .active-module-pill {
+  background-color: #4F46E5 !important;
+  border-color: #4F46E5 !important;
+  color: #FFFFFF !important;
+}
+
+/* Protect buttons, badges, and progress bars from background-image wipes */
+button[class*="bg-gradient-to-"],
+a[class*="bg-gradient-to-"],
+.complete-day-btn,
+.start-roadmap-day-btn:not(.is-completed),
+.pdf-btn-buy,
+[class*="rounded-full"][class*="bg-gradient-to-"],
+#readingProgressBar,
+[class*="h-1"][class*="bg-gradient-to-"],
+[class*="h-full"][class*="bg-gradient-to-"] {
+  background-image: revert !important;
+}
+
+/* White text for rich dark / gradient buttons */
+button[class*="bg-gradient-to-"],
+button[class*="bg-emerald-"],
+button[class*="bg-teal-"],
+button[class*="bg-indigo-"],
+button[class*="bg-blue-"],
+a[class*="bg-gradient-to-"],
+.complete-day-btn,
+.start-roadmap-day-btn:not(.is-completed),
+.pdf-btn-buy,
+.sys-roadmap-jump-day {
+  color: #FFFFFF !important;
+}
+
+button[class*="bg-gradient-to-"] *,
+button[class*="bg-emerald-"] *,
+button[class*="bg-teal-"] *,
+button[class*="bg-indigo-"] *,
+button[class*="bg-[#4F46E5]"] *,
+.complete-day-btn *,
+.start-roadmap-day-btn:not(.is-completed) *,
+.sys-roadmap-jump-day *,
+.pdf-btn-buy * {
+  color: #FFFFFF !important;
+}
+
+/* --- Day 1 Mastered Status Pill --- */
+html:not(.dark) .day-mastered-pill {
+  background-color: #ECFDF5 !important;
+  border: 1px solid #A7F3D0 !important;
+  color: #065F46 !important;
+}
+html:not(.dark) .day-mastered-pill * {
+  color: #065F46 !important;
+}
+html:not(.dark) .day-mastered-pill .material-symbols-outlined {
+  color: #059669 !important;
+}
+
+html.dark .day-mastered-pill {
+  background-color: rgba(16, 185, 129, 0.18) !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  color: #34D399 !important;
+}
+html.dark .day-mastered-pill * {
+  color: #34D399 !important;
+}
+html.dark .day-mastered-pill .material-symbols-outlined {
+  color: #10B981 !important;
+}
+
+/* --- Advance to Day Button (.sys-roadmap-jump-day) --- */
+.sys-roadmap-jump-day {
+  background-color: #4F46E5 !important;
+  border: 1px solid #4338CA !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.35) !important;
+}
+.sys-roadmap-jump-day:hover {
+  background-color: #4338CA !important;
+  box-shadow: 0 6px 18px 0 rgba(79, 70, 229, 0.5) !important;
+  transform: translateY(-1px);
+}
+.sys-roadmap-jump-day * {
+  color: #FFFFFF !important;
+}
+
+/* --- Reopen Day Button (.reopen-day-btn) --- */
+html:not(.dark) .reopen-day-btn {
+  background-color: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #475569 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+html:not(.dark) .reopen-day-btn:hover {
+  background-color: #F1F5F9 !important;
+  border-color: #94A3B8 !important;
+  color: #0F172A !important;
+}
+html:not(.dark) .reopen-day-btn * {
+  color: #475569 !important;
+}
+html:not(.dark) .reopen-day-btn:hover * {
+  color: #0F172A !important;
+}
+
+html.dark .reopen-day-btn {
+  background-color: #182238 !important;
+  border: 1px solid #24314A !important;
+  color: #CBD5E1 !important;
+}
+html.dark .reopen-day-btn:hover {
+  background-color: #24314A !important;
+  color: #FFFFFF !important;
+}
+html.dark .reopen-day-btn * {
+  color: #CBD5E1 !important;
+}
+html.dark .reopen-day-btn:hover * {
+  color: #FFFFFF !important;
+}
+
+/* --- Review Day Button on Small Cards (.start-roadmap-day-btn.is-completed) --- */
+html:not(.dark) .start-roadmap-day-btn.is-completed {
+  background-color: #FFFFFF !important;
+  border: 1px solid #A7F3D0 !important;
+  color: #065F46 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+}
+html:not(.dark) .start-roadmap-day-btn.is-completed:hover {
+  background-color: #ECFDF5 !important;
+  border-color: #6EE7B7 !important;
+  color: #047857 !important;
+}
+html:not(.dark) .start-roadmap-day-btn.is-completed * {
+  color: #065F46 !important;
+}
+html:not(.dark) .start-roadmap-day-btn.is-completed:hover * {
+  color: #047857 !important;
+}
+
+html.dark .start-roadmap-day-btn.is-completed {
+  background-color: #182238 !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  color: #34D399 !important;
+}
+html.dark .start-roadmap-day-btn.is-completed:hover {
+  background-color: #202E4C !important;
+  color: #6EE7B7 !important;
+}
+html.dark .start-roadmap-day-btn.is-completed * {
+  color: #34D399 !important;
+}
+html.dark .start-roadmap-day-btn.is-completed:hover * {
+  color: #6EE7B7 !important;
+}
+
+/* --------------------------------------------------------------------------
+   5. TYPOGRAPHY & CONTRAST RATIOS
+   -------------------------------------------------------------------------- */
+/* Primary Headings */
+html:not(.dark) h1:not(button *),
+html:not(.dark) h2:not(button *),
+html:not(.dark) h3:not(button *),
+html:not(.dark) h4:not(button *) {
+  color: #0F172A !important; /* Slate 900 */
+}
+
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4 {
+  color: #F8FAFC !important; /* Slate 50 */
+}
+
+/* Secondary & Supporting Copy: Slate 600 (#475569) & Slate 500 (#64748B) */
+html:not(.dark) .text-slate-100:not(button):not(button *),
+html:not(.dark) .text-slate-200:not(button):not(button *) {
+  color: #1E293B !important;
+}
+
+html:not(.dark) .text-slate-300:not(button):not(button *),
+html:not(.dark) .text-slate-400:not(button):not(button *) {
+  color: #475569 !important; /* Slate 600 */
+}
+
+html.dark .text-slate-200,
+html.dark .text-slate-300,
+html.dark .text-slate-400 {
+  color: #94A3B8 !important; /* Slate 400 */
+}
+
+/* Hairline Borders */
+html:not(.dark) [class~="border-[#24314A]"],
+html:not(.dark) [class~="border-[#1B2538]"],
+html:not(.dark) [class~="border-slate-800"],
+html:not(.dark) [class~="border-slate-700"] {
+  border-color: #E2E8F0 !important; /* Slate 200 */
+}
+
+html.dark [class~="border-[#24314A]"],
+html.dark [class~="border-[#1B2538]"],
+html.dark [class~="border-slate-800"] {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* --------------------------------------------------------------------------
+   6. PEDAGOGICAL & ACCENT CONTRAST IN LIGHT MODE
+   -------------------------------------------------------------------------- */
+/* Emerald / Mint */
+html:not(.dark) [class*="text-emerald-300"],
+html:not(.dark) [class*="text-emerald-400"] {
+  color: #059669 !important;
+}
+
+/* Cyan / Sky */
+html:not(.dark) [class*="text-cyan-300"],
+html:not(.dark) [class*="text-cyan-400"] {
+  color: #0284C7 !important;
+}
+
+/* Amber / Warm Coral */
+html:not(.dark) [class*="text-amber-300"],
+html:not(.dark) [class*="text-amber-400"] {
+  color: #D97706 !important;
+}
+
+/* Rose / Danger */
+html:not(.dark) [class*="text-rose-300"],
+html:not(.dark) [class*="text-rose-400"] {
+  color: #E11D48 !important;
+}
+
+/* Purple / Violet */
+html:not(.dark) [class*="text-purple-300"],
+html:not(.dark) [class*="text-purple-400"],
+html:not(.dark) [class*="text-indigo-300"] {
+  color: #4F46E5 !important;
+}
+
+/* Teal */
+html:not(.dark) [class*="text-teal-300"],
+html:not(.dark) [class*="text-teal-400"] {
+  color: #0D9488 !important;
+}
+
+/* --------------------------------------------------------------------------
+   7. CURRICULUM VISUAL GUIDES (.modern-guide-spec)
+   -------------------------------------------------------------------------- */
+html:not(.dark) .modern-guide-spec {
+  color: #1E293B !important;
+}
+
+/* Direct child containers in visual guides default to clean white cards */
+html:not(.dark) .modern-guide-spec > div:not([class*="bg-[#EFF6FF]"]):not([class*="bg-[#ECFDF5]"]):not([class*="bg-[#F0F9FF]"]):not([class*="bg-[#F5F3FF]"]):not([class*="bg-[#FFF1F2]"]):not([class*="bg-[#FFFBEB]"]) {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Terminal & Pre Monospace Code Blocks in Light Mode */
+html:not(.dark) pre[class*="bg-[#0A0E1A]"],
+html:not(.dark) pre[class*="bg-[#050811]"],
+html:not(.dark) pre[class*="bg-[#0B1120]"],
+html:not(.dark) pre {
+  background-color: #F8FAFC !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+html:not(.dark) pre code {
+  color: #0F172A !important;
+}
+
+/* Tables inside visual guides */
+html:not(.dark) .modern-guide-spec table {
+  background-color: #FFFFFF !important;
+}
+
+html:not(.dark) .modern-guide-spec thead tr {
+  background-color: #F1F5F9 !important;
+  border-bottom: 2px solid #E2E8F0 !important;
+}
+
+html:not(.dark) .modern-guide-spec th {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+html:not(.dark) .modern-guide-spec td {
+  border-color: #E2E8F0 !important;
+  color: #1E293B !important;
+}
+
+/* --------------------------------------------------------------------------
+   8. INTERACTIVE SPEC TABS, INPUTS & MODALS
+   -------------------------------------------------------------------------- */
+/* Spec 1 Tabs */
+html:not(.dark) .url-shortener-spec-root .url-spec-tab-btn {
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #475569 !important;
+}
+
+html:not(.dark) .url-shortener-spec-root .url-spec-tab-btn:hover {
+  background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+}
+
+html:not(.dark) .url-shortener-spec-root .url-spec-tab-btn.active {
+  background-color: #F5F3FF !important;
+  border-color: #7C3AED !important;
+  color: #4338CA !important;
+}
+
+/* Modals & Dialogs */
+html:not(.dark) .spec-modal-card {
+  background-color: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+}
+
+html.dark .spec-modal-card {
+  background-color: #111827 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #F8FAFC !important;
+}
+
+html:not(.dark) .spec-modal-backdrop {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Sidebar Nav Items */
+html:not(.dark) .sidebar-nav-item {
+  color: #475569 !important;
+}
+
+html:not(.dark) .sidebar-nav-item:hover {
+  background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+}
+
+html:not(.dark) .sidebar-nav-item.active,
+html:not(.dark) a.sidebar-nav-item[class*="bg-[#182238]"] {
+  background-color: #F5F3FF !important;
+  color: #4338CA !important;
+  border-color: #DDD6FE !important;
+}
+
+/* Inputs, Selects & Dropdowns */
+html:not(.dark) input:not([type="checkbox"]):not([type="radio"]),
+html:not(.dark) select,
+html:not(.dark) textarea {
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+html:not(.dark) select option {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+/* --------------------------------------------------------------------------
+   9. THEME TOGGLE BUTTON STYLING
+   -------------------------------------------------------------------------- */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  user-select: none;
+}
+html:not(.dark) .theme-toggle-btn {
+  background-color: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  color: #475569;
+}
+html:not(.dark) .theme-toggle-btn:hover {
+  background-color: #E2E8F0;
+  color: #0F172A;
+}
+html.dark .theme-toggle-btn {
+  background-color: #1E293B;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94A3B8;
+}
+html.dark .theme-toggle-btn:hover {
+  background-color: #28354D;
+  color: #F8FAFC;
+}
+
+/* --------------------------------------------------------------------------
+   10. INTERVIEW CHEAT SHEETS & GUIDES STOREFRONT THEMING
+   -------------------------------------------------------------------------- */
+html:not(.dark) #pdf-store-container {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03) !important;
+}
+
+html:not(.dark) #pdf-store-container h2 {
+  color: #0F172A !important;
+}
+
+html.dark #pdf-store-container {
+  background-color: #101827 !important;
+  border-color: #24314A !important;
+  color: #F8FAFC !important;
+}
+
+html.dark #pdf-store-container h2 {
+  color: #F8FAFC !important;
+}
+
+html:not(.dark) .pdf-card {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
+}
+
+html:not(.dark) .pdf-card:hover {
+  border-color: #CBD5E1 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.dark .pdf-card {
+  background-color: #111927 !important;
+  border-color: #24314A !important;
+  color: #F8FAFC !important;
+}
+
+html:not(.dark) .pdf-card-pitch {
+  background-color: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #334155 !important;
+}
+
+html.dark .pdf-card-pitch {
+  background-color: rgba(11, 17, 30, 0.8) !important;
+  border: 1px solid rgba(36, 49, 74, 0.7) !important;
+  color: #CBD5E1 !important;
+}
+
+html:not(.dark) .pdf-delivery-strip {
+  background-color: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #475569 !important;
+}
+
+html.dark .pdf-delivery-strip {
+  background-color: #0B111E !important;
+  border: 1px solid rgba(36, 49, 74, 0.5) !important;
+  color: #94A3B8 !important;
+}
+
+html:not(.dark) .pdf-btn-preview {
+  background-color: #F1F5F9 !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+}
+html:not(.dark) .pdf-btn-preview * {
+  color: #334155 !important;
+}
+html:not(.dark) .pdf-btn-preview:hover {
+  background-color: #E2E8F0 !important;
+  border-color: #94A3B8 !important;
+  color: #0F172A !important;
+}
+html:not(.dark) .pdf-btn-preview:hover * {
+  color: #0F172A !important;
+}
+
+html.dark .pdf-btn-preview {
+  background-color: #182238 !important;
+  border: 1px solid #24314A !important;
+  color: #CBD5E1 !important;
+}
+html.dark .pdf-btn-preview * {
+  color: #CBD5E1 !important;
+}
+html.dark .pdf-btn-preview:hover {
+  background-color: #24314A !important;
+  color: #FFFFFF !important;
+}
+html.dark .pdf-btn-preview:hover * {
+  color: #FFFFFF !important;
+}
+
+html:not(.dark) .pdf-price-display {
+  color: #0F172A !important;
+}
+html.dark .pdf-price-display {
+  color: #FFFFFF !important;
+}
+
+html:not(.dark) .pdf-bundle-strip {
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.08), #F8FAFC, rgba(99, 102, 241, 0.08)) !important;
+  border: 1px solid #FDE68A !important;
+}
+
+html.dark .pdf-bundle-strip {
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), #141C2E, rgba(99, 102, 241, 0.1)) !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+}

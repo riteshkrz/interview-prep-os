@@ -22,7 +22,7 @@ export function renderHero() {
 
       <!-- CTAs -->
       <div class="flex flex-col sm:flex-row items-center gap-3 mb-14 w-full sm:w-auto">
-        <button type="button" id="hero-buy-btn" class="buy-access-trigger w-full sm:w-auto h-11 px-6 bg-[#6366F1] hover:bg-[#4F46E5] text-white transition-all duration-200 rounded-md inline-flex items-center justify-center gap-2 text-[14px] font-semibold tracking-tight shadow-[0_0_24px_rgba(99,102,241,0.4)] hover:shadow-[0_0_32px_rgba(99,102,241,0.6)] ring-1 ring-indigo-400/50 cursor-pointer">
+        <button type="button" id="hero-buy-btn" class="buy-access-trigger w-full sm:w-auto h-11 px-6 bg-[#4F46E5] hover:bg-[#4338CA] text-white transition-all duration-200 rounded-md inline-flex items-center justify-center gap-2 text-[14px] font-semibold tracking-tight shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 ring-1 ring-indigo-400/50 cursor-pointer">
           <span>Get the Prep OS — ${CONFIG.PRICE}</span>
           <span class="font-mono text-[13px] opacity-90">→</span>
         </button>

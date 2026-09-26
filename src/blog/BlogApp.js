@@ -68,22 +68,22 @@ export function renderBlogApp() {
       >
         <!-- Card Top Bar -->
         <div class="w-full bg-[#0a0e18] p-4 flex flex-col justify-between border-b border-[#1e2638] relative">
-          <div class="flex items-center justify-between text-[11px] font-mono">
+          <div class="flex items-center justify-between text-[11px] font-sans">
             <div class="flex items-center gap-1.5">
               <span class="px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-bold uppercase">
                 ${escapeHtml(c.company)}
               </span>
-              <span class="text-slate-400 font-mono text-[10px]">• ${escapeHtml(c.category)}</span>
+              <span class="text-slate-400 font-sans text-[10px]">• ${escapeHtml(c.category)}</span>
             </div>
             ${c.sla ? `
-              <span class="bg-[#161f33] border border-[#263552] text-emerald-400 px-2 py-0.5 rounded text-[10px] font-mono">
+              <span class="bg-[#161f33] border border-[#263552] text-emerald-400 px-2 py-0.5 rounded text-[10px] font-sans font-medium">
                 ${escapeHtml(c.sla.split('•')[0].trim())}
               </span>
             ` : ''}
           </div>
 
           <div class="mt-4 mb-2 flex items-center justify-between">
-            <span class="font-mono text-[11px] text-slate-400">${escapeHtml(c.readTime)}</span>
+            <span class="font-sans text-[11px] text-slate-400 font-medium">${escapeHtml(c.readTime)}</span>
             ${isRead ? `
               <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-code font-semibold border border-emerald-500/30">
                 <span class="material-symbols-outlined text-[12px]">done_all</span> Completed
@@ -96,7 +96,7 @@ export function renderBlogApp() {
         <div class="p-5 sm:p-6 flex flex-col flex-1 justify-between gap-4">
           <div>
             <div class="flex items-center gap-2 mb-2">
-              <span class="px-2 py-0.5 rounded text-[10px] font-mono ${c.difficulty === 'Hard' ? 'bg-rose-500/15 border border-rose-500/30 text-rose-300' : 'bg-amber-500/15 border border-amber-500/30 text-amber-300'}">
+              <span class="px-2 py-0.5 rounded text-[10px] font-sans font-medium ${c.difficulty === 'Hard' ? 'bg-rose-500/15 border border-rose-500/30 text-rose-300' : 'bg-amber-500/15 border border-amber-500/30 text-amber-300'}">
                 ${escapeHtml(c.difficulty)}
               </span>
               <span class="text-slate-500 text-[11px]">• ${escapeHtml(c.publishedDate)}</span>
@@ -183,7 +183,7 @@ export function renderBlogApp() {
             <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-label">
               <div class="flex items-center gap-2 text-slate-400">
                 <span class="inline-flex items-center justify-center w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
-                <span class="font-semibold tracking-wider uppercase text-emerald-400 font-mono">ENGINEERING ARCHIVES • CASE STUDIES</span>
+                <span class="font-semibold tracking-wider uppercase text-emerald-400 font-sans">ENGINEERING ARCHIVES • CASE STUDIES</span>
                 <span class="hidden sm:inline text-slate-600">•</span>
                 <span class="hidden sm:inline text-slate-400">Real-World System Architecture • Zero Fluff, Production Code</span>
               </div>
@@ -193,11 +193,11 @@ export function renderBlogApp() {
                 </button>
                 <span class="text-slate-700">•</span>
                 <span class="hover:text-indigo-400 cursor-pointer transition-colors flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[14px]">bookmark</span> Saved (<span class="text-indigo-400 font-mono" id="savedCount">${bookmarked.length}</span>)
+                  <span class="material-symbols-outlined text-[14px]">bookmark</span> Saved (<span class="text-indigo-400 font-sans font-semibold" id="savedCount">${bookmarked.length}</span>)
                 </span>
                 <span class="text-slate-700">•</span>
                 <span class="text-slate-400 flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[14px] text-emerald-400">done_all</span> Completed (<span class="text-emerald-400 font-mono" id="readCount">${readList.length}</span>)
+                  <span class="material-symbols-outlined text-[14px] text-emerald-400">done_all</span> Completed (<span class="text-emerald-400 font-sans font-semibold" id="readCount">${readList.length}</span>)
                 </span>
               </div>
             </div>
@@ -246,7 +246,7 @@ export function renderBlogApp() {
                     <button class="popular-query-btn underline decoration-dotted text-slate-300 hover:text-indigo-300 ml-1 transition-colors" data-term="Netflix">Netflix Multi-Region</button>, 
                     <button class="popular-query-btn underline decoration-dotted text-slate-300 hover:text-indigo-300 ml-1 transition-colors" data-term="Kafka">Kafka</button>
                   </span>
-                  <span class="font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/30">${totalCount} Case Studies</span>
+                  <span class="font-sans font-semibold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/30">${totalCount} Case Studies</span>
                 </div>
               </div>
             </div>
@@ -277,7 +277,7 @@ export function renderBlogApp() {
               </div>
 
               <div class="flex items-center gap-2 text-xs font-label text-slate-400 shrink-0">
-                <span class="font-mono text-slate-400 bg-[#131929] border border-[#232e47] px-2.5 py-1 rounded" id="articlesCountDisplay">Showing ${totalCount} case studies</span>
+                <span class="font-sans font-medium text-slate-400 bg-[#131929] border border-[#232e47] px-2.5 py-1 rounded" id="articlesCountDisplay">Showing ${totalCount} case studies</span>
               </div>
             </div>
           </section>
@@ -309,7 +309,7 @@ export function renderBlogApp() {
             <div class="max-w-7xl mx-auto">
               <div class="w-full rounded-2xl bg-[#111625] border border-[#20293d] p-8 lg:p-12 flex flex-col lg:flex-row items-center justify-between gap-8 relative overflow-hidden shadow-2xl">
                 <div class="flex flex-col gap-4 max-w-2xl relative z-10">
-                  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-emerald-400 font-semibold w-fit">
+                  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-sans text-emerald-400 font-semibold w-fit">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span>DAILY EXECUTION ENGINE ACTIVE</span>
                   </div>
@@ -319,7 +319,7 @@ export function renderBlogApp() {
                   <p class="text-sm sm:text-base text-slate-300 font-body leading-relaxed">
                     Don't just read architectures passively. Drill 100 curated DSA patterns, 20 production system design specifications, and SM-2 spaced repetition revision directly in your daily dashboard.
                   </p>
-                  <div class="flex flex-wrap items-center gap-4 text-xs font-mono text-slate-400 pt-2">
+                  <div class="flex flex-wrap items-center gap-4 text-xs font-sans text-slate-400 pt-2">
                     <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-emerald-400 text-[16px]">check</span><span>100 Curated Problems</span></div>
                     <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-emerald-400 text-[16px]">check</span><span>20 System Design Specs</span></div>
                     <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-emerald-400 text-[16px]">check</span><span>Readiness Radar</span></div>

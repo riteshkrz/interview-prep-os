@@ -91,16 +91,16 @@ export function renderMonographReader(article, isBookmarked = false, isRead = fa
             
             <!-- Metadata & Title Header -->
             <div class="flex flex-wrap items-center gap-2 mb-4">
-              <span class="px-2.5 py-1 rounded bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-mono font-bold uppercase tracking-wider">
+              <span class="px-2.5 py-1 rounded bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-sans font-bold uppercase tracking-wider">
                 ${escapeHtml(article.category)}
               </span>
-              <span class="px-2.5 py-1 rounded bg-[#161f33] border border-[#263552] text-sky-300 text-xs font-mono font-bold uppercase tracking-wider">
+              <span class="px-2.5 py-1 rounded bg-[#161f33] border border-[#263552] text-sky-300 text-xs font-sans font-bold uppercase tracking-wider">
                 ${escapeHtml(article.company)}
               </span>
-              <span class="px-2 py-0.5 rounded text-xs font-mono ${article.difficulty === 'Hard' ? 'bg-rose-500/15 border border-rose-500/30 text-rose-300' : 'bg-amber-500/15 border border-amber-500/30 text-amber-300'}">
+              <span class="px-2 py-0.5 rounded text-xs font-sans font-medium ${article.difficulty === 'Hard' ? 'bg-rose-500/15 border border-rose-500/30 text-rose-300' : 'bg-amber-500/15 border border-amber-500/30 text-amber-300'}">
                 ${escapeHtml(article.difficulty)}
               </span>
-              <span class="text-xs text-slate-400 font-mono ml-auto">
+              <span class="text-xs text-slate-400 font-sans font-medium ml-auto">
                 ${escapeHtml(article.readTime)}
               </span>
             </div>
@@ -271,7 +271,7 @@ function formatMarkdownContent(md) {
     const headers = headerLine.split('|').map(h => h.trim()).filter(Boolean);
     const rows = rowsBlock.trim().split('\n').map(r => r.split('|').map(c => c.trim()).filter(Boolean));
 
-    const ths = headers.map(h => `<th class="py-2.5 px-3 font-mono text-[12px] uppercase tracking-wider text-slate-300 border-b border-[#24314A] bg-[#0d121f] text-left">${escapeHtml(h)}</th>`).join('');
+    const ths = headers.map(h => `<th class="py-2.5 px-3 font-sans text-[12px] font-semibold uppercase tracking-wider text-slate-300 border-b border-[#24314A] bg-[#0d121f] text-left">${escapeHtml(h)}</th>`).join('');
     const trs = rows.map(r => {
       const tds = r.map(c => `<td class="py-2.5 px-3 text-[13px] font-body text-slate-300 border-b border-[#1e2638]">${escapeHtml(c)}</td>`).join('');
       return `<tr class="hover:bg-[#111625] transition-colors">${tds}</tr>`;
@@ -289,7 +289,7 @@ function formatMarkdownContent(md) {
 
   // Bullet lists: - item or 1. item
   html = html.replace(/^\s*[-*]\s+(.*$)/gim, '<li class="flex items-start gap-2 text-slate-300"><span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0"></span><span>$1</span></li>');
-  html = html.replace(/^\s*\d+\.\s+(.*$)/gim, '<li class="flex items-start gap-2 text-slate-300"><span class="font-mono text-indigo-400 text-xs mt-0.5 shrink-0 font-bold">•</span><span>$1</span></li>');
+  html = html.replace(/^\s*\d+\.\s+(.*$)/gim, '<li class="flex items-start gap-2 text-slate-300"><span class="font-sans text-indigo-400 text-xs mt-0.5 shrink-0 font-bold">•</span><span>$1</span></li>');
 
   // Wrap loose <li> in <ul>
   html = html.replace(/(<li[\s\S]*?<\/li>)+/g, '<ul class="space-y-2 my-3 pl-1">$0</ul>');

@@ -15,8 +15,13 @@ import { renderFaqModal } from './components/FaqModal.js';
 import { renderDashboardApp, attachDashboardListeners } from './dashboard/DashboardApp.js';
 import { renderBlogApp, attachBlogListeners } from './blog/BlogApp.js';
 import { renderAuthPage, attachAuthPageListeners } from './auth/AuthPage.js';
+import { renderRoadmapLandingPage, setupRoadmapLandingListeners } from './roadmap-landing/RoadmapLandingPage.js';
 import { openBuyAccessModal } from './components/BuyAccessModal.js';
 import { resetState } from './dashboard/state.js';
+import { initTheme } from './services/themeService.js';
+
+// Initialize Theme (Defaults to Light Mode)
+initTheme();
 
 // Route Manager
 function handleRouting() {
@@ -26,6 +31,7 @@ function handleRouting() {
   if (!app) return;
 
   const isBuy = hash === '#buy' || hash === '#/buy' || hash.startsWith('#/buy?');
+  const isRoadmap = hash === '#roadmap' || hash === '#/roadmap' || hash.startsWith('#/roadmap?') || hash.startsWith('#roadmap?') || path === '/roadmap' || path.startsWith('/roadmap');
   const isAuth = hash.includes('login') || hash.includes('signin') || hash.includes('signup') || hash.includes('auth') || path.includes('/login') || path.includes('/auth');
   const isBlog = hash.includes('blog') || path.includes('/blog');
   const isDashboard = hash.includes('dashboard') || path.includes('/dashboard');
@@ -33,6 +39,17 @@ function handleRouting() {
   if (isBuy) {
     renderLandingPage();
     openBuyAccessModal();
+    return;
+  }
+
+  if (isRoadmap) {
+    try {
+      app.innerHTML = renderRoadmapLandingPage();
+      setupRoadmapLandingListeners();
+      window.scrollTo(0, 0);
+    } catch (err) {
+      console.error('Error rendering roadmap landing page:', err);
+    }
     return;
   }
 

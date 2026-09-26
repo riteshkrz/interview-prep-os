@@ -131,7 +131,7 @@
 }
 
 .rubric-section-title {
-  font-family: var(--font-family-mono);
+  font-family: var(--font-family-base);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;

@@ -73,7 +73,7 @@ export function renderPricing() {
                 </span>
               </div>
 
-              <button id="pricing-buy-btn" type="button" class="buy-access-trigger w-full h-12 bg-[#6366F1] hover:bg-[#4F46E5] text-white transition-all duration-200 rounded-md flex items-center justify-center gap-2 text-[15px] font-semibold tracking-tight shadow-[0_0_30px_rgba(99,102,241,0.5)] hover:shadow-[0_0_40px_rgba(99,102,241,0.7)] ring-2 ring-indigo-400/50 cursor-pointer">
+              <button id="pricing-buy-btn" type="button" class="buy-access-trigger w-full h-12 bg-[#4F46E5] hover:bg-[#4338CA] text-white transition-all duration-200 rounded-md flex items-center justify-center gap-2 text-[15px] font-semibold tracking-tight shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/40 ring-1 ring-indigo-400/50 cursor-pointer">
                 <span>Get the Prep OS — ${CONFIG.PRICE}</span>
                 <span class="font-mono text-[14px] opacity-90">→</span>
               </button>

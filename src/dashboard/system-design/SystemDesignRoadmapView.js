@@ -74,7 +74,50 @@ import {
   renderServiceMeshSidecarContent,
   renderGlobalTrafficManagementContent,
   renderScalingLongLivedConnectionsContent,
-  renderWebRtcRealTimeMediaContent
+  renderWebRtcRealTimeMediaContent,
+  renderUrlShortenerInterviewDesign,
+  renderHttpsContent,
+  renderCdnContent,
+  renderBrowserInternalsContent,
+  renderLoadBalancingContent,
+  renderApiGatewayContent,
+  renderWeek1RevisionContent,
+  renderDeploymentStrategiesContent,
+  renderResiliencePatternsContent,
+  renderLinuxProcessTriageContent,
+  renderSloErrorBudgetsContent,
+  renderMultiRegionDisasterRecoveryContent,
+  renderChaosEngineeringContent,
+  renderWeek3RevisionContent,
+  renderOutagePostmortemContent,
+  renderCapacityAutoscalingContent,
+  renderUniqueIdGenerationContent,
+  renderRedisInternalsContent,
+  renderBloomFilterContent,
+  renderConflictResolutionContent,
+  renderMultipartUploadContent,
+  renderDesignS3Content,
+  renderMetricsMonitoringContent,
+  renderWebhooksContent,
+  renderEventSourcingCqrsContent,
+  renderDistributedTracingContent,
+  renderLoggingPipelineContent,
+  renderServiceDecompositionContent,
+  renderIdempotencyContent,
+  renderDurableExecutionContent,
+  renderProximitySearchContent,
+  renderGoogleMapsContent,
+  renderDistributedEmailContent,
+  renderPaymentSystemsContent,
+  renderStockExchangeContent,
+  renderFlashSaleContent,
+  renderAiCodingEngineContent,
+  renderAppendixCheatSheetContent,
+  renderWeek4RevisionContent,
+  renderAppendixPatternIndexContent,
+  renderWeek5RevisionContent,
+  renderStaffRubricContent,
+  renderRapidFireQuestionBankContent
 } from '../weeks/index.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
@@ -969,7 +1012,7 @@ export function renderReadinessIndexCard(metrics, activeReadinessFilter = 'all')
           </svg>
           <div class="flex flex-col">
             <h3 class="font-sans text-[16.5px] font-bold text-white tracking-tight leading-none">Readiness Index</h3>
-            <span class="text-[10px] font-code text-slate-400 mt-0.5">10 Core Dimensions</span>
+            <span class="text-[10px] font-sans text-slate-400 mt-0.5">10 Core Dimensions</span>
           </div>
         </div>
 
@@ -977,7 +1020,7 @@ export function renderReadinessIndexCard(metrics, activeReadinessFilter = 'all')
           ${activeReadinessFilter !== 'all' ? `
             <button
               type="button"
-              class="sys-roadmap-filter-readiness px-2 py-0.5 rounded text-[10px] font-code font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400 flex items-center gap-1 cursor-pointer"
+              class="sys-roadmap-filter-readiness px-2 py-0.5 rounded text-[10px] font-sans font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400 flex items-center gap-1 cursor-pointer"
               data-readiness-filter="${activeReadinessFilter}"
               title="Clear readiness filter"
             >
@@ -985,7 +1028,7 @@ export function renderReadinessIndexCard(metrics, activeReadinessFilter = 'all')
               <span class="material-symbols-outlined text-[12px]">close</span>
             </button>
           ` : ''}
-          <span class="px-2.5 py-0.5 rounded-md text-[10.5px] font-code tracking-wider uppercase font-semibold text-[#38BDF8] bg-[#0E2A3E]/90 border border-cyan-500/30">
+          <span class="px-2.5 py-0.5 rounded-md text-[10.5px] font-sans tracking-wider uppercase font-semibold text-[#38BDF8] bg-[#0E2A3E]/90 border border-cyan-500/30">
             L5/L6 CALIBRATED
           </span>
         </div>
@@ -1020,12 +1063,12 @@ export function renderReadinessIndexCard(metrics, activeReadinessFilter = 'all')
               />
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center text-center select-none">
-              <span class="text-[24px] font-bold font-code text-white tracking-tight leading-none">${overall}%</span>
-              <span class="text-[9.5px] font-code text-cyan-400 font-bold uppercase tracking-widest mt-1">OVERALL</span>
+              <span class="text-[24px] font-bold font-sans text-white tracking-tight leading-none">${overall}%</span>
+              <span class="text-[9.5px] font-sans text-cyan-400 font-bold uppercase tracking-widest mt-1">OVERALL</span>
             </div>
           </div>
 
-          <div class="flex items-center gap-1 text-[11px] font-code text-[#34D399] font-semibold mt-2">
+          <div class="flex items-center gap-1 text-[11px] font-sans text-[#34D399] font-semibold mt-2">
             <span class="material-symbols-outlined text-[14px]">trending_up</span>
             <span>+${weeklyGain}% this wk</span>
           </div>
@@ -1042,7 +1085,7 @@ export function renderReadinessIndexCard(metrics, activeReadinessFilter = 'all')
                 data-readiness-filter="${idx.id}"
                 title="${escapeHtml(idx.name)}: ${idx.totalMapped} curriculum days (Click to filter)"
               >
-                <div class="flex items-center justify-between text-[11px] font-code">
+                <div class="flex items-center justify-between text-[11px] font-sans">
                   <div class="flex items-center gap-1.5 min-w-0">
                     <span class="material-symbols-outlined text-[13px] shrink-0" style="color: ${idx.color}">${idx.icon}</span>
                     <span class="text-slate-200 font-medium truncate">${idx.shortName}</span>
@@ -1161,11 +1204,11 @@ export function renderSystemDesignRoadmapView(weekFilter = 'today', statusFilter
                 <span class="material-symbols-outlined text-[18px]">alt_route</span>
               </div>
               <h1 class="font-sans text-[20px] font-bold text-white tracking-tight">6-Week System Design Roadmap</h1>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-code bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-semibold uppercase">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-sans bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-semibold uppercase">
                 42 Days • 6 Weeks • L5/L6 Focus
               </span>
             </div>
-            <p class="text-[13px] text-slate-300 leading-relaxed">
+            <p class="text-[13px] text-slate-300 leading-relaxed font-sans">
               A comprehensive 6-week curriculum covering Parts 0 to 13 with weekly revision days every 7th day, leading into the 20 production specs in the last 18 study days paired with architectural theory.
             </p>
 
@@ -1173,7 +1216,7 @@ export function renderSystemDesignRoadmapView(weekFilter = 'today', statusFilter
             <div class="flex flex-wrap items-center gap-2 pt-2">
               ${weeksSummary.map(w => `
                 <button
-                  class="roadmap-week-chip px-2 py-1 rounded text-[11px] font-code border transition-all cursor-pointer ${weekFilter === String(w.week) ? 'bg-[#38BDF8]/20 border-[#38BDF8] text-white font-semibold' : 'bg-[#0F1626] border-[#24314A] text-slate-400 hover:text-white'}"
+                  class="roadmap-week-chip px-2 py-1 rounded text-[11px] font-sans border transition-all cursor-pointer ${weekFilter === String(w.week) ? 'bg-[#4F46E5] border-[#4F46E5] text-white font-semibold shadow-xs' : 'bg-[#0F1626] border-[#24314A] text-slate-400 hover:text-white'}"
                   data-filter-week="${w.week}"
                   title="${w.title}"
                 >
@@ -1184,7 +1227,7 @@ export function renderSystemDesignRoadmapView(weekFilter = 'today', statusFilter
           </div>
 
           <!-- Bottom Badges inside Hero Banner -->
-          <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#24314A]/70 text-[11.5px] font-code z-10">
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#24314A]/70 text-[11.5px] font-sans z-10">
             <span class="text-slate-300">Days: <strong class="text-white">${completedCount} / ${totalDays}</strong></span>
             <span class="text-slate-400">Roadmap Progress: <strong class="text-cyan-400">${pct}%</strong></span>
             <span class="text-slate-400">Study Time: <strong class="text-emerald-400">~${estTotalHours}h logged</strong></span>
@@ -1204,7 +1247,7 @@ export function renderSystemDesignRoadmapView(weekFilter = 'today', statusFilter
         <!-- View Mode & Week Filters -->
         <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
           <button
-            class="sys-roadmap-filter-week px-3 py-1.5 rounded-lg text-[12px] font-code cursor-pointer transition-all flex items-center gap-1.5 ${weekFilter === 'today' ? 'bg-[#38BDF8] text-[#0A0E17] font-bold shadow-xs' : 'bg-[#141C2E] text-slate-300 hover:text-white border border-[#24314A]'}"
+            class="sys-roadmap-filter-week px-3 py-1.5 rounded-lg text-[12px] font-sans cursor-pointer transition-all flex items-center gap-1.5 ${weekFilter === 'today' ? 'bg-[#4F46E5] text-white font-bold shadow-xs' : 'bg-[#141C2E] text-slate-300 hover:text-white border border-[#24314A]'}"
             data-week="today"
             title="Only show today's system design task to complete"
           >
@@ -1213,7 +1256,7 @@ export function renderSystemDesignRoadmapView(weekFilter = 'today', statusFilter
           </button>
 
           <button
-            class="sys-roadmap-filter-week px-3 py-1.5 rounded-lg text-[12px] font-code cursor-pointer transition-all ${weekFilter === 'all' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
+            class="sys-roadmap-filter-week px-3 py-1.5 rounded-lg text-[12px] font-sans cursor-pointer transition-all ${weekFilter === 'all' ? 'bg-[#4F46E5] text-white border border-[#4F46E5] font-semibold shadow-xs' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
             data-week="all"
             title="View all 42 days grid"
           >
@@ -1224,7 +1267,7 @@ export function renderSystemDesignRoadmapView(weekFilter = 'today', statusFilter
 
           ${[1, 2, 3, 4, 5, 6].map(w => `
             <button
-              class="sys-roadmap-filter-week px-2 py-1 rounded-md text-[11px] font-code cursor-pointer transition-colors ${weekFilter === String(w) ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
+              class="sys-roadmap-filter-week px-2 py-1 rounded-md text-[11px] font-sans cursor-pointer transition-colors ${weekFilter === String(w) ? 'bg-[#4F46E5] text-white border border-[#4F46E5] font-semibold' : 'text-slate-400 hover:text-white hover:bg-[#141C2E]'}"
               data-week="${w}"
             >
               W${w}
@@ -1241,13 +1284,13 @@ export function renderSystemDesignRoadmapView(weekFilter = 'today', statusFilter
               type="text"
               placeholder="Search topic or spec..."
               value="${escapeHtml(searchQuery)}"
-              class="w-full pl-8 pr-2.5 py-1 bg-[#141C2E] border border-[#24314A] rounded-lg text-white text-[12px] placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+              class="w-full pl-8 pr-2.5 py-1 bg-[#141C2E] border border-[#24314A] rounded-lg text-white text-[12px] placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors font-sans"
             />
           </div>
 
           <select
             id="sys-roadmap-readiness-select"
-            class="bg-[#141C2E] border ${readinessFilter !== 'all' ? 'border-cyan-400 text-cyan-300 font-semibold' : 'border-[#24314A] text-slate-300'} text-[11.5px] font-code rounded-lg px-2.5 py-1 focus:outline-none focus:border-cyan-500 cursor-pointer shrink-0"
+            class="bg-[#141C2E] border ${readinessFilter !== 'all' ? 'border-cyan-400 text-cyan-300 font-semibold' : 'border-[#24314A] text-slate-300'} text-[11.5px] font-sans rounded-lg px-2.5 py-1 focus:outline-none focus:border-cyan-500 cursor-pointer shrink-0"
             title="Filter days by competency / readiness index"
           >
             <option value="all" ${readinessFilter === 'all' ? 'selected' : ''}>🎯 Readiness: All (10)</option>
@@ -1260,7 +1303,7 @@ export function renderSystemDesignRoadmapView(weekFilter = 'today', statusFilter
 
           <select
             id="sys-roadmap-status-select"
-            class="bg-[#141C2E] border border-[#24314A] text-slate-300 text-[11.5px] font-code rounded-lg px-2.5 py-1 focus:outline-none focus:border-cyan-500 cursor-pointer shrink-0"
+            class="bg-[#141C2E] border border-[#24314A] text-slate-300 text-[11.5px] font-sans rounded-lg px-2.5 py-1 focus:outline-none focus:border-cyan-500 cursor-pointer shrink-0"
           >
             <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>Status: All</option>
             <option value="completed" ${statusFilter === 'completed' ? 'selected' : ''}>✓ Completed</option>
@@ -1271,7 +1314,7 @@ export function renderSystemDesignRoadmapView(weekFilter = 'today', statusFilter
 
       <!-- Active Readiness Filter Indicator -->
       ${readinessFilter !== 'all' ? `
-        <div class="flex items-center justify-between bg-[#141C2E] border border-cyan-500/40 rounded-xl px-4 py-2.5 shadow-sm text-[12px] font-code text-cyan-300">
+        <div class="flex items-center justify-between bg-[#141C2E] border border-cyan-500/40 rounded-xl px-4 py-2.5 shadow-sm text-[12px] font-sans text-cyan-300">
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-cyan-400 text-[18px]">filter_alt</span>
             <span>Filtering by Competency: <strong class="text-white font-semibold">${READINESS_INDEXES.find(i => i.id === readinessFilter)?.name || readinessFilter}</strong> — <span class="text-cyan-400 font-bold">${filtered.length}</span> matching days</span>
@@ -1335,47 +1378,47 @@ export function renderTodayRoadmapTask(item, progress, roadmapState = {}, active
 
   return `
     <div
-      class="roadmap-day-card bg-[#141C2E] border ${item.isRevision ? 'border-indigo-500/50 bg-[#161D32]' : isDone ? 'border-emerald-500/50 shadow-md shadow-emerald-500/10' : 'border-cyan-500/40 shadow-lg shadow-cyan-500/5'} rounded-xl p-6 md:p-7 flex flex-col gap-5 transition-all relative group"
+      class="roadmap-day-card bg-white dark:bg-[#141C2E] border ${item.isRevision ? 'border-[#DDD6FE] dark:border-indigo-500/50 bg-[#F5F3FF] dark:bg-[#161D32]' : isDone ? 'border-[#A7F3D0] dark:border-emerald-500/50 shadow-sm shadow-emerald-500/5' : 'border-[#BAE6FD] dark:border-cyan-500/40 shadow-sm shadow-cyan-500/5'} rounded-xl p-6 md:p-7 flex flex-col gap-5 transition-all relative group"
       data-day="${item.day}"
       id="today-system-design-card"
     >
       <!-- Top Row: Day Pill, Stepper & Badges -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#24314A]/70">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E2E8F0] dark:border-[#24314A]/70">
         <div class="flex items-center gap-2.5 flex-wrap">
-          <span class="px-3 py-1 rounded-lg font-code text-[12px] font-bold ${item.isRevision ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40' : isDone ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'}">
+          <span class="px-3 py-1 rounded-lg font-sans text-[12px] font-bold ${item.isRevision ? 'bg-[#F5F3FF] dark:bg-indigo-500/20 text-[#4F46E5] dark:text-indigo-300 border border-[#DDD6FE] dark:border-indigo-500/40' : isDone ? 'bg-[#ECFDF5] dark:bg-emerald-500/20 text-[#065F46] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-500/40' : 'bg-[#F0F9FF] dark:bg-cyan-500/20 text-[#0284C7] dark:text-cyan-300 border border-[#BAE6FD] dark:border-cyan-500/40'}">
             TODAY'S FOCUS • DAY ${String(item.day).padStart(2, '0')} OF 42
           </span>
-          <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-code font-bold uppercase border ${badgeColor}">
+          <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-sans font-bold uppercase border ${badgeColor}">
             ${item.difficulty}
           </span>
-          <span class="text-[12px] font-code text-slate-400">
+          <span class="text-[12px] font-sans text-[#64748B] dark:text-slate-400">
             Week ${item.week} • ${escapeHtml(item.weekTitle)}
           </span>
         </div>
 
         <!-- Day Navigation Stepper -->
         <div class="flex items-center gap-2 shrink-0">
-          <div class="flex items-center gap-1 bg-[#0F1626] border border-[#24314A] rounded-lg p-0.5">
-            <button class="sys-roadmap-prev-day-btn p-1.5 rounded hover:bg-[#182238] text-slate-400 hover:text-white transition-colors cursor-pointer ${item.day <= 1 ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}" title="Previous Day">
+          <div class="flex items-center gap-1 bg-[#F8FAFC] dark:bg-[#0F1626] border border-[#CBD5E1] dark:border-[#24314A] rounded-lg p-0.5 shadow-xs">
+            <button class="sys-roadmap-prev-day-btn p-1.5 rounded hover:bg-[#E2E8F0] dark:hover:bg-[#182238] text-[#475569] dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white transition-colors cursor-pointer ${item.day <= 1 ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}" title="Previous Day">
               <span class="material-symbols-outlined text-[16px]">chevron_left</span>
             </button>
 
-            <select class="sys-roadmap-jump-select bg-transparent text-cyan-300 font-code text-[11.5px] font-bold px-2 py-0.5 focus:outline-none cursor-pointer">
+            <select class="sys-roadmap-jump-select bg-transparent text-[#0284C7] dark:text-cyan-300 font-sans text-[11.5px] font-bold px-2 py-0.5 focus:outline-none cursor-pointer">
               ${SYSTEM_DESIGN_6_WEEK_ROADMAP.map(d => `
-                <option value="${d.day}" ${d.day === item.day ? 'selected' : ''} class="bg-[#0F1626] text-white">
+                <option value="${d.day}" ${d.day === item.day ? 'selected' : ''} class="bg-white dark:bg-[#0F1626] text-[#0F172A] dark:text-white">
                   ${roadmapState[d.day]?.completed ? '✓ ' : ''}Day ${d.day}: ${escapeHtml(d.topic.slice(0, 32))}...
                 </option>
               `).join('')}
             </select>
 
-            <button class="sys-roadmap-next-day-btn p-1.5 rounded hover:bg-[#182238] text-slate-400 hover:text-white transition-colors cursor-pointer ${item.day >= 42 ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}" title="Next Day">
+            <button class="sys-roadmap-next-day-btn p-1.5 rounded hover:bg-[#E2E8F0] dark:hover:bg-[#182238] text-[#475569] dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white transition-colors cursor-pointer ${item.day >= 42 ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}" title="Next Day">
               <span class="material-symbols-outlined text-[16px]">chevron_right</span>
             </button>
           </div>
 
           <button
             type="button"
-            class="sys-roadmap-filter-week px-2.5 py-1 rounded-lg text-[11px] font-code text-slate-300 bg-[#0F1626] hover:bg-[#182238] border border-[#24314A] hover:border-cyan-500/40 transition-all flex items-center gap-1 cursor-pointer"
+            class="sys-roadmap-filter-week px-2.5 py-1 rounded-lg text-[11px] font-sans text-slate-300 bg-[#0F1626] hover:bg-[#182238] border border-[#24314A] hover:border-cyan-500/40 transition-all flex items-center gap-1 cursor-pointer"
             data-week="${item.week}"
             title="View all Week ${item.week} cards"
           >
@@ -1398,14 +1441,14 @@ export function renderTodayRoadmapTask(item, progress, roadmapState = {}, active
 
       <!-- Target Readiness Indexes for this Day -->
       <div class="flex items-center gap-2 flex-wrap pt-0.5">
-        <span class="text-[11px] font-code text-slate-400 font-semibold flex items-center gap-1">
+        <span class="text-[11px] font-sans text-slate-400 font-semibold flex items-center gap-1">
           <span class="material-symbols-outlined text-[14px] text-cyan-400">psychology</span>
           Target Competencies (${dayIndexes.length}):
         </span>
         ${dayIndexes.map(idx => `
           <button
             type="button"
-            class="sys-roadmap-filter-readiness px-2.5 py-0.5 rounded text-[10.5px] font-code font-semibold border ${idx.badgeClass} flex items-center gap-1.5 transition-all cursor-pointer hover:scale-105"
+            class="sys-roadmap-filter-readiness px-2.5 py-0.5 rounded text-[10.5px] font-sans font-semibold border ${idx.badgeClass} flex items-center gap-1.5 transition-all cursor-pointer hover:scale-105"
             data-readiness-filter="${idx.id}"
             title="Filter all days training ${escapeHtml(idx.name)}"
           >
@@ -1421,7 +1464,7 @@ export function renderTodayRoadmapTask(item, progress, roadmapState = {}, active
           <div class="flex items-center gap-2.5 min-w-0">
             <span class="material-symbols-outlined text-cyan-400 text-[22px] shrink-0">inventory_2</span>
             <div class="flex flex-col">
-              <span class="font-code text-[10.5px] text-cyan-400 font-semibold uppercase tracking-wider">Production Spec Pairing</span>
+              <span class="font-sans text-[10.5px] text-cyan-400 font-semibold uppercase tracking-wider">Production Spec Pairing</span>
               <span class="text-[13.5px] font-sans font-bold text-white truncate">
                 ${escapeHtml(item.topic)}
               </span>
@@ -1429,7 +1472,7 @@ export function renderTodayRoadmapTask(item, progress, roadmapState = {}, active
           </div>
           <button
             type="button"
-            class="open-spec-modal-btn px-3.5 py-1.5 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/30 text-[12px] font-code font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer shadow-xs"
+            class="open-spec-modal-btn px-3.5 py-1.5 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/30 text-[12px] font-sans font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer shadow-xs"
             data-open-problem="${item.specId}"
             data-is-spec="true"
             title="Launch full production blueprint spec modal"
@@ -1443,18 +1486,18 @@ export function renderTodayRoadmapTask(item, progress, roadmapState = {}, active
       <!-- Interactive Topic Tabs for Today (Click to switch content) -->
       <div class="flex flex-col gap-2 pt-1">
         <div class="flex items-center justify-between gap-2">
-          <span class="text-[11px] font-code text-cyan-400 uppercase tracking-wider font-bold flex items-center gap-1.5">
+          <span class="text-[11px] font-sans text-cyan-400 uppercase tracking-wider font-bold flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[15px]">layers</span>
             Today's Topic Breakdown (${topics.length} Concepts):
           </span>
-          <span class="text-[11px] font-code text-slate-400 hidden sm:inline">Click any concept tab below to master its architecture</span>
+          <span class="text-[11px] font-sans text-[#64748B] dark:text-slate-400 hidden sm:inline">Click any concept tab below to master its architecture</span>
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
           ${topics.map((t, idx) => `
             <button
               type="button"
-              class="roadmap-topic-tab px-3.5 py-1.5 rounded-lg text-[12px] font-code font-semibold cursor-pointer transition-all ${idx === 0 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-xs active ring-1 ring-cyan-500/30' : 'bg-[#0F1626] text-slate-400 border border-[#24314A] hover:text-slate-200 hover:border-slate-500'}"
+              class="roadmap-topic-tab px-3.5 py-1.5 rounded-lg text-[12px] font-sans font-semibold cursor-pointer transition-all ${idx === 0 ? 'bg-[#F0F9FF] dark:bg-cyan-500/20 text-[#0284C7] dark:text-cyan-300 border border-[#BAE6FD] dark:border-cyan-500/40 shadow-xs active ring-1 ring-[#BAE6FD] dark:ring-cyan-500/30' : 'bg-white dark:bg-[#0F1626] text-[#475569] dark:text-slate-400 border border-[#E2E8F0] dark:border-[#24314A] hover:text-[#0F172A] dark:hover:text-slate-200 hover:border-[#CBD5E1] dark:hover:border-slate-500'}"
               data-day="${item.day}"
               data-topic-idx="${idx}"
               title="${escapeHtml(t.title)}"
@@ -1466,41 +1509,41 @@ export function renderTodayRoadmapTask(item, progress, roadmapState = {}, active
       </div>
 
       <!-- Dynamic Topic Content Container -->
-      <div id="roadmap-topic-content-${item.day}" class="roadmap-topic-content flex flex-col gap-4 p-4 rounded-xl bg-[#0A0E1A]/90 border border-[#24314A]/90 shadow-inner">
+      <div id="roadmap-topic-content-${item.day}" class="roadmap-topic-content flex flex-col gap-4 p-4 rounded-xl bg-white dark:bg-[#0A0E1A]/90 border border-[#E2E8F0] dark:border-[#24314A]/90 shadow-xs dark:shadow-inner">
         ${renderTopicDetail(topics[0])}
       </div>
 
       <!-- Bottom Card Action Strip: Completion Toggle & Reading Links -->
-      <div class="pt-4 border-t border-[#24314A]/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="pt-4 border-t border-[#E2E8F0] dark:border-[#24314A]/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <!-- Complete / Reopen Action -->
         <div class="flex items-center gap-3 flex-wrap">
           ${isDone ? `
-            <div class="flex items-center gap-2.5">
-              <span class="px-4 py-2 rounded-xl bg-emerald-500/20 text-[#10B981] border border-emerald-500/40 font-code text-[12.5px] font-bold flex items-center gap-1.5 shadow-sm shadow-emerald-500/10">
-                <span class="material-symbols-outlined text-[18px]">done_all</span>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <span class="day-mastered-pill px-4 py-2 rounded-xl bg-[#ECFDF5] dark:bg-emerald-500/20 text-[#065F46] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-500/40 font-sans text-[12.5px] font-bold flex items-center gap-1.5 shadow-xs">
+                <span class="material-symbols-outlined text-[18px] text-[#059669] dark:text-emerald-400">done_all</span>
                 <span>Day ${item.day} Mastered!</span>
               </span>
               ${item.day < 42 ? `
-                <button class="sys-roadmap-jump-day px-4 py-2 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5] text-white font-sans text-[12.5px] font-bold flex items-center gap-1.5 shadow-md shadow-indigo-600/30 transition-all cursor-pointer" data-day="${item.day + 1}">
+                <button class="sys-roadmap-jump-day px-4 py-2 rounded-xl bg-[#4F46E5] hover:bg-[#4338CA] text-white font-sans text-[12.5px] font-bold flex items-center gap-1.5 shadow-md shadow-indigo-600/30 transition-all cursor-pointer" data-day="${item.day + 1}">
                   <span>Advance to Day ${item.day + 1}</span>
-                  <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  <span class="material-symbols-outlined text-[16px] text-white">arrow_forward</span>
                 </button>
               ` : ''}
-              <button class="toggle-roadmap-day-btn px-3 py-2 rounded-xl bg-[#182238] hover:bg-[#24314A] text-slate-300 hover:text-white border border-[#24314A] font-code text-[11.5px] transition-colors cursor-pointer" data-day="${item.day}">
+              <button class="toggle-roadmap-day-btn reopen-day-btn px-3.5 py-2 rounded-xl bg-white dark:bg-[#182238] hover:bg-[#F1F5F9] dark:hover:bg-[#24314A] text-[#475569] dark:text-slate-300 hover:text-[#0F172A] dark:hover:text-white border border-[#CBD5E1] dark:border-[#24314A] font-sans text-[11.5px] font-semibold transition-colors cursor-pointer shadow-xs" data-day="${item.day}">
                 Reopen Day ${item.day}
               </button>
             </div>
           ` : `
-            <button class="toggle-roadmap-day-btn px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-sans text-[13px] font-bold shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2 cursor-pointer" data-day="${item.day}">
-              <span class="material-symbols-outlined text-[18px]">check_circle</span>
-              <span>Mark Day ${item.day} Task Complete</span>
+            <button class="toggle-roadmap-day-btn complete-day-btn px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-sans text-[13px] font-bold shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2 cursor-pointer" data-day="${item.day}">
+              <span class="material-symbols-outlined text-[18px] text-white">check_circle</span>
+              <span class="text-white">Mark Day ${item.day} Task Complete</span>
             </button>
           `}
         </div>
 
         <!-- Right: References & Est Time -->
-        <div class="flex items-center gap-3 text-[12px] font-code text-slate-400 flex-wrap">
-          <span>Est: <strong class="text-slate-200">${item.estTime}</strong></span>
+        <div class="flex items-center gap-3 text-[12px] font-sans text-[#64748B] dark:text-slate-400 flex-wrap">
+          <span>Est: <strong class="text-[#0F172A] dark:text-slate-200">${item.estTime}</strong></span>
           ${item.readingLinks && item.readingLinks[0] ? `
             <a
               href="${item.readingLinks[0].url}"
@@ -1559,6 +1602,9 @@ export function renderTopicDetail(topic) {
   if (topic.id === '2.1') {
     return renderHttpGenerationsContent(topic);
   }
+  if (topic.id === '2.2-https' || topic.title?.includes('HTTPS')) {
+    return renderHttpsContent(topic);
+  }
   if (topic.id === '2.2') {
     return renderForwardVsReverseProxyContent(topic);
   }
@@ -1568,14 +1614,32 @@ export function renderTopicDetail(topic) {
   if (topic.id === '2.4') {
     return renderUrlLifecycleContent(topic);
   }
+  if (topic.title?.includes('CDN') || topic.title?.includes('Content Delivery')) {
+    return renderCdnContent(topic);
+  }
   if (topic.id === '2.5') {
     return renderHttpStatusCodesContent(topic);
   }
   if (topic.id === '2.6') {
     return renderApiStylesContent(topic);
   }
-  if (topic.id === '2.7') {
+  if (topic.id === '2.7' || topic.id === '2.7-push' || topic.title?.includes('Push Channels') || topic.title?.includes('Server-to-Client Push')) {
     return renderRealtimeProtocolsContent(topic);
+  }
+  if (topic.id === '2.8' || topic.title?.includes('Load Balancing') || topic.title?.includes('L4 vs. L7') || topic.title?.includes('L4 vs L7')) {
+    return renderLoadBalancingContent(topic);
+  }
+  if (topic.id === '2.9' || topic.title?.includes('Browser') || topic.title?.includes('Browsers')) {
+    return renderBrowserInternalsContent(topic);
+  }
+  if (topic.id === '11.2' || topic.id === '11.2-gw' || topic.title?.includes('API Gateways') || topic.title?.includes('Edge Gateways')) {
+    return renderApiGatewayContent(topic);
+  }
+  if (topic.id === 'rev-1' || topic.id === 'rev-1-checklist' || topic.title?.includes('Revision Day 1') || topic.title?.includes('Week 1 Core Mastery')) {
+    return renderWeek1RevisionContent(topic);
+  }
+  if (topic.id === 'rev-2' || topic.id === 'rev-2-checklist' || topic.title?.includes('Revision Day 2') || topic.title?.includes('Week 2 Core Mastery')) {
+    return renderDatabaseShardingContent(topic);
   }
   if (topic.id === '3.1') {
     return renderJwtVsSessionContent(topic);
@@ -1606,6 +1670,9 @@ export function renderTopicDetail(topic) {
   }
   if (topic.id === '4.3' || topic.title?.includes('Locking')) {
     return renderOptimisticVsPessimisticLockingContent(topic);
+  }
+  if (topic.id === '4.3-quorum' || topic.title?.includes('Tunable Quorum Math') || topic.title?.includes('Quorum Math')) {
+    return renderConflictResolutionContent(topic);
   }
   if (topic.id === '4.5-read-replica' || topic.title?.includes('Read-Replica') || topic.title?.includes('Read Replica')) {
     return renderReadReplicaPatternContent(topic);
@@ -1646,22 +1713,43 @@ export function renderTopicDetail(topic) {
   if (topic.title?.includes('Erasure Coding') || (topic.id === '6.3' && topic.section?.includes('Storage')) || (topic.id === '7.3' && topic.section?.includes('Storage'))) {
     return renderErasureCodingVsReplicationContent(topic);
   }
+  if (topic.id === '4.10' || topic.title?.includes('Unique ID') || topic.title?.includes('Snowflake')) {
+    return renderUniqueIdGenerationContent(topic);
+  }
+  if (topic.id === '5.4' || topic.title?.includes('Why Redis Is So Fast') || topic.title?.includes('Why Redis Fast')) {
+    return renderRedisInternalsContent(topic);
+  }
+  if (topic.id === '5.5' || topic.id === '5.5-cache' || topic.id === '5.5-crawler' || topic.title?.includes('Bloom Filter')) {
+    return renderBloomFilterContent(topic);
+  }
+  if (topic.title?.includes('Multipart Upload') || (topic.id === '6.4' && (topic.section?.includes('Storage') || topic.title?.includes('Uploading Large Files')))) {
+    return renderMultipartUploadContent(topic);
+  }
+  if (topic.id === '6.5' || topic.title?.includes('Designing S3') || topic.title?.includes('Design S3')) {
+    return renderDesignS3Content(topic);
+  }
+  if (topic.id === '10.3' || topic.title?.includes('Conflict Resolution')) {
+    return renderConflictResolutionContent(topic);
+  }
+  if (topic.id === '7.5-metrics' || topic.id === '7.5' || topic.id === '7.6' || topic.title?.includes('Metrics Monitoring') || topic.title?.includes('Pull vs. Push') || topic.title?.includes('Pull vs Push')) {
+    return renderMetricsMonitoringContent(topic);
+  }
   if (topic.id === '6.4' || topic.title?.includes('Event-Driven Architecture') || topic.title?.includes('Event-Driven')) {
     return renderEventDrivenArchitectureContent(topic);
   }
   if (topic.title?.includes('Delivery Semantics') || (topic.id === '7.1' && !topic.section?.includes('Storage'))) {
     return renderDeliverySemanticsContent(topic);
   }
-  if (topic.title?.includes('Why Kafka Is Fast') || topic.title?.includes('Why Kafka Fast') || (topic.id === '7.2' && !topic.section?.includes('Storage'))) {
+  if (topic.id === '7.2-internals' || topic.title?.includes('Why Kafka Is Fast') || topic.title?.includes('Why Kafka Fast') || topic.title?.includes('Kafka Broker & Consumer Group') || (topic.id === '7.2' && !topic.section?.includes('Storage'))) {
     return renderWhyKafkaIsFastContent(topic);
   }
   if (topic.title?.includes('Microservice Collaboration') || topic.title?.includes('Orchestration vs') || topic.title?.includes('Choreography') || (topic.id === '7.3' && !topic.section?.includes('Storage'))) {
     return renderMicroserviceCollaborationContent(topic);
   }
-  if (topic.id === '10.1' || topic.title?.includes('Consensus and Coordination') || topic.title?.includes('Consensus & Raft') || topic.title?.includes('Consensus') || topic.title?.includes('Raft')) {
+  if (topic.id === '10.1' || (!topic.id?.startsWith('rev-') && (topic.title?.includes('Consensus and Coordination') || topic.title?.includes('Consensus & Raft')))) {
     return renderConsensusRaftContent(topic);
   }
-  if (topic.id === '10.2' || topic.title?.includes('Distributed Time') || topic.title?.includes('Time and Ordering') || topic.title?.includes('Time & Ordering')) {
+  if (topic.id === '10.2' || topic.id === '10.2-time' || topic.title?.includes('Distributed Time') || topic.title?.includes('Time and Ordering') || topic.title?.includes('Time & Ordering') || topic.title?.includes('Vector Clocks')) {
     return renderDistributedTimeOrderingContent(topic);
   }
   if (topic.id === '10.4' || topic.title?.includes('Failure Detection') || topic.title?.includes('Grey Failures') || topic.title?.includes('Grey Failure')) {
@@ -1676,7 +1764,7 @@ export function renderTopicDetail(topic) {
   if (topic.id === '11.5' || topic.title?.includes('Scaling Long-Lived') || topic.title?.includes('Long-Lived Connections') || topic.title?.includes('Long-Lived Conn')) {
     return renderScalingLongLivedConnectionsContent(topic);
   }
-  if (topic.id === '11.6' || topic.title?.includes('WebRTC') || topic.title?.includes('Real-Time Media')) {
+  if (topic.id === '11.6' || topic.id === '11.6-chat' || topic.title?.includes('WebRTC') || topic.title?.includes('Real-Time Media') || topic.title?.includes('Selective Forwarding Units') || topic.title?.includes('SFU')) {
     return renderWebRtcRealTimeMediaContent(topic);
   }
   if (topic.title?.includes('Asynchronous Processing') || topic.title?.includes('Message Queues') || topic.id === '6.1') {
@@ -1691,8 +1779,98 @@ export function renderTopicDetail(topic) {
   if (topic.id === '4.11' || topic.title?.includes('Metrics') || topic.title?.includes('Time Series')) {
     return renderMetricsDatabaseContent(topic);
   }
-  if (topic.id === '4.12' || topic.title?.includes('Big Data') || topic.title?.includes('Papers and the Evolution')) {
+  if (topic.id === '4.12' || topic.id === '1.6-trie' || topic.id === 'trie-arch' || topic.title?.includes('Prefix Trie') || topic.title?.includes('Big Data') || topic.title?.includes('Papers and the Evolution')) {
     return renderBigDataEvolutionContent(topic);
+  }
+  if (topic.id === 'spec-1-interview' || topic.id === 'sd-1' || topic.id === 'kgs-base62' || topic.title?.includes('Base62 Encoding') || topic.title?.includes('Key Generation Service') || topic.title?.includes('URL Shortener') || topic.title?.includes('TinyURL') || topic.title?.includes('Bitly')) {
+    return renderUrlShortenerInterviewDesign(topic);
+  }
+  if (topic.id === '8.1' || topic.title?.includes('Deployment Strategies')) {
+    return renderDeploymentStrategiesContent(topic);
+  }
+  if (topic.id === '8.2' || topic.title?.includes('Resilience:') || topic.title?.includes('Timeouts, Retries')) {
+    return renderResiliencePatternsContent(topic);
+  }
+  if (topic.id === '8.3' || topic.title?.includes('Runaway Process')) {
+    return renderLinuxProcessTriageContent(topic);
+  }
+  if (topic.id === '8.4' || topic.title?.includes('War Story') || topic.title?.includes('Outage')) {
+    return renderOutagePostmortemContent(topic);
+  }
+  if (topic.id === '12.3' || topic.title?.includes('SLIs, SLOs')) {
+    return renderSloErrorBudgetsContent(topic);
+  }
+  if (topic.id === '12.4' || topic.title?.includes('Multi-Region')) {
+    return renderMultiRegionDisasterRecoveryContent(topic);
+  }
+  if (topic.id === '12.5' || topic.id === '12.6' || topic.title?.includes('Capacity Planning') || topic.title?.includes('Autoscaling') || topic.title?.includes('Cost as a Design')) {
+    return renderCapacityAutoscalingContent(topic);
+  }
+  if (topic.id === '12.7' || topic.title?.includes('Chaos Engineering')) {
+    return renderChaosEngineeringContent(topic);
+  }
+  if (topic.id === 'rev-3' || topic.id === 'rev-3-checklist' || topic.title?.includes('Revision Day 3') || topic.title?.includes('Week 3 Core Mastery')) {
+    return renderWeek3RevisionContent(topic);
+  }
+  if (topic.id === '13.5' || topic.title?.includes('Webhooks') || topic.title?.includes('Outbound Integrations')) {
+    return renderWebhooksContent(topic);
+  }
+  if (topic.id === '13.1' || topic.title?.includes('Event Sourcing') || topic.title?.includes('CQRS')) {
+    return renderEventSourcingCqrsContent(topic);
+  }
+  if (topic.id === '12.1' || topic.title?.includes('Distributed Tracing') || topic.title?.includes('Context Propagation')) {
+    return renderDistributedTracingContent(topic);
+  }
+  if (topic.id === '12.2' || topic.title?.includes('Logging Pipeline') || topic.title?.includes('Logging Pipelines')) {
+    return renderLoggingPipelineContent(topic);
+  }
+  if (topic.id === '13.4' || topic.title?.includes('Service Decomposition') || topic.title?.includes('Strangler Fig')) {
+    return renderServiceDecompositionContent(topic);
+  }
+  if (topic.id === '13.2' || topic.title?.includes('Idempotency Keys') || topic.title?.includes('Idempotency')) {
+    return renderIdempotencyContent(topic);
+  }
+  if (topic.id === '13.3' || topic.title?.includes('Durable Execution') || topic.title?.includes('Temporal') || topic.title?.includes('Cadence')) {
+    return renderDurableExecutionContent(topic);
+  }
+  if (topic.id === '9.1' || topic.title?.includes('Proximity Search') || topic.title?.includes('Geohash and Quadtree') || topic.title?.includes('Geohash & Quadtree') || topic.title?.includes('Yelp')) {
+    return renderProximitySearchContent(topic);
+  }
+  if (topic.id === '9.2' || topic.title?.includes('Google Maps') || topic.title?.includes('Tiling & Route Planning')) {
+    return renderGoogleMapsContent(topic);
+  }
+  if (topic.id === '9.3' || topic.title?.includes('Gmail') || topic.title?.includes('Distributed Email')) {
+    return renderDistributedEmailContent(topic);
+  }
+  if (topic.id === '9.4' || topic.title?.includes('Payment System') || topic.title?.includes('Payment Systems') || topic.title?.includes('Clearing, Settlement')) {
+    return renderPaymentSystemsContent(topic);
+  }
+  if (topic.id === '9.5' || topic.title?.includes('Stock Exchange') || topic.title?.includes('Matching Engine')) {
+    return renderStockExchangeContent(topic);
+  }
+  if (topic.id === '9.6' || topic.title?.includes('Flash Sale') || topic.title?.includes('Flash Sales')) {
+    return renderFlashSaleContent(topic);
+  }
+  if (topic.id === '9.7' || topic.title?.includes('AlphaCode') || topic.title?.includes('AI Coding Engines') || topic.title?.includes('AI Inference')) {
+    return renderAiCodingEngineContent(topic);
+  }
+  if (topic.id === 'rev-4-cheat' || topic.title?.includes('Appendix C Cheat Sheet') || topic.title?.includes('Tip-of-the-Tongue Numbers')) {
+    return renderAppendixCheatSheetContent(topic);
+  }
+  if (topic.id === 'rev-4' || topic.title?.includes('Revision Day 4')) {
+    return renderWeek4RevisionContent(topic);
+  }
+  if (topic.id === 'rev-5-patterns' || topic.title?.includes('Appendix C.3 Problem-to-Pattern') || topic.title?.includes('Problem-to-Pattern Index')) {
+    return renderAppendixPatternIndexContent(topic);
+  }
+  if (topic.id === 'rev-5' || topic.title?.includes('Revision Day 5')) {
+    return renderWeek5RevisionContent(topic);
+  }
+  if (topic.id === 'capstone-rubric' || topic.title?.includes('Staff & Principal 45-Minute Interview Rubric') || topic.title?.includes('Staff & Principal')) {
+    return renderStaffRubricContent(topic);
+  }
+  if (topic.id === 'rapid-257' || topic.title?.includes('Appendix D: 257-Question') || topic.title?.includes('257-Question Rapid-Fire')) {
+    return renderRapidFireQuestionBankContent(topic);
   }
   if (topic.customHtml) {
     return typeof topic.customHtml === 'function' ? topic.customHtml(topic) : topic.customHtml;
@@ -1710,20 +1888,20 @@ export function renderTopicDetail(topic) {
           </h4>
           <div class="flex items-center gap-1.5 flex-wrap">
             ${topicIndexes.map(idx => `
-              <span class="text-[10px] font-code px-2 py-0.5 rounded border ${idx.badgeClass} flex items-center gap-1 shrink-0" title="${escapeHtml(idx.name)}: ${escapeHtml(idx.description)}">
+              <span class="text-[10px] font-sans px-2 py-0.5 rounded border ${idx.badgeClass} flex items-center gap-1 shrink-0" title="${escapeHtml(idx.name)}: ${escapeHtml(idx.description)}">
                 <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${idx.color}"></span>
                 <span>${idx.shortName}</span>
               </span>
             `).join('')}
           </div>
         </div>
-        <span class="text-[10px] font-code text-cyan-400 shrink-0 bg-[#0A0E1A] px-2 py-0.5 rounded border border-cyan-500/20">
+        <span class="text-[10px] font-sans text-cyan-400 shrink-0 bg-[#0A0E1A] px-2 py-0.5 rounded border border-cyan-500/20">
           ${escapeHtml(topic.section)}
         </span>
       </div>
 
       <!-- What it is / Explanation -->
-      <p class="text-[12.5px] text-slate-300 leading-relaxed">
+      <p class="text-[12.5px] text-slate-300 leading-relaxed font-sans">
         ${escapeHtml(topic.whatItIs)}
       </p>
 
@@ -1737,11 +1915,11 @@ ${escapeHtml(topic.architecture)}
       <!-- Key Trade-offs & Invariants -->
       ${topic.tradeoffs && topic.tradeoffs.length ? `
         <div class="bg-[#0F1626] border border-[#24314A]/70 rounded-lg p-3 flex flex-col gap-1.5 mt-0.5">
-          <span class="font-code text-[10px] text-cyan-400 uppercase font-semibold tracking-wider flex items-center gap-1">
+          <span class="font-sans text-[10px] text-cyan-400 uppercase font-semibold tracking-wider flex items-center gap-1">
             <span class="material-symbols-outlined text-[13px]">tune</span>
             Key Architectural Trade-offs & Invariants:
           </span>
-          <ul class="flex flex-col gap-1 text-[11.5px] text-slate-300 list-disc list-inside">
+          <ul class="flex flex-col gap-1 text-[11.5px] text-slate-300 list-disc list-inside font-sans">
             ${topic.tradeoffs.map(t => `<li class="leading-relaxed">${escapeHtml(t)}</li>`).join('')}
           </ul>
         </div>
@@ -1750,7 +1928,7 @@ ${escapeHtml(topic.architecture)}
       <!-- Key Senior Takeaway -->
       ${topic.keyTakeaway ? `
         <div class="bg-cyan-950/30 border-l-2 border-cyan-500 px-3 py-2 rounded-r text-[11.5px] text-cyan-200/90 leading-relaxed font-sans mt-0.5">
-          <strong class="font-code text-[10px] uppercase text-cyan-400 tracking-wider block mb-0.5">Key Senior Takeaway:</strong>
+          <strong class="font-sans text-[10px] uppercase text-cyan-400 tracking-wider block mb-0.5">Key Senior Takeaway:</strong>
           ${escapeHtml(topic.keyTakeaway)}
         </div>
       ` : ''}
@@ -1787,7 +1965,7 @@ export function renderRoadmapDayCard(item, progress) {
 
   return `
     <div
-      class="roadmap-small-day-card bg-[#141C2E] border ${item.isRevision ? 'border-indigo-500/40 bg-[#161D32]' : isDone ? 'border-emerald-500/40 shadow-xs shadow-emerald-500/10' : 'border-[#24314A] hover:border-cyan-500/40'} rounded-xl p-5 flex flex-col justify-between gap-4 transition-all shadow-sm relative group select-text cursor-default"
+      class="roadmap-small-day-card bg-white dark:bg-[#141C2E] border ${item.isRevision ? 'border-indigo-300 dark:border-indigo-500/40 bg-[#F5F3FF] dark:bg-[#161D32]' : isDone ? 'border-emerald-300 dark:border-emerald-500/40 shadow-xs shadow-emerald-500/10' : 'border-[#E2E8F0] dark:border-[#24314A] hover:border-indigo-300 dark:hover:border-cyan-500/40'} rounded-xl p-5 flex flex-col justify-between gap-4 transition-all shadow-sm relative group select-text cursor-default"
       data-day="${item.day}"
     >
       <!-- Top Section -->
@@ -1795,13 +1973,13 @@ export function renderRoadmapDayCard(item, progress) {
         <!-- Top Row: Day Pill, Week & Difficulty Badge, Completion Status -->
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="px-2.5 py-0.5 rounded font-code text-[11px] font-bold ${item.isRevision ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40' : isDone ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-[#0F1626] text-cyan-400 border border-cyan-500/30'}">
+            <span class="px-2.5 py-0.5 rounded font-sans text-[11px] font-bold ${item.isRevision ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/40' : isDone ? 'bg-[#ECFDF5] dark:bg-emerald-500/20 text-[#065F46] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-500/40' : 'bg-slate-100 dark:bg-[#0F1626] text-slate-800 dark:text-cyan-400 border border-slate-300 dark:border-cyan-500/30'}">
               DAY ${String(item.day).padStart(2, '0')}
             </span>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-code font-semibold uppercase border ${badgeColor}">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-sans font-semibold uppercase border ${badgeColor}">
               ${item.difficulty}
             </span>
-            <span class="text-[11px] font-code text-slate-400 truncate max-w-[140px] sm:max-w-none">
+            <span class="text-[11px] font-sans text-[#64748B] dark:text-slate-400 truncate max-w-[140px] sm:max-w-none">
               Week ${item.week}
             </span>
           </div>
@@ -1810,13 +1988,13 @@ export function renderRoadmapDayCard(item, progress) {
             <label class="flex items-center gap-1.5 cursor-pointer select-none stop-prop" title="Toggle Day Completion">
               <input
                 type="checkbox"
-                class="sys-roadmap-toggle-checkbox w-4 h-4 rounded border-slate-600 text-cyan-500 focus:ring-0 focus:ring-offset-0 bg-[#0F1626] cursor-pointer"
+                class="sys-roadmap-toggle-checkbox w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-0 focus:ring-offset-0 bg-white dark:bg-[#0F1626] cursor-pointer"
                 data-roadmap-day="${item.day}"
                 ${isDone ? 'checked' : ''}
               />
             </label>
             ${isDone ? `
-              <span class="text-[10.5px] font-code font-semibold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded">
+              <span class="text-[10.5px] font-sans font-semibold text-[#065F46] dark:text-emerald-400 bg-[#ECFDF5] dark:bg-emerald-950/40 border border-[#A7F3D0] dark:border-emerald-500/30 px-2 py-0.5 rounded">
                 Done ✓
               </span>
             ` : ''}
@@ -1825,10 +2003,10 @@ export function renderRoadmapDayCard(item, progress) {
 
         <!-- Headline: Day Main Topic & Objective -->
         <div class="flex flex-col gap-1">
-          <h3 class="font-sans text-[15.5px] font-bold text-white tracking-tight leading-snug">
+          <h3 class="font-sans text-[15.5px] font-bold text-[#0F172A] dark:text-white tracking-tight leading-snug">
             ${escapeHtml(item.topic)}
           </h3>
-          <p class="text-[12px] text-slate-400 line-clamp-2 leading-relaxed font-sans">
+          <p class="text-[12px] text-[#475569] dark:text-slate-400 line-clamp-2 leading-relaxed font-sans">
             ${escapeHtml(item.objective)}
           </p>
         </div>
@@ -1836,7 +2014,7 @@ export function renderRoadmapDayCard(item, progress) {
         <!-- Readiness Index Badges for this day -->
         <div class="flex flex-wrap items-center gap-1.5 my-0.5">
           ${dayIndexes.map(idx => `
-            <span class="px-2 py-0.5 rounded text-[10px] font-code border ${idx.badgeClass} flex items-center gap-1 shrink-0" title="${escapeHtml(idx.name)}: ${escapeHtml(idx.description)}">
+            <span class="px-2 py-0.5 rounded text-[10px] font-sans border ${idx.badgeClass} flex items-center gap-1 shrink-0" title="${escapeHtml(idx.name)}: ${escapeHtml(idx.description)}">
               <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${idx.color}"></span>
               <span>${idx.shortName}</span>
             </span>
@@ -1845,16 +2023,16 @@ export function renderRoadmapDayCard(item, progress) {
 
         <!-- Spec Tag (If production spec) -->
         ${item.specId ? `
-          <div class="flex items-center justify-between gap-2 bg-[#0F1626] border border-cyan-500/30 rounded-lg px-2.5 py-1.5">
+          <div class="flex items-center justify-between gap-2 bg-[#F8FAFC] dark:bg-[#0F1626] border border-[#CBD5E1] dark:border-cyan-500/30 rounded-lg px-2.5 py-1.5">
             <div class="flex items-center gap-2 min-w-0">
-              <span class="material-symbols-outlined text-cyan-400 text-[16px] shrink-0">inventory_2</span>
-              <span class="text-[11.5px] font-sans font-semibold text-cyan-300 truncate">
+              <span class="material-symbols-outlined text-indigo-600 dark:text-cyan-400 text-[16px] shrink-0">inventory_2</span>
+              <span class="text-[11.5px] font-sans font-semibold text-[#0F172A] dark:text-cyan-300 truncate">
                 Production Blueprint Spec
               </span>
             </div>
             <button
               type="button"
-              class="open-spec-modal-btn px-2 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/25 text-[10.5px] font-code font-semibold flex items-center gap-1 shrink-0 transition-all cursor-pointer stop-prop"
+              class="open-spec-modal-btn px-2 py-0.5 rounded bg-indigo-50 dark:bg-cyan-500/15 border border-indigo-200 dark:border-cyan-500/40 text-indigo-700 dark:text-cyan-300 hover:bg-indigo-100 dark:hover:bg-cyan-500/25 text-[10.5px] font-sans font-semibold flex items-center gap-1 shrink-0 transition-all cursor-pointer stop-prop"
               data-open-problem="${item.specId}"
               data-is-spec="true"
               title="Launch full production blueprint spec modal"
@@ -1866,30 +2044,30 @@ export function renderRoadmapDayCard(item, progress) {
         ` : ''}
 
         <!-- Topics to Cover on this Day (Clean, compact list) -->
-        <div class="flex flex-col gap-2 pt-1 border-t border-[#24314A]/70">
-          <div class="flex items-center justify-between text-[11px] font-code text-slate-400">
-            <span class="font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+        <div class="flex flex-col gap-2 pt-1 border-t border-[#E2E8F0] dark:border-[#24314A]/70">
+          <div class="flex items-center justify-between text-[11px] font-sans text-[#475569] dark:text-slate-400">
+            <span class="font-bold text-indigo-700 dark:text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
               <span class="material-symbols-outlined text-[14px]">checklist</span>
               Topics to Cover (${topics.length}):
             </span>
-            <span>Est: <strong class="text-slate-300 font-semibold">${item.estTime}</strong></span>
+            <span>Est: <strong class="text-[#0F172A] dark:text-slate-300 font-semibold">${item.estTime}</strong></span>
           </div>
 
-          <div class="flex flex-col gap-1.5 bg-[#0A0E1A]/80 border border-[#1E293B] rounded-xl p-2.5 shadow-inner">
+          <div class="flex flex-col gap-1.5 bg-[#F8FAFC] dark:bg-[#0A0E1A]/80 border border-[#E2E8F0] dark:border-[#1E293B] rounded-xl p-2.5 shadow-inner">
             ${topics.map((t, idx) => {
               const topicIndexes = getReadinessIndexesForTopic(t.id, item.day);
               const primaryIdx = topicIndexes[0];
               return `
-                <div class="flex items-center justify-between gap-2 text-[12px] text-slate-200 py-0.5">
+                <div class="flex items-center justify-between gap-2 text-[12px] text-[#1E293B] dark:text-slate-200 py-0.5">
                   <div class="flex items-start gap-2 min-w-0 flex-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-cyan-400 mt-1.5 shrink-0"></span>
                     <div class="flex items-baseline gap-1.5 min-w-0">
-                      <span class="font-code text-[11px] text-cyan-300 font-semibold shrink-0">${escapeHtml(t.id || String(idx + 1))}</span>
-                      <span class="truncate font-sans font-medium text-slate-300 text-[12px]">${escapeHtml(t.title || t.tabTitle)}</span>
+                      <span class="font-sans text-[11px] text-indigo-700 dark:text-cyan-300 font-semibold shrink-0">${escapeHtml(t.id || String(idx + 1))}</span>
+                      <span class="truncate font-sans font-medium text-[#1E293B] dark:text-slate-300 text-[12px]">${escapeHtml(t.title || t.tabTitle)}</span>
                     </div>
                   </div>
                   ${primaryIdx ? `
-                    <span class="text-[9.5px] font-code px-1.5 py-0.5 rounded border ${primaryIdx.badgeClass} shrink-0 hidden sm:inline-block" title="${escapeHtml(primaryIdx.name)}">
+                    <span class="text-[9.5px] font-sans px-1.5 py-0.5 rounded border ${primaryIdx.badgeClass} shrink-0 hidden sm:inline-block" title="${escapeHtml(primaryIdx.name)}">
                       ${primaryIdx.shortName}
                     </span>
                   ` : ''}
@@ -1901,14 +2079,14 @@ export function renderRoadmapDayCard(item, progress) {
       </div>
 
       <!-- Bottom Card Action Row: Metadata & "Start the Day" Button -->
-      <div class="pt-3 border-t border-[#24314A] flex items-center justify-between gap-3">
-        <span class="text-[11px] font-code text-slate-500 truncate">
+      <div class="pt-3 border-t border-[#E2E8F0] dark:border-[#24314A] flex items-center justify-between gap-3">
+        <span class="text-[11px] font-sans text-[#64748B] dark:text-slate-500 truncate">
           ${item.readingLinks && item.readingLinks[0] ? escapeHtml(item.readingLinks[0].title.slice(0, 20)) + '...' : `Day ${item.day} Curriculum`}
         </span>
 
         <button
           type="button"
-          class="start-roadmap-day-btn px-4 py-2 rounded-xl ${isDone ? 'bg-[#182238] hover:bg-[#202E4C] text-emerald-300 border border-emerald-500/30' : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20'} font-sans text-[12.5px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+          class="start-roadmap-day-btn ${isDone ? 'is-completed' : ''} px-4 py-2 rounded-xl ${isDone ? 'bg-white dark:bg-[#182238] hover:bg-[#ECFDF5] dark:hover:bg-[#202E4C] text-[#065F46] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-500/30 shadow-xs' : 'bg-[#4F46E5] hover:bg-[#4338CA] text-white shadow-md shadow-indigo-600/30'} font-sans text-[12.5px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
           data-day="${item.day}"
           title="Direct to the complete big card for Day ${item.day}"
         >

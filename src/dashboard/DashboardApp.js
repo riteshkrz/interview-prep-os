@@ -24,9 +24,22 @@ import { renderCloudSyncModal, attachCloudSyncModalListeners } from './component
 import { stateSyncService, SyncStatus } from '../services/stateSyncService.js';
 import { catalogService } from '../services/catalogService.js';
 import { signOut } from '../lib/supabase.js';
+import {
+  renderPdfStore,
+  PDF_PRODUCTS,
+  renderPdfCheckoutModal,
+  downloadProductGuide,
+  recordPurchase,
+  getPurchasedPdfs
+} from './pdf-store/PdfStore.js';
+import { renderLldStudioView, getActiveLldProblemId, setActiveLldProblemId } from './lld-studio/LldStudioView.js';
+import { LLD_PROBLEMS } from './lld-studio/lldTopicsData.js';
+import { renderDistinctionsWorkspaceView } from './concepts/DistinctionsWorkspaceView.js';
+import { INTERVIEW_DISTINCTIONS } from './concepts/interviewDistinctionsData.js';
 
 // Workspace Navigation & Layout State (Default: 6-Week System Design Roadmap)
 let currentTab = 'system-design-roadmap';
+let activePdfCategoryFilter = 'all';
 
 const STORAGE_SIDEBAR_COLLAPSED_KEY = 'prep_os_sidebar_collapsed';
 function getInitialSidebarCollapsed() {
@@ -45,6 +58,14 @@ let dsaPatternFilter = 'all';
 let dsaDiffFilter = 'all';
 let dsaSearch = '';
 
+// Filters for Machine Coding / LLD Studio Workspace
+let lldCategoryFilter = 'all';
+let lldSearch = '';
+
+// Filters for 180+ Architectural Distinctions Workspace
+let distCategoryFilter = 'all';
+let distSearch = '';
+
 // Filters for 6-Week System Design Roadmap Workspace
 let sysRoadmapWeek = 'today';
 let sysRoadmapStatus = 'all';
@@ -60,6 +81,10 @@ export function renderDashboardApp() {
 
   if (currentTab === 'dsa-tracker') {
     mainWorkspaceContent = renderDsaTrackerView(dsaStatusFilter, dsaPatternFilter, dsaDiffFilter, dsaSearch);
+  } else if (currentTab === 'lld-studio') {
+    mainWorkspaceContent = renderLldStudioView(lldCategoryFilter, lldSearch);
+  } else if (currentTab === 'concepts-distinctions') {
+    mainWorkspaceContent = renderDistinctionsWorkspaceView(distCategoryFilter, distSearch);
   } else {
     currentTab = 'system-design-roadmap';
     mainWorkspaceContent = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch, sysRoadmapReadiness);
@@ -76,9 +101,19 @@ export function renderDashboardApp() {
         ${renderDashboardHeader(currentTab, isSidebarCollapsed)}
 
         <!-- Main Workspace Content -->
-        <main class="w-full pt-14 px-4 lg:px-6 max-w-[1280px] mx-auto min-h-screen">
-          <div id="main-workspace-mount" class="py-3">
+        <main class="w-full pt-14 px-4 lg:px-6 max-w-[1280px] mx-auto min-h-screen flex flex-col justify-between">
+          <div id="main-workspace-mount" class="py-3 flex-1">
             ${mainWorkspaceContent}
+          </div>
+
+          <!-- Bottom PDF Cheat Sheets & Study Guides Section on Every Dashboard Page -->
+          <div id="dashboard-pdf-store-mount" class="mt-8 mb-12 w-full">
+            ${renderPdfStore({
+              currentTab,
+              week: sysRoadmapWeek,
+              activeDay: getActiveRoadmapDay ? getActiveRoadmapDay() : null,
+              filter: activePdfCategoryFilter
+            })}
           </div>
         </main>
       </div>
@@ -291,11 +326,134 @@ export function attachDashboardListeners() {
       return;
     }
 
+    // Modal Cheatsheet Tab Switching
+    const modalCheatsheetTab = e.target.closest('.modal-cheatsheet-tab-btn');
+    if (modalCheatsheetTab) {
+      e.preventDefault();
+      const tabKey = modalCheatsheetTab.getAttribute('data-tab');
+      const modalEl = document.getElementById('cheatsheet-modal');
+      if (modalEl) {
+        modalEl.querySelectorAll('.modal-cheatsheet-tab-btn').forEach(btn => {
+          if (btn.getAttribute('data-tab') === tabKey) {
+            btn.className = 'modal-cheatsheet-tab-btn px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all bg-[#4F46E5] text-white';
+          } else {
+            btn.className = 'modal-cheatsheet-tab-btn px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all text-slate-400 hover:text-white hover:bg-slate-800';
+          }
+        });
+        const tabQuickfire = document.getElementById('modal-tab-quickfire');
+        const tabMath = document.getElementById('modal-tab-math');
+        const tabTree = document.getElementById('modal-tab-tree');
+        if (tabQuickfire) tabQuickfire.className = tabKey === 'quickfire' ? 'flex flex-col gap-3' : 'hidden';
+        if (tabMath) tabMath.className = tabKey === 'math' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'hidden';
+        if (tabTree) tabTree.className = tabKey === 'tree' ? 'flex flex-col gap-3' : 'hidden';
+      }
+      return;
+    }
+
+    // LLD Studio: Select Problem Card
+    const lldSelect = e.target.closest('[data-select-lld]');
+    if (lldSelect) {
+      e.preventDefault();
+      const probId = lldSelect.getAttribute('data-select-lld');
+      setActiveLldProblemId(probId);
+      refreshWorkspaceView();
+      return;
+    }
+
+    // LLD Studio: Category Filter
+    const lldCat = e.target.closest('.lld-category-btn');
+    if (lldCat) {
+      e.preventDefault();
+      lldCategoryFilter = lldCat.getAttribute('data-lld-cat') || 'all';
+      refreshWorkspaceView();
+      return;
+    }
+
+    // LLD Studio: Copy Code Snippet
+    const copyLldBtn = e.target.closest('.copy-lld-code-btn');
+    if (copyLldBtn) {
+      e.preventDefault();
+      const code = decodeURIComponent(copyLldBtn.getAttribute('data-code') || '');
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(code).then(() => {
+          showDashboardNotification('✓ Code copied to clipboard', 'content_copy');
+        });
+      }
+      return;
+    }
+
+    // Distinctions: Category Filter
+    const distCat = e.target.closest('.dist-category-btn');
+    if (distCat) {
+      e.preventDefault();
+      distCategoryFilter = distCat.getAttribute('data-dist-cat') || 'all';
+      refreshWorkspaceView();
+      return;
+    }
+
+    // Distinctions: Copy 20s Pitch
+    const copyDistBtn = e.target.closest('.copy-dist-btn');
+    if (copyDistBtn) {
+      e.preventDefault();
+      const text = decodeURIComponent(copyDistBtn.getAttribute('data-copy') || '');
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          showDashboardNotification('✓ Pitch copied to clipboard', 'record_voice_over');
+        });
+      }
+      return;
+    }
+
     // Mock Design Notes Modal
     if (e.target.closest('#open-mock-notes-nav-btn, #quick-action-mock-btn')) {
       e.preventDefault();
       if (window.innerWidth < 768) setSidebarState(true);
       openMockModal();
+      return;
+    }
+
+    // Scroll to Study Guides & PDFs section at the bottom of the dashboard
+    if (e.target.closest('#scroll-to-cheatsheets-btn')) {
+      e.preventDefault();
+      if (window.innerWidth < 768) setSidebarState(true);
+      const container = document.getElementById('pdf-store-container');
+      if (container) {
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      return;
+    }
+
+    // PDF Store Category Filter Pills
+    const pdfCatBtn = e.target.closest('.pdf-category-tab');
+    if (pdfCatBtn) {
+      e.preventDefault();
+      const filter = pdfCatBtn.getAttribute('data-filter') || 'all';
+      activePdfCategoryFilter = filter;
+      refreshCompactPdfStore();
+      return;
+    }
+
+    // PDF Store Preview & Buy Actions
+    const pdfActionBtn = e.target.closest('.open-pdf-checkout-btn');
+    if (pdfActionBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const prodId = pdfActionBtn.getAttribute('data-product-id');
+      const action = pdfActionBtn.getAttribute('data-action') || 'preview';
+      const prod = PDF_PRODUCTS.find(p => p.id === prodId);
+      if (!prod) return;
+
+      const purchased = new Set(getPurchasedPdfs());
+      const isPurchased = purchased.has(prod.id) || (purchased.has('bundle-system-design') && (prod.id === 'pdf-sd-vol-1' || prod.id === 'pdf-sd-vol-2'));
+
+      if (action === 'download' && isPurchased) {
+        downloadProductGuide(prod);
+        showDashboardNotification(`✓ Downloading ${prod.title}...`, 'download_done');
+        return;
+      }
+
+      openModal(renderPdfCheckoutModal(prod), 'close-pdf-modal-btn');
+      attachPdfModalListeners(prod);
       return;
     }
 
@@ -423,11 +581,11 @@ export function attachDashboardListeners() {
         // Update active styling on all sibling tabs
         const allTabs = card.querySelectorAll('.roadmap-topic-tab');
         allTabs.forEach(t => {
-          t.classList.remove('bg-cyan-500/20', 'text-cyan-300', 'border-cyan-500/40', 'shadow-xs', 'active');
-          t.classList.add('bg-[#0F1626]', 'text-slate-400', 'border-[#24314A]');
+          t.classList.remove('active', 'bg-[#F0F9FF]', 'text-[#0284C7]', 'border-[#BAE6FD]', 'dark:bg-cyan-500/20', 'dark:text-cyan-300', 'dark:border-cyan-500/40', 'ring-1');
+          t.classList.add('bg-white', 'dark:bg-[#0F1626]', 'text-[#475569]', 'dark:text-slate-400', 'border-[#E2E8F0]', 'dark:border-[#24314A]');
         });
-        topicTab.classList.remove('bg-[#0F1626]', 'text-slate-400', 'border-[#24314A]');
-        topicTab.classList.add('bg-cyan-500/20', 'text-cyan-300', 'border-cyan-500/40', 'shadow-xs', 'active');
+        topicTab.classList.remove('bg-white', 'dark:bg-[#0F1626]', 'text-[#475569]', 'dark:text-slate-400', 'border-[#E2E8F0]', 'dark:border-[#24314A]');
+        topicTab.classList.add('active', 'bg-[#F0F9FF]', 'text-[#0284C7]', 'border-[#BAE6FD]', 'dark:bg-cyan-500/20', 'dark:text-cyan-300', 'dark:border-cyan-500/40', 'ring-1', 'shadow-xs');
 
         // Dynamically update the content container with the selected topic
         const contentEl = card.querySelector(`#roadmap-topic-content-${day}`);
@@ -437,6 +595,34 @@ export function attachDashboardListeners() {
             contentEl.innerHTML = renderTopicDetail(topics[topicIdx]);
           }
         }
+      }
+      return;
+    }
+
+    // URL Shortener Spec Interview Design tab switcher
+    const urlTabBtn = e.target.closest('.url-spec-tab-btn');
+    if (urlTabBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const tabKey = urlTabBtn.getAttribute('data-spec-tab');
+      const root = urlTabBtn.closest('.url-shortener-spec-root');
+      if (root && tabKey) {
+        root.querySelectorAll('.url-spec-tab-btn').forEach(btn => {
+          btn.classList.remove('bg-cyan-500/20', 'text-cyan-300', 'border-cyan-500/40', 'shadow-xs', 'active');
+          btn.classList.add('bg-[#0F1626]', 'text-slate-400', 'border-[#24314A]');
+        });
+        urlTabBtn.classList.remove('bg-[#0F1626]', 'text-slate-400', 'border-[#24314A]');
+        urlTabBtn.classList.add('bg-cyan-500/20', 'text-cyan-300', 'border-cyan-500/40', 'shadow-xs', 'active');
+
+        root.querySelectorAll('.url-spec-tab-panel').forEach(panel => {
+          if (panel.getAttribute('data-panel') === tabKey) {
+            panel.classList.remove('hidden');
+            panel.classList.add('flex');
+          } else {
+            panel.classList.remove('flex');
+            panel.classList.add('hidden');
+          }
+        });
       }
       return;
     }
@@ -695,6 +881,36 @@ function attachWorkspaceListeners() {
       }
     };
   }
+
+  // Live Search Input for Machine Coding & LLD Studio
+  const lldSearchInput = document.getElementById('lld-search-input');
+  if (lldSearchInput) {
+    lldSearchInput.oninput = (e) => {
+      lldSearch = e.target.value;
+      const cursorPos = e.target.selectionStart;
+      refreshWorkspaceView();
+      const nextInput = document.getElementById('lld-search-input');
+      if (nextInput) {
+        nextInput.focus();
+        nextInput.setSelectionRange(cursorPos, cursorPos);
+      }
+    };
+  }
+
+  // Live Search Input for 180+ Architectural Distinctions
+  const distSearchInput = document.getElementById('dist-search-input');
+  if (distSearchInput) {
+    distSearchInput.oninput = (e) => {
+      distSearch = e.target.value;
+      const cursorPos = e.target.selectionStart;
+      refreshWorkspaceView();
+      const nextInput = document.getElementById('dist-search-input');
+      if (nextInput) {
+        nextInput.focus();
+        nextInput.setSelectionRange(cursorPos, cursorPos);
+      }
+    };
+  }
 }
 
 function openModal(modalHtml, closeBtnId) {
@@ -724,6 +940,70 @@ function openModal(modalHtml, closeBtnId) {
   }
 
   document.addEventListener('keydown', handleEsc);
+}
+
+function attachPdfModalListeners(product) {
+  const mount = document.getElementById('modal-mount');
+  if (!mount) return;
+
+  const buyBtn = document.getElementById('confirm-buy-pdf-btn');
+  if (buyBtn) {
+    buyBtn.onclick = (e) => {
+      e.preventDefault();
+      const prodId = buyBtn.getAttribute('data-product-id') || product.id;
+      const targetProd = PDF_PRODUCTS.find(p => p.id === prodId) || product;
+
+      recordPurchase(targetProd.id);
+      downloadProductGuide(targetProd);
+      mount.innerHTML = '';
+      showDashboardNotification(`🎉 Successfully unlocked ${targetProd.title}! Digital study guide downloaded.`, 'verified');
+      refreshCompactPdfStore();
+      refreshFullDashboard();
+    };
+  }
+
+  const downloadBtn = document.getElementById('download-purchased-pdf-btn');
+  if (downloadBtn) {
+    downloadBtn.onclick = (e) => {
+      e.preventDefault();
+      downloadProductGuide(product);
+      showDashboardNotification(`✓ Downloading ${product.title}...`, 'download_done');
+      mount.innerHTML = '';
+    };
+  }
+
+  // Switch to Combo upgrade button in modal
+  const upgradeBtn = mount.querySelector('.open-pdf-checkout-btn[data-product-id="bundle-system-design"]');
+  if (upgradeBtn) {
+    upgradeBtn.onclick = (e) => {
+      e.preventDefault();
+      const bundle = PDF_PRODUCTS.find(p => p.id === 'bundle-system-design');
+      if (bundle) {
+        mount.innerHTML = renderPdfCheckoutModal(bundle);
+        const closeBtn = document.getElementById('close-pdf-modal-btn');
+        if (closeBtn) closeBtn.onclick = () => { mount.innerHTML = ''; };
+        attachPdfModalListeners(bundle);
+      }
+    };
+  }
+}
+
+function showDashboardNotification(message, icon = 'info') {
+  const existing = document.getElementById('dashboard-toast-notification');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'dashboard-toast-notification';
+  toast.className = 'fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-[#0F1626] border border-[#24314A] shadow-2xl text-[13px] font-medium text-white animate-fadeIn';
+  toast.innerHTML = `
+    <span class="material-symbols-outlined text-[18px] text-amber-400">${icon}</span>
+    <span>${message}</span>
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('transition-opacity', 'opacity-0');
+    setTimeout(() => toast.remove(), 400);
+  }, 4000);
 }
 
 function openDetailModal(item) {
@@ -771,9 +1051,11 @@ function openQuickSearch() {
 
     const matchedDSA = state.dsaProblems.filter(p => p.title.toLowerCase().includes(q) || (p.pattern && p.pattern.toLowerCase().includes(q))).slice(0, 4);
     const matchedSpecs = state.systemSpecs.filter(s => s.title.toLowerCase().includes(q) || (s.pattern && s.pattern.toLowerCase().includes(q)) || (s.domain && s.domain.toLowerCase().includes(q))).slice(0, 3);
+    const matchedLLD = LLD_PROBLEMS.filter(p => p.title.toLowerCase().includes(q) || p.subtitle.toLowerCase().includes(q) || p.patterns.some(pat => pat.toLowerCase().includes(q))).slice(0, 3);
+    const matchedDist = INTERVIEW_DISTINCTIONS.filter(d => d.title.toLowerCase().includes(q) || d.category.toLowerCase().includes(q) || d.tags.some(t => t.toLowerCase().includes(q))).slice(0, 3);
     const matchedDays = Object.values(state.curriculum || {}).filter(c => (c.topic && c.topic.toLowerCase().includes(q)) || (c.objective && c.objective.toLowerCase().includes(q))).slice(0, 3);
 
-    if (matchedDSA.length === 0 && matchedSpecs.length === 0 && matchedDays.length === 0) {
+    if (matchedDSA.length === 0 && matchedSpecs.length === 0 && matchedLLD.length === 0 && matchedDist.length === 0 && matchedDays.length === 0) {
       resultsContainer.innerHTML = `<div class="p-4 text-center text-slate-400 text-[13px]">No matches found for "${escapeHtml(q)}"</div>`;
       return;
     }
@@ -788,7 +1070,37 @@ function openQuickSearch() {
               <span class="material-symbols-outlined text-[#38BDF8] text-[16px]">schema</span>
               <span class="text-[13px] font-medium text-slate-200">${escapeHtml(s.title)}</span>
             </div>
-            <span class="font-code text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">SPEC</span>
+            <span class="font-code text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">HLD</span>
+          </div>
+        `;
+      });
+    }
+
+    if (matchedLLD.length > 0) {
+      html += `<div class="px-2 py-1 font-code text-[10px] text-purple-400 uppercase tracking-wider mt-1">Machine Coding (LLD)</div>`;
+      matchedLLD.forEach(l => {
+        html += `
+          <div class="search-result-item flex items-center justify-between p-2 rounded-lg hover:bg-[#182238] cursor-pointer transition-colors" data-lld-id="${l.id}">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-purple-400 text-[16px]">architecture</span>
+              <span class="text-[13px] font-medium text-slate-200">${escapeHtml(l.title)}</span>
+            </div>
+            <span class="font-code text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">LLD</span>
+          </div>
+        `;
+      });
+    }
+
+    if (matchedDist.length > 0) {
+      html += `<div class="px-2 py-1 font-code text-[10px] text-amber-400 uppercase tracking-wider mt-1">180+ Architectural Distinctions</div>`;
+      matchedDist.forEach(d => {
+        html += `
+          <div class="search-result-item flex items-center justify-between p-2 rounded-lg hover:bg-[#182238] cursor-pointer transition-colors" data-dist-id="${d.id}" data-dist-title="${escapeHtml(d.title)}">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-amber-400 text-[16px]">psychology</span>
+              <span class="text-[13px] font-medium text-slate-200">${escapeHtml(d.title)}</span>
+            </div>
+            <span class="font-code text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">CORE</span>
           </div>
         `;
       });
@@ -834,6 +1146,26 @@ function openQuickSearch() {
         if (spec) {
           openDetailModal(spec);
         }
+      });
+    });
+
+    resultsContainer.querySelectorAll('[data-lld-id]').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.getAttribute('data-lld-id');
+        setActiveLldProblemId(id);
+        document.getElementById('modal-mount').innerHTML = '';
+        currentTab = 'lld-studio';
+        refreshFullDashboard();
+      });
+    });
+
+    resultsContainer.querySelectorAll('[data-dist-id]').forEach(el => {
+      el.addEventListener('click', () => {
+        const title = el.getAttribute('data-dist-title') || '';
+        document.getElementById('modal-mount').innerHTML = '';
+        currentTab = 'concepts-distinctions';
+        distSearch = title;
+        refreshFullDashboard();
       });
     });
 
@@ -1021,6 +1353,10 @@ function refreshWorkspaceView() {
   let html = '';
   if (currentTab === 'dsa-tracker') {
     html = renderDsaTrackerView(dsaStatusFilter, dsaPatternFilter, dsaDiffFilter, dsaSearch);
+  } else if (currentTab === 'lld-studio') {
+    html = renderLldStudioView(lldCategoryFilter, lldSearch);
+  } else if (currentTab === 'concepts-distinctions') {
+    html = renderDistinctionsWorkspaceView(distCategoryFilter, distSearch);
   } else {
     currentTab = 'system-design-roadmap';
     html = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch, sysRoadmapReadiness);
@@ -1028,6 +1364,21 @@ function refreshWorkspaceView() {
 
   mount.innerHTML = html;
   attachWorkspaceListeners();
+
+  // Keep the bottom PDF cheat sheets section synchronized and relevant to active view
+  refreshCompactPdfStore();
+}
+
+function refreshCompactPdfStore() {
+  const mount = document.getElementById('dashboard-pdf-store-mount');
+  if (mount) {
+    mount.innerHTML = renderPdfStore({
+      currentTab,
+      week: sysRoadmapWeek,
+      activeDay: getActiveRoadmapDay ? getActiveRoadmapDay() : null,
+      filter: activePdfCategoryFilter
+    });
+  }
 }
 
 function refreshFullDashboard() {

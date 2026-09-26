@@ -1,3 +1,5 @@
+import { renderUrlShortenerInterviewDesign } from '../weeks/index.js';
+
 function escapeHtml(str) {
   if (!str) return '';
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -10,7 +12,7 @@ export function renderProblemDetailModal(item) {
 
   return `
     <div class="spec-modal-backdrop" id="spec-detail-modal">
-      <div class="spec-modal-card">
+      <div class="spec-modal-card" style="${isSpec ? 'max-width: 54rem;' : ''}">
         <!-- Modal Header -->
         <div style="display: flex; align-items: flex-start; justify-content: space-between; padding-bottom: 1rem; border-bottom: 1px solid var(--color-surface-container);">
           <div>
@@ -43,7 +45,28 @@ export function renderProblemDetailModal(item) {
         </div>
 
         <!-- Content Body -->
-        ${isSpec ? `
+        ${isSpec ? (
+          String(item.id) === 'sd-1' ? `
+            <div style="margin-top: 1rem;">
+              ${renderUrlShortenerInterviewDesign(item)}
+            </div>
+            ${(item.referenceLinks || item.reference_links || []).length > 0 ? `
+              <div class="rubric-section" style="margin-top: 1rem;">
+                <div class="rubric-section-title">Reference Reading &amp; Architecture Deep Dives</div>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                  ${(item.referenceLinks || item.reference_links).map(link => `
+                    <a href="${link.url}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; background: var(--color-surface-container-high); border-radius: var(--radius-sm); color: #38BDF8; font-size: 12px; text-decoration: none; border: 1px solid rgba(56, 189, 248, 0.2); transition: all 0.2s;">
+                      <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined" style="font-size: 15px; color: #818CF8;">link</span>
+                        <span style="font-weight: 500;">${link.title}</span>
+                      </div>
+                      <span class="material-symbols-outlined" style="font-size: 14px; opacity: 0.7;">open_in_new</span>
+                    </a>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          ` : `
           <div class="rubric-section">
             <div class="rubric-section-title">1. Functional &amp; Capacity Scope</div>
             <p class="font-body-sm" style="color: var(--color-on-surface); line-height: 1.6;">
@@ -88,7 +111,7 @@ ${item.rubric.api}
               </div>
             </div>
           ` : ''}
-        ` : `
+        `) : `
           <!-- DSA Problem Presentation -->
           <div class="rubric-section">
             <div class="rubric-section-title">1. Problem Summary &amp; Objective</div>

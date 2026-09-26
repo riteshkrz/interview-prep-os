@@ -1,4 +1,5 @@
 import { CONFIG } from '../config.js';
+import { renderThemeToggleButton } from '../services/themeService.js';
 
 export function renderHeader() {
   return `
@@ -14,7 +15,10 @@ export function renderHeader() {
         <nav class="hidden md:flex items-center gap-6">
           <a class="text-[13px] font-medium text-slate-400 hover:text-white transition-colors tracking-tight" href="#whats-inside">What's Inside</a>
           <a class="text-[13px] font-medium text-slate-400 hover:text-white transition-colors tracking-tight" href="#how-it-works">How It Works</a>
-          <a class="text-[13px] font-medium text-slate-400 hover:text-white transition-colors tracking-tight" href="#who-its-for">Who It's For</a>
+          <a class="text-[13px] font-medium text-cyan-300 hover:text-white transition-colors tracking-tight flex items-center gap-1" href="#/roadmap">
+            <span class="material-symbols-outlined text-[14px]">map</span>
+            <span>6-Week Roadmap</span>
+          </a>
           <a class="text-[13px] font-medium text-slate-400 hover:text-white transition-colors tracking-tight" href="#/blog">Blog</a>
           <a class="text-[13px] font-medium text-slate-300 hover:text-white transition-colors tracking-tight" href="#/login">Sign In</a>
           <a class="text-[13px] font-medium text-[#38BDF8] hover:text-white transition-colors tracking-tight flex items-center gap-1" href="#/dashboard">
@@ -24,7 +28,10 @@ export function renderHeader() {
         </nav>
 
         <div class="flex items-center gap-2.5 shrink-0">
-          <button type="button" id="header-buy-btn" class="buy-access-trigger h-8 px-3.5 bg-[#6366F1] hover:bg-[#4F46E5] text-white transition-all duration-200 rounded-md inline-flex items-center justify-center text-[12px] font-semibold tracking-tight shadow-[0_0_18px_rgba(99,102,241,0.35)] hover:shadow-[0_0_24px_rgba(99,102,241,0.55)] border border-indigo-400/40 cursor-pointer">
+          <!-- Theme Toggle Button -->
+          ${renderThemeToggleButton('w-8 h-8')}
+
+          <button type="button" id="header-buy-btn" class="buy-access-trigger h-8 px-3.5 bg-[#4F46E5] hover:bg-[#4338CA] text-white transition-all duration-200 rounded-md inline-flex items-center justify-center text-[12px] font-semibold tracking-tight shadow-sm shadow-indigo-500/25 border border-indigo-400/40 cursor-pointer">
             <span>Get the Prep OS</span>
             <span class="ml-1 font-mono text-[11px] opacity-90">→</span>
           </button>
@@ -44,11 +51,14 @@ export function renderHeader() {
           <span class="material-symbols-outlined text-[16px]">space_dashboard</span>
           <span>Open User Dashboard</span>
         </a>
+        <a class="text-[13px] font-medium text-cyan-300 hover:text-white py-1 flex items-center gap-1.5" href="#/roadmap">
+          <span class="material-symbols-outlined text-[16px]">map</span>
+          <span>6-Week System Design Roadmap</span>
+        </a>
         <a class="text-[13px] font-medium text-slate-300 hover:text-white py-1 block" href="#/login">Sign In / Account</a>
         <a class="text-[13px] font-medium text-slate-300 hover:text-white py-1 block" href="#/blog">Engineering Blog</a>
         <a class="text-[13px] font-medium text-slate-300 hover:text-white py-1 block" href="#whats-inside">What's Inside</a>
         <a class="text-[13px] font-medium text-slate-300 hover:text-white py-1 block" href="#how-it-works">How It Works</a>
-        <a class="text-[13px] font-medium text-slate-300 hover:text-white py-1 block" href="#who-its-for">Who It's For</a>
         <a class="text-[13px] font-medium text-slate-300 hover:text-white py-1 block" href="#pricing">Pricing</a>
         <button type="button" id="mobile-buy-btn" class="buy-access-trigger w-full h-9 mt-2 bg-[#6366F1] text-white rounded-md flex items-center justify-center text-[13px] font-semibold cursor-pointer">
           Get the Prep OS — ${CONFIG.PRICE}

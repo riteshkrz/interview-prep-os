@@ -10,10 +10,10 @@ export const SEED_SYSTEM_DESIGN_SPECS = [
     "domain": "Hashing Algorithms & Persistent Key Generation (KGS)",
     "difficulty": "Medium",
     "rubric": {
-      "scope": "100M writes/day, 1B reads/day (10:1 read ratio). Generate 7-character Base62 keys with 99.999% availability and p99 read redirection < 8ms.",
-      "api": "POST /api/v1/shorten { longUrl, customAlias?, expireAt? } -> { shortUrl, key }\nGET /{shortKey} -> HTTP 301 / 302 Redirect",
-      "dataModel": "Key Generation Service (KGS) pre-allocating Base62 key blocks in memory. Sharded PostgreSQL with Redis cache-aside (LRU).",
-      "deepDive": "Base62 vs MD5/Murmur3 collision handling; Bloom filters to eliminate cold-key database exhaustion; HTTP 301 (browser cached) vs 302 (server analytics) trade-offs."
+      "scope": "100M new URLs/month (~40 writes/s avg, 120/s peak), 10:1 to 100:1 read ratio (400 to 4,000 QPS). 5-year storage: 6B URLs (~3.3 TB). 7-character Base62 keys (3.5T keys, ~41 bits) with 99.999% availability and p99 read redirection < 8ms.",
+      "api": "POST /api/v1/shorten { longUrl, customAlias?, ttlDays? } -> { shortCode, shortUrl, expiresAt }\nGET /{shortCode} -> HTTP 302 Found (or 301 Permanent) with Location header",
+      "dataModel": "Sequencer (Redis INCR or DB 10k range tickets) + XOR secret seed obfuscation + Base62 encoder. PostgreSQL primary key short_code VARCHAR(7) with Redis Cache-Aside.",
+      "deepDive": "Base62 7-char key space (3.5T keys vs 64-bit Snowflake encoding to 11 chars); XOR sequence masking to prevent link scraping; HTTP 302 (click analytics) vs 301 (browser cached); DB sizing for cache outage fallback."
     },
     "referenceLinks": [
       {
@@ -525,6 +525,198 @@ export const SEED_SYSTEM_DESIGN_SPECS = [
     ],
     "revision": "Day 43",
     "timeSpent": "50m",
+    "status": "Queued",
+    "stars": 0
+  },
+  {
+    "id": "sd-21",
+    "title": "Social Feed & Timeline Service (Twitter / Threads)",
+    "domain": "Fan-Out on Write vs Read, Timeline Cache & Celebrity Problem",
+    "difficulty": "Hard",
+    "rubric": {
+      "scope": "Serve 300 million daily active users generating 500 million posts per day. P99 home timeline read latency < 50ms at 250,000 read QPS. Support dynamic follower graphs and instant post ingestion.",
+      "api": "POST /v1/tweets { content, mediaIds } -> { tweetId, createdAt }\nGET /v1/timelines/home?cursor={id}&limit=20 -> { tweets: [], nextCursor }",
+      "dataModel": "Redis Sorted Sets (ZSET) for pre-computed user timelines storing tweet_id scored by creation timestamp. PostgreSQL / CockroachDB for source-of-truth tweet metadata and follow relationships.",
+      "deepDive": "Hybrid Fan-Out Architecture: Solving the Celebrity Problem via Fan-out on write (push) for regular users (<50k followers) into follower Redis ZSETs; Fan-out on read (pull) for high-follower celebrities (>50k followers) merged at query time to avoid write stampede. Timeline cache truncation to 800 latest tweet IDs."
+    },
+    "referenceLinks": [
+      {
+        "title": "SystemCraft: Twitter Feed Deep Dive",
+        "url": "https://systemcraft.in/hld/TwitterFeed/"
+      },
+      {
+        "title": "Twitter Architecture: Timelines at Scale",
+        "url": "https://blog.x.com/engineering/en_us/topics/infrastructure/2013/timelines-at-scale"
+      }
+    ],
+    "revision": "Day 44",
+    "timeSpent": "55m",
+    "status": "Queued",
+    "stars": 0
+  },
+  {
+    "id": "sd-22",
+    "title": "Digital Wallet & Ledger System (PhonePe / Venmo)",
+    "domain": "Double-Entry Ledger, Idempotency & Distributed Saga Orchestration",
+    "difficulty": "Hard",
+    "rubric": {
+      "scope": "Process 50 million peer-to-peer and merchant wallet transactions per day with zero balance discrepancies, strict double-entry invariants (debits == credits), sub-second user confirmation, and multi-region resilience.",
+      "api": "POST /v1/wallets/transfer { idempotencyKey, sourceAccountId, destAccountId, amount, currency } -> { transactionId, status: 'SETTLED' }\nGET /v1/wallets/{accountId}/balance -> { availableBalance, pendingBalance }",
+      "dataModel": "Immutable Double-Entry Ledger: Accounts table (balance check, version) + Journal entries table (every transfer writes equal debit and credit rows). Redis distributed lock on idempotency_key.",
+      "deepDive": "Saga Orchestrator with compensating actions for external bank payment gateway integration; Database isolation levels preventing concurrent race conditions and negative balances; Nightly automated reconciliation cron jobs verifying sum of journal entries == account balance."
+    },
+    "referenceLinks": [
+      {
+        "title": "SystemCraft: Digital Wallet Deep Dive",
+        "url": "https://systemcraft.in/hld/DigitalWallet/"
+      },
+      {
+        "title": "Designing Idempotent Payment APIs (Stripe)",
+        "url": "https://stripe.com/blog/idempotency"
+      }
+    ],
+    "revision": "Day 44",
+    "timeSpent": "60m",
+    "status": "Queued",
+    "stars": 0
+  },
+  {
+    "id": "sd-23",
+    "title": "Real-Time Distributed Leaderboard (Dream11 / Gaming)",
+    "domain": "Redis Sorted Sets (ZSET), Real-Time Ranking & WebSocket Fan-Out",
+    "difficulty": "Medium",
+    "rubric": {
+      "scope": "Maintain global and tournament-specific leaderboards for 10 million concurrent active users with live score updates at 100,000 updates/sec. Instant top-100 queries in < 5ms and live rank notifications via WebSockets.",
+      "api": "POST /v1/leaderboards/{tournamentId}/scores { userId, scoreDelta } -> { currentRank, totalScore }\nGET /v1/leaderboards/{tournamentId}/top?n=100 -> [ { rank, userId, score } ]\nGET /v1/leaderboards/{tournamentId}/users/{userId}/rank -> { rank, score, surroundingUsers: [] }",
+      "dataModel": "Redis Sorted Sets (ZSET) storing member=userId with score=points. Secondary tie-breaker score encoding (points * 10^10 + (MAX_TIMESTAMP - timestamp)). Sharded Redis clusters partitioned by tournament_id.",
+      "deepDive": "Redis ZADD, ZREVRANGE, and ZREVRANK complexity (O(log N)); Real-time client updates using Redis Pub/Sub with WebSocket edge gateway clusters; Cold storage snapshots in PostgreSQL; Handling mega tournaments with Millions of participants via score-bucket sharding."
+    },
+    "referenceLinks": [
+      {
+        "title": "SystemCraft: Real-Time Leaderboard Deep Dive",
+        "url": "https://systemcraft.in/hld/Leaderboard/"
+      },
+      {
+        "title": "Redis Documentation: Sorted Sets Under the Hood",
+        "url": "https://redis.io/docs/latest/develop/data-types/sorted-sets/"
+      }
+    ],
+    "revision": "Day 44",
+    "timeSpent": "45m",
+    "status": "Queued",
+    "stars": 0
+  },
+  {
+    "id": "sd-24",
+    "title": "High-Concurrency Ticket Booking (BookMyShow / Ticketmaster)",
+    "domain": "TTL Distributed Locks, Temporary Seat Holds & Optimistic Concurrency",
+    "difficulty": "Hard",
+    "rubric": {
+      "scope": "Handle peak concerts and stadium events with 500,000 users attempting to book 50,000 seats simultaneously. Zero double-booking, 10-minute temporary seat reservation hold during checkout, and seamless seat release on timeout.",
+      "api": "POST /v1/shows/{showId}/seats/hold { seatIds: [], userId } -> { reservationToken, expiresAt: 1718000600 }\nPOST /v1/bookings/confirm { reservationToken, paymentIntentId } -> { bookingId, ticketPdfUrl }",
+      "dataModel": "Seats table in PostgreSQL with state machine (AVAILABLE, HELD, BOOKED) and optimistic version column. Redis TTL keys (seat_lock:{showId}:{seatId}) holding reservation token with 10-minute expiry.",
+      "deepDive": "Distributed Lock with auto-expiry using Redis Redlock or Lua atomic SETNX with TTL; Handling clock drift between app servers and cache; Deadlock prevention by always acquiring seat locks sorted by seat ID; Event-driven seat release via Redis Keyspace Notifications or delayed queue."
+    },
+    "referenceLinks": [
+      {
+        "title": "SystemCraft: Ticket Booking Deep Dive",
+        "url": "https://systemcraft.in/hld/BookMyShow/"
+      }
+    ],
+    "revision": "Day 45",
+    "timeSpent": "55m",
+    "status": "Queued",
+    "stars": 0
+  },
+  {
+    "id": "sd-25",
+    "title": "Stock Broker & Order Matching Engine (Zerodha / Robinhood)",
+    "domain": "In-Memory FIFO Matching, CQRS, Event Sourcing & Audit Ledger",
+    "difficulty": "Hard",
+    "rubric": {
+      "scope": "Execute 20 million equity orders per day with sub-millisecond order matching latency. Strict Price-Time Priority (FIFO order book), regulatory auditability, risk check validation, and real-time market data feed broadcast.",
+      "api": "POST /v1/orders { symbol, side: 'BUY'|'SELL', type: 'LIMIT'|'MARKET', price, quantity } -> { orderId, status: 'ACCEPTED' }\nGET /v1/market-data/{symbol}/orderbook -> { bids: [], asks: [] }",
+      "dataModel": "Dual Priority Queue / B-Tree in-memory Order Book (Bids sorted descending by price, then ascending by time; Asks sorted ascending by price, then ascending by time). Kafka event stream for immutable order audit trail.",
+      "deepDive": "Pre-trade risk management checks (margin balance, circuit limits) in < 100μs; LMAX Disruptor ring buffer architecture for single-threaded lock-free in-memory execution; CQRS: command side matches orders in RAM, query side updates relational DB via Kafka consumer."
+    },
+    "referenceLinks": [
+      {
+        "title": "SystemCraft: Stock Broker Deep Dive",
+        "url": "https://systemcraft.in/hld/StockBroker/"
+      },
+      {
+        "title": "LMAX Disruptor High Performance Architecture",
+        "url": "https://lmax-exchange.github.io/disruptor/"
+      }
+    ],
+    "revision": "Day 45",
+    "timeSpent": "60m",
+    "status": "Queued",
+    "stars": 0
+  },
+  {
+    "id": "sd-26",
+    "title": "Food Delivery & Driver Dispatch System (Zomato / Swiggy)",
+    "domain": "Geospatial Indexing (H3 / Redis Geo), Driver Assignment & Real-Time Tracking",
+    "difficulty": "Hard",
+    "rubric": {
+      "scope": "Coordinate 2 million daily food orders across 200,000 delivery drivers and 150,000 restaurants. High-frequency driver GPS updates every 4 seconds, optimal order-driver batching, and live tracking WebSocket streams.",
+      "api": "POST /v1/drivers/location { driverId, lat, lng, bearing } (Every 4 seconds)\nPOST /v1/orders/dispatch { orderId, restaurantLocation } -> { assignedDriverId, estimatedPickupTime }\nGET /v1/orders/{orderId}/live-tracking -> WebSocket stream",
+      "dataModel": "Uber H3 hexagonal hierarchical spatial index or Redis GEO (GEOADD, GEORADIUSBYMEMBER); Driver state machine (OFFLINE, AVAILABLE, EN_ROUTE_PICKUP, EN_ROUTE_DELIVERY) in Redis; PostgreSQL for order and restaurant data.",
+      "deepDive": "Driver matching algorithm: Hungarian algorithm vs greedy spatial proximity with prep time coordination; Minimizing battery and network bandwidth on mobile drivers via dead reckoning and Kalman filter noise reduction; WebSocket gateway cluster handling 200k persistent connections."
+    },
+    "referenceLinks": [
+      {
+        "title": "SystemCraft: Food Delivery Deep Dive",
+        "url": "https://systemcraft.in/hld/Zomato/"
+      }
+    ],
+    "revision": "Day 45",
+    "timeSpent": "55m",
+    "status": "Queued",
+    "stars": 0
+  },
+  {
+    "id": "sd-27",
+    "title": "Pastebin & High-Volume Text Sharing (Pastebin / GitHub Gist)",
+    "domain": "Base62 Key Space, S3 Object Storage, CDN Edge Caching & TTL Eviction",
+    "difficulty": "Medium",
+    "rubric": {
+      "scope": "Store 100 million text pastes per year. 100:1 read-to-write ratio. Fast paste redirection in < 20ms, automatic expiration (1 hour to forever), custom vanity URLs, and abuse detection.",
+      "api": "POST /api/v1/pastes { content, expirationEnum: '1D'|'1M'|'NEVER', isPrivate: boolean } -> { pasteId, url }\nGET /{pasteId} -> Returns raw text or HTML rendered preview",
+      "dataModel": "Decoupled storage: Paste metadata (paste_id, author_id, size_bytes, expires_at) in MongoDB/PostgreSQL; Raw paste content in AWS S3 or MinIO blob store for pastes > 32KB. Base62 ID generator.",
+      "deepDive": "Base62 7-character encoding space (62^7 = 3.5 trillion unique keys); S3 direct upload presigned URLs for large pastes; Automated TTL expiration: DynamoDB TTL or daily partition DROP / background sweeper; Cloudflare CDN caching for viral pastes."
+    },
+    "referenceLinks": [
+      {
+        "title": "SystemCraft: Pastebin Deep Dive",
+        "url": "https://systemcraft.in/hld/Pastebin/"
+      }
+    ],
+    "revision": "Day 45",
+    "timeSpent": "40m",
+    "status": "Queued",
+    "stars": 0
+  },
+  {
+    "id": "sd-28",
+    "title": "Real-Time Ad Serving & Auction Engine (Google Ads / Meta Ads)",
+    "domain": "Real-Time Bidding (RTB), 100ms Hard SLA, ML CTR Ranking & Budget Pacing",
+    "difficulty": "Hard",
+    "rubric": {
+      "scope": "Serve 1 million ad impression auctions per second with a strict 100ms end-to-end deadline. Real-time bidding (RTB) protocol, probabilistic budget pacing, machine learning click-through rate (CTR) prediction, and click fraud filtering.",
+      "api": "POST /v1/ads/auction { publisherId, userContext: { geo, device, segments: [] } } -> { winningAdId, creativeUrl, trackingPixelUrl }\nPOST /v1/ads/events/click { auctionId, impressionToken } -> 204 No Content",
+      "dataModel": "Ad inventory and targeting index in distributed in-memory cache (Aerospike / Redis); Real-time advertiser campaign budget counters updated via atomic operations; Kafka click & impression stream piped to Flink for fraud detection.",
+      "deepDive": "Executing RTB auctions within 100ms (50ms DSP bidding budget, 20ms network, 30ms internal ranking); Budget pacing algorithm (Token bucket or probabilistic coin flip) to prevent advertiser budgets from exhausting in the first 10 minutes of the day; Click fraud deduplication via Bloom filters."
+    },
+    "referenceLinks": [
+      {
+        "title": "SystemCraft: Ad Serving & Auction Deep Dive",
+        "url": "https://systemcraft.in/hld/AdSystem/"
+      }
+    ],
+    "revision": "Day 45",
+    "timeSpent": "60m",
     "status": "Queued",
     "stars": 0
   }

@@ -15,3 +15,6 @@ export * from './day-5/index.js';
 
 // Day 6
 export * from './day-6/index.js';
+
+// Day 7
+export * from './day-7/index.js';

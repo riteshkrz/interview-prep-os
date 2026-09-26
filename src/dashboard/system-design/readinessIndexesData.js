@@ -210,6 +210,14 @@ export const SPEC_READINESS_MAP = {
   "sd-6": ["consistency-transactions", "security-auth", "resiliency-availability", "storage-partitioning", "api-networking"],
   "sd-15": ["caching-latency", "storage-partitioning", "capacity-math", "api-networking", "consistency-transactions"],
   "sd-14": ["caching-latency", "consistency-transactions", "resiliency-availability", "capacity-math", "storage-partitioning"],
+  "sd-21": ["caching-latency", "distributed-systems", "streaming-queues", "storage-partitioning", "capacity-math"],
+  "sd-22": ["consistency-transactions", "security-auth", "resiliency-availability", "storage-partitioning", "distributed-systems"],
+  "sd-23": ["caching-latency", "api-networking", "capacity-math", "distributed-systems"],
+  "sd-24": ["consistency-transactions", "resiliency-availability", "distributed-systems", "caching-latency"],
+  "sd-25": ["consistency-transactions", "streaming-queues", "distributed-systems", "capacity-math"],
+  "sd-26": ["api-networking", "caching-latency", "streaming-queues", "distributed-systems"],
+  "sd-27": ["storage-partitioning", "caching-latency", "api-networking", "capacity-math"],
+  "sd-28": ["capacity-math", "caching-latency", "streaming-queues", "distributed-systems"],
   "sd-finale": ["distributed-systems", "storage-partitioning", "api-networking", "resiliency-availability", "caching-latency", "consistency-transactions", "streaming-queues", "capacity-math", "security-auth", "observability-telemetry"]
 };
 
