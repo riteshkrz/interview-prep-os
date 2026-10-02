@@ -131,10 +131,10 @@ export function renderConsensusRaftContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "How does Raft guarantee the 'Leader Completeness Property' (that a newly elected Leader contains all committed entries)?",
+      conceptId: "#01",
+      title: "Raft Leader Completeness Guarantee: The Quorum Overlap Election Restriction",
       answer: `In Raft, logs never flow from Follower to Leader; data only flows strictly from Leader to Follower. Therefore, Raft enforces the <strong>Election Restriction</strong> at the moment of voting:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>Voter Comparison Rule:</strong> When a Candidate sends a <code>RequestVote(candidateId, term, lastLogIndex, lastLogTerm)</code> RPC, the Follower compares the Candidate's log with its own:
@@ -145,9 +145,9 @@ export function renderConsensusRaftContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q2",
-      question: "Why does an even-numbered cluster (e.g. 4 nodes) have strictly worse availability than an odd-numbered cluster (3 nodes)?",
-      answer: `This is a classic Staff-level distributed systems interview trap:
+      conceptId: "#02",
+      title: "Quorum Geometry & The Symmetrical Partition Hazard: Why 4 Nodes Is An Anti-Pattern",
+      answer: `This is a fundamental distributed systems mathematical reality:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>Fault Tolerance Formula:</strong> A cluster of $N$ nodes tolerates $F = \lfloor (N-1)/2 \rfloor$ node crashes.
           <br/>- For $N = 3$: Tolerates $\lfloor (3-1)/2 \rfloor = 1$ crash. Quorum required: $\lfloor 3/2 \rfloor + 1 = 2$ nodes.
@@ -160,8 +160,8 @@ export function renderConsensusRaftContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q3",
-      question: "What is a 'Grey Failure' (or Flapping Follower), and how does the Raft Pre-Vote phase protect cluster stability?",
+      conceptId: "#03",
+      title: "Grey Failures & Flapping Follower Protection: The Raft Pre-Vote Protocol",
       answer: `In real datacenters, nodes rarely die cleanly; they become 'sick' or experience asymmetric network partitions:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>The Disrupted Cluster Hazard:</strong> Suppose Follower 3 suffers an outgoing packet loss or GC pause. It stops hearing heartbeats from the healthy Leader. Follower 3 increments its Term ($Term = 10 \to 11$) and broadcasts <code>RequestVote</code>. Even though Follower 3 cannot win, when the healthy Leader receives a message with a higher Term ($11 &gt; 10$), the Raft specification requires the Leader to immediately abdicate and step down to Follower! This destabilizes the cluster and interrupts client traffic.</li>
@@ -173,8 +173,8 @@ export function renderConsensusRaftContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q4",
-      question: "Why can't you use distributed locks without 'Fencing Tokens' for shared resource mutations (The Martin Kleppmann Hazard)?",
+      conceptId: "#04",
+      title: "Distributed Lock Safety & GC Pauses: The Martin Kleppmann Fencing Token Defense",
       answer: `A widely held misconception is that acquiring a distributed lock from ZooKeeper or etcd guarantees safe writes to storage. Martin Kleppmann proved that distributed locks without fencing tokens are inherently unsafe due to uncoordinated process pauses:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>The GC Pause Race Condition:</strong>
@@ -519,21 +519,21 @@ export function renderConsensusRaftContent(topic) {
           </p>
         </div>
 
-        <!-- INTERVIEW FOLLOW-UPS Box (Q1–Q4) -->
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
         <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
           <div class="flex items-center gap-2">
-            <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider flex items-center gap-2">
-              <span class="material-symbols-outlined text-[16px]">contact_support</span>
-              DEEP-DIVE INTERVIEW FOLLOW-UPS (Q1–Q4)
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
             </span>
           </div>
 
           <div class="flex flex-col gap-4">
-            ${interviewFollowUps.map(item => `
+            ${architecturalDeepDives.map(item => `
               <div class="flex flex-col gap-2 pb-4 border-b border-[#24314A]/60 last:border-0 last:pb-0">
                 <div class="flex items-start gap-2.5">
-                  <span class="font-code text-[12px] font-bold text-[#818CF8] shrink-0 pt-0.5">${item.qNum}</span>
-                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.question}</span>
+                  <span class="font-code text-[12px] font-bold text-cyan-400 shrink-0 pt-0.5">${item.conceptId}</span>
+                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.title}</span>
                 </div>
                 <div class="text-[13px] text-slate-300 leading-relaxed font-sans pl-6">
                   ${item.answer}

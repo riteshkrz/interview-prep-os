@@ -50,10 +50,10 @@ export function renderDeliverySemanticsContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "What is the fundamental difference between At-Least-Once delivery and Exactly-Once delivery?",
+      conceptId: "#01",
+      title: "At-Least-Once vs. Exactly-Once Processing: The Two Generals Impossibility Boundary",
       answer: `The distinction boils down to <strong>failure handling and the Two Generals Problem</strong>:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>At-Least-Once Delivery:</strong> Guarantees that the message will reach the consumer <em>at least one time</em>. If an ACK packet is lost in transit due to network jitter, or if the worker crashes before sending the ACK, the broker assumes delivery failure and redelivers. Consequently, the consumer may process the identical payload multiple times.</li>
@@ -61,8 +61,8 @@ export function renderDeliverySemanticsContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q2",
-      question: "How does Apache Kafka achieve idempotence on the producer side without distributed locks?",
+      conceptId: "#02",
+      title: "Producer Idempotence in Apache Kafka: PID and Monotonic Sequence Numbers",
       answer: `When <code>enable.idempotence=true</code> is set on a Kafka producer, Kafka prevents duplicate writes caused by producer network retries using two lightweight metadata fields:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>Producer ID (PID):</strong> On initialization, the producer sends an <code>InitProducerId</code> request to the broker. The cluster assigns a unique 64-bit PID managed internally.</li>
@@ -74,8 +74,8 @@ export function renderDeliverySemanticsContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q3",
-      question: "How do you design an idempotent consumer in practice when updating non-relational datastores or external third-party APIs?",
+      conceptId: "#03",
+      title: "Consumer Idempotency Patterns for NoSQL Datastores & External Payment Gateways",
       answer: `Relational databases allow atomic deduplication via <code>INSERT ... ON CONFLICT DO NOTHING</code> inside a transaction. For non-relational or external systems, use the following patterns:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>Distributed Idempotency Cache (Redis SETNX):</strong> Before mutating state, the consumer calls <code>SET idempotency:event_123 "PROCESSING" NX EX 3600</code>. If it returns <code>false</code>, the event is already processed or in-flight; immediately drop and ACK. After success, update status to <code>"COMPLETED"</code>.</li>
@@ -87,8 +87,8 @@ export function renderDeliverySemanticsContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q4",
-      question: "What is the performance overhead of Kafka transactions, and what happens when a Transaction Coordinator crashes?",
+      conceptId: "#04",
+      title: "Kafka Transaction Coordinator Performance Overhead & Broker Failover Recovery",
       answer: `Kafka's transactional API (supporting read-process-write cycles across consumer offsets and producer topics) introduces measurable architectural trade-offs:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>Throughput Overhead:</strong> Typically a 10%–25% throughput penalty. This is caused by: (1) round-trip network hops to the <strong>Transaction Coordinator</strong> to register partitions, (2) appending control records (<code>COMMIT</code> / <code>ABORT</code> markers) to data topic partitions, and (3) consumer buffering under <code>isolation.level=read_committed</code>.</li>
@@ -418,7 +418,7 @@ export function renderDeliverySemanticsContent(topic) {
 
 
       <!-- ================================================================= -->
-      <!-- PAGE 95: COMPARISON MATRIX, INTERVIEW FOLLOW-UPS & KEY TAKEAWAY -->
+      <!-- PAGE 95: COMPARISON MATRIX, ARCHITECTURAL DEEP-DIVES & KEY TAKEAWAY -->
       <!-- ================================================================= -->
       <div class="relative overflow-hidden rounded-2xl bg-[#0F172A] border border-[#24314A] shadow-2xl p-6 sm:p-8 flex flex-col gap-6">
 
@@ -466,31 +466,31 @@ export function renderDeliverySemanticsContent(topic) {
           </div>
         </div>
 
-        <!-- Bar: OVER TO YOU -->
+        <!-- High-Throughput Design Tradeoff Study -->
         <div class="bg-[#1E293B]/70 border border-[#334155] rounded-xl px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-3 text-[12.5px]">
-          <span class="px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-code text-[10.5px] font-bold uppercase tracking-wider shrink-0 w-fit">
-            OVER TO YOU
+          <span class="px-2.5 py-1 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-code text-[10.5px] font-bold uppercase tracking-wider shrink-0 w-fit">
+            CASE STUDY
           </span>
           <span class="text-slate-300 font-medium">
-            If designing an online advertising click-tracking system handling 500,000 events/sec, which delivery semantic would you select for billing vs. analytics counters? How would you justify your choice using deduplication store memory limits?
+            <strong>High-Throughput Tradeoff:</strong> At 500,000 events/sec (ad click-tracking), attempting distributed deduplication with Redis crashes memory clusters ($500k \times 32\text{ bytes} = 16\text{MB/sec}$ of RAM keys). Production architects select <em>At-Least-Once</em> transport paired with background probabilistic HyperLogLog counters for analytics, reserving deterministic transactional deduplication strictly for financial billing runs.
           </span>
         </div>
 
-        <!-- INTERVIEW FOLLOW-UPS Box -->
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
         <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
           <div class="flex items-center gap-2">
-            <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider flex items-center gap-2">
-              <span class="material-symbols-outlined text-[16px]">contact_support</span>
-              DEEP-DIVE INTERVIEW FOLLOW-UPS (Q1–Q4)
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
             </span>
           </div>
 
           <div class="flex flex-col gap-4">
-            ${interviewFollowUps.map(item => `
+            ${architecturalDeepDives.map(item => `
               <div class="flex flex-col gap-2 pb-4 border-b border-[#24314A]/60 last:border-0 last:pb-0">
                 <div class="flex items-start gap-2.5">
-                  <span class="font-code text-[12px] font-bold text-[#818CF8] shrink-0 pt-0.5">${item.qNum}</span>
-                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.question}</span>
+                  <span class="font-code text-[12px] font-bold text-cyan-400 shrink-0 pt-0.5">${item.conceptId}</span>
+                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.title}</span>
                 </div>
                 <div class="text-[13px] text-slate-300 leading-relaxed font-sans pl-6">
                   ${item.answer}

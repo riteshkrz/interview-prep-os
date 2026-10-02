@@ -50,24 +50,24 @@ export function renderAsyncProcessingQueuesContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "What is Backpressure, and how do push-based vs. pull-based message queues handle it?",
+      conceptId: "#01",
+      title: "Backpressure & Flow Control: Push vs. Pull Overload Dynamics (RabbitMQ Prefetch vs. Kafka Poll)",
       answer: `Backpressure is the resistance or flow-control signal exerted by a downstream consumer when incoming message velocity exceeds its processing throughput capacity.
       <br/><br/>
-      <strong class="text-indigo-400">Push vs. Pull Flow Control:</strong>
+      <strong class="text-cyan-400">Push vs. Pull Flow Control:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
         <li><strong>Push-Based Queues (RabbitMQ):</strong> The broker proactively pushes messages to connected workers. If a worker is slow, unconsumed messages pile up in the worker's TCP buffer and application memory, causing <em>buffer bloat and Out-Of-Memory (OOM) crashes</em>. <strong>Mitigation:</strong> Consumers must set <code class="text-amber-300 bg-black/40 px-1 py-0.5 rounded">basic.qos(prefetch_count=N)</code> to restrict unacknowledged in-flight messages.</li>
         <li><strong>Pull-Based Systems (Apache Kafka, AWS SQS):</strong> Workers continuously pull or poll message batches on their own cadence. When a worker is busy running heavy tasks, it simply delays its next poll request. The broker never overwhelms the consumer, providing <strong>inherent backpressure protection</strong>.</li>
       </ul>`
     },
     {
-      qNum: "Q2",
-      question: "How do you guarantee message ordering in a distributed queue without crippling throughput?",
+      conceptId: "#02",
+      title: "Partitioned Partial FIFO Ordering: Entity-Level Message Group Hashing vs. Global Sequential Bottlenecks",
       answer: `Enforcing <strong>total global ordering</strong> across an entire distributed message system requires a single sequential queue thread, which creates a catastrophic throughput bottleneck (&lt; 1,000 msgs/sec).
       <br/><br/>
-      <strong class="text-indigo-400">The Distributed Solution: Partitioned Partial Ordering:</strong>
+      <strong class="text-cyan-400">The Distributed Solution: Partitioned Partial Ordering:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
         <li>In real-world business domains, messages only need to be ordered <em>relative to a specific entity</em> (e.g., events for <code class="text-cyan-300 bg-black/40 px-1 py-0.5 rounded">order_id #4812</code> must be ordered, but Order A and Order B have zero ordering dependency).</li>
         <li><strong>Partitioning Keys:</strong> In Kafka or AWS SQS FIFO, producers provide a <strong>Partition Key / Message Group ID</strong> (e.g. <code class="text-cyan-300 bg-black/40 px-1 py-0.5 rounded">customer_id</code>). The broker hashes this key to assign all messages for that entity to the exact same partition and consumer thread.</li>
@@ -75,8 +75,8 @@ export function renderAsyncProcessingQueuesContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q3",
-      question: "What is the difference between Point-to-Point (Queue) and Publish-Subscribe (Topic) topologies?",
+      conceptId: "#03",
+      title: "Point-to-Point Work Queues vs. Publish-Subscribe Topics: Competing Consumers vs. Multi-Subscriber Fanout",
       answer: `Distributed messaging architectures rely on two distinct message distribution paradigms:
       <br/><br/>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
@@ -91,11 +91,11 @@ export function renderAsyncProcessingQueuesContent(topic) {
       </div>`
     },
     {
-      qNum: "Q4",
-      question: "How do you design an Idempotent Consumer to handle At-Least-Once delivery re-transmissions?",
+      conceptId: "#04",
+      title: "Idempotent Consumer Implementation Strategies: DB Upsert Constraints, Redis TTL Locks, and Monotonic State",
       answer: `Because distributed message brokers retry unacknowledged messages upon network timeouts, duplicate deliveries are guaranteed to occur in production.
       <br/><br/>
-      <strong class="text-indigo-400">Three Idempotent Implementation Strategies:</strong>
+      <strong class="text-cyan-400">Three Idempotent Implementation Strategies:</strong>
       <ol class="list-decimal list-inside mt-1.5 space-y-1 text-slate-300">
         <li><strong>Unique Idempotency Key in Database:</strong> Include a globally unique <code class="text-cyan-300 bg-black/40 px-1 py-0.5 rounded">message_id</code> or <code class="text-cyan-300 bg-black/40 px-1 py-0.5 rounded">idempotency_key</code> in every message. Execute database writes using an upsert with uniqueness constraint: <br/><code class="text-emerald-300 bg-black/50 px-2 py-0.5 rounded text-[11px] block mt-1">INSERT INTO processed_events (event_id, payload) VALUES ($1, $2) ON CONFLICT (event_id) DO NOTHING;</code></li>
         <li><strong>Atomic Redis Cache Check:</strong> Before processing, check and set a distributed lock with TTL: <code class="text-amber-300 bg-black/40 px-1 py-0.5 rounded">SET event:id123 "PROCESSED" NX EX 86400</code>. If key already exists, acknowledge and discard the duplicate immediately.</li>
@@ -256,24 +256,24 @@ export function renderAsyncProcessingQueuesContent(topic) {
           </p>
         </div>
 
-        <!-- Interview Follow-ups: Deep Dive Technical Q&As -->
-        <div class="flex flex-col gap-4">
-          <div class="flex items-center gap-2 border-b border-[#24314A] pb-2">
-            <span class="material-symbols-outlined text-[18px] text-indigo-400">quiz</span>
-            <h3 class="font-sans text-[15px] font-bold text-white tracking-wide uppercase">
-              Senior Interview Deep-Dives: Real-World Follow-Ups
-            </h3>
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
+        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
+          <div class="flex items-center gap-2">
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
+            </span>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            ${interviewFollowUps.map(item => `
-              <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 flex flex-col gap-2">
+            ${architecturalDeepDives.map(item => `
+              <div class="bg-[#0B1120] border border-[#24314A] rounded-xl p-4 flex flex-col gap-2">
                 <div class="flex items-center gap-2">
-                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/30 shrink-0">
-                    ${item.qNum}
+                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30 shrink-0">
+                    ${item.conceptId}
                   </span>
                   <h4 class="font-sans text-[13px] font-bold text-white leading-snug">
-                    ${item.question}
+                    ${item.title}
                   </h4>
                 </div>
                 <div class="text-[12.5px] text-slate-300 font-sans leading-relaxed pt-1 border-t border-[#24314A]/60">

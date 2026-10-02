@@ -82,25 +82,25 @@ export function renderDistributedTimeOrderingContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "Cassandra uses Last-Write-Wins (LWW) by default. How do you defend against silent data loss caused by clock skew in production?",
+      conceptId: "#01",
+      title: "Cassandra Last-Write-Wins (LWW) Clock Drift Defenses: Chrony Slew & Server-Side Timestamps",
       answer: "In production, three defenses protect Cassandra systems: (1) <strong>Run Chrony instead of ntpd</strong> with tight slew configurations (max slew rate, step disabled) and alert when clock drift exceeds 10ms. (2) <strong>Use Server-Side Timestamps</strong> generated exclusively by the coordinator node rather than trusting client-provided wall clocks, eliminating client device clock skew. (3) <strong>Avoid blind LWW for read-modify-write workflows</strong>: use Lightweight Transactions (LWT, which uses Paxos underneath) or write update mutations as append-only immutable event streams and resolve state on the read path via Conflict-free Replicated Data Types (CRDTs)."
     },
     {
-      qNum: "Q2",
-      question: "What is a Hybrid Logical Clock (HLC) and why did CockroachDB and MongoDB adopt it over pure vector clocks or TrueTime?",
+      conceptId: "#02",
+      title: "Hybrid Logical Clocks (HLC) Architecture: CockroachDB & MongoDB Causality Without TrueTime Hardware",
       answer: "A Hybrid Logical Clock combines a physical clock timestamp $pt$ with a logical counter $l$. If a received message has physical time $pt_{msg} > pt_{local}$, the HLC advances its physical component to $pt_{msg}$ and resets $l=0$; if $pt_{msg} == pt_{local}$, it increments $l$. CockroachDB and MongoDB adopted HLC because: (1) Unlike TrueTime, it requires <strong>no expensive proprietary atomic clock or GPS hardware</strong>; (2) Unlike Vector Clocks, its metadata footprint is fixed (10 bytes: 8-byte millis + 2-byte logical) rather than growing with cluster size $O(N)$; and (3) It stays tightly bound to real physical time (within max drift offset $\\pm 250$ms), enabling point-in-time historical snapshot queries (AS OF SYSTEM TIME)."
     },
     {
-      qNum: "Q3",
-      question: "If Google Spanner's atomic clocks fail or GPS antennas lose satellite lock, what happens to TrueTime and the database?",
+      conceptId: "#03",
+      title: "Google Spanner TrueTime Failure Modes: GPS Antenna Loss & Commit-Wait Latency Expansion",
       answer: "TrueTime explicitly quantifies its uncertainty interval as $[t - \\epsilon, t + \\epsilon]$. When GPS and atomic clocks are healthy, $\\epsilon \\approx 1-7$ms. If GPS antenna connections fail or a rubidium clock fails, Spanner's TrueTime daemon falls back to estimating clock drift using worst-case drift models (conservatively assuming drift increases by 200 microseconds per second). As time passes without synchronization, $\\epsilon$ widens (e.g. from 7ms to 50ms, then 100ms). Because Spanner's Commit-Wait rule requires transactions to wait $2\\epsilon$ before committing, <strong>Spanner write latency increases proportionally</strong>. If $\\epsilon$ exceeds a safety threshold, Spanner safely halts writes rather than risking data corruption, preserving Safety over Liveness."
     },
     {
-      qNum: "Q4",
-      question: "In a system design interview, when should you recommend Vector Clocks vs. CRDTs vs. a Centralized Sequencer (e.g. Snowflake / Raft)?",
+      conceptId: "#04",
+      title: "Distributed Ordering Decision Framework: Centralized Sequencers vs. Vector Clocks vs. CRDTs",
       answer: "Use this decision framework: (1) <strong>Centralized Sequencer (Snowflake / Raft / ZooKeeper)</strong>: Choose when the system has a single region or can tolerate cross-region WAN consensus round trips for an absolute monotonic ID (e.g. distributed financial ledger, global ticket order). (2) <strong>Vector Clocks</strong>: Choose when multiple nodes accept offline concurrent writes in an AP/Dynamo-style architecture and the business domain requires manual human or application-level conflict resolution (e.g. Git branches, concurrent document revisions). (3) <strong>CRDTs (Conflict-free Replicated Data Types)</strong>: Choose when multi-master concurrent writes must resolve automatically without user intervention or distributed locks (e.g. collaborative live docs, shopping cart item sets, like-counters, collaborative Whiteboards)."
     }
   ];
@@ -459,21 +459,21 @@ Initial State: Empty Cart. Vector V = {NodeA: 0, NodeB: 0}
           </p>
         </div>
 
-        <!-- INTERVIEW FOLLOW-UPS Box (Q1–Q4) -->
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
         <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
           <div class="flex items-center gap-2">
-            <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider flex items-center gap-2">
-              <span class="material-symbols-outlined text-[16px]">contact_support</span>
-              DEEP-DIVE INTERVIEW FOLLOW-UPS (Q1–Q4)
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
             </span>
           </div>
 
           <div class="flex flex-col gap-4">
-            ${interviewFollowUps.map(item => `
+            ${architecturalDeepDives.map(item => `
               <div class="flex flex-col gap-2 pb-4 border-b border-[#24314A]/60 last:border-0 last:pb-0">
                 <div class="flex items-start gap-2.5">
-                  <span class="font-code text-[12px] font-bold text-[#818CF8] shrink-0 pt-0.5">${item.qNum}</span>
-                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.question}</span>
+                  <span class="font-code text-[12px] font-bold text-cyan-400 shrink-0 pt-0.5">${item.conceptId}</span>
+                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.title}</span>
                 </div>
                 <div class="text-[13px] text-slate-300 leading-relaxed font-sans pl-6">
                   ${item.answer}

@@ -93,25 +93,25 @@ export function renderWebRtcRealTimeMediaContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "Why doesn't the WebRTC W3C specification standardize a signaling protocol?",
+      conceptId: "#01",
+      title: "Why WebRTC Omits Signaling from W3C Specs: Protocol Decoupling & SDP Negotiation",
       answer: "The W3C working group deliberately left signaling out of the specification to provide architectural flexibility. Real-time media requirements differ wildly: a VoIP telecom system requires SIP, an enterprise chat app already maintains a persistent WebSocket connection, and a multiplayer game might use a custom binary UDP protocol. By standardizing only the <strong>Session Description Protocol (SDP)</strong> exchange and media engine, WebRTC allows developers to transport SDP offers, answers, and ICE candidates over any existing transport (WebSocket, HTTP/2, SSE, or gRPC) without forcing a rigid telecom signaling standard."
     },
     {
-      qNum: "Q2",
-      question: "What is the difference between Simulcast and Scalable Video Coding (SVC)?",
+      conceptId: "#02",
+      title: "Simulcast vs. Scalable Video Coding (SVC): Mobile Hardware Encoders vs. Uplink Bandwidth",
       answer: "Both solve the problem of sending multi-quality video through an SFU to heterogeneous clients: (1) <strong>Simulcast</strong>: The client's hardware encoder compresses 3 completely separate, independent video streams (e.g. 1080p @ 2.5 Mbps, 720p @ 1 Mbps, 360p @ 300 kbps). The SFU forwards the appropriate stream to each subscriber based on their downlink bandwidth. (2) <strong>Scalable Video Coding (SVC, e.g. VP9 / AV1)</strong>: The encoder produces a single layered stream consisting of a base layer and multiple enhancement layers. The SFU drops enhancement packets for bandwidth-constrained users without breaking the stream. Simulcast has broader hardware acceleration support across mobile devices, while SVC consumes less client uplink bandwidth."
     },
     {
-      qNum: "Q3",
-      question: "If 15% to 20% of calls require TURN relay servers, how do you size and deploy TURN globally?",
+      conceptId: "#03",
+      title: "Global TURN Relay Sizing & Egress Network Physics: Bypass Restrictive Enterprise Firewalls",
       answer: "TURN sizing is strictly an <strong>egress bandwidth and packet-per-second (PPS) sizing exercise</strong>, not CPU-bound, because TURN proxies UDP packets without decoding. Sizing formula: For a 720p video call at 1.5 Mbps, each relayed stream consumes 1.5 Mbps ingress + 1.5 Mbps egress (3 Mbps total bandwidth per session). For 10,000 concurrent relayed streams: $10,000 \\times 3\\text{ Mbps} = 30\\text{ Gbps}$ bandwidth. Production deployment rules: (1) Deploy TURN servers (e.g. <code>coturn</code>) in every major geographical cloud region using Anycast or GeoDNS so users hit a TURN relay within 15ms. (2) Bind TURN to ports 3478 (UDP/TCP) and <strong>port 443 with TLS (TURNS)</strong> to bypass restrictive enterprise firewalls that inspect application protocols."
     },
     {
-      qNum: "Q4",
-      question: "Why is TCP strictly avoided for sub-150ms real-time audio and video, and how does WebRTC handle packet loss over UDP?",
+      conceptId: "#04",
+      title: "Why TCP is Fatal for Conversational Media: Head-of-Line Blocking vs. SRTP Packet Loss Recovery",
       answer: "TCP guarantees delivery via retransmission (ACK/NACK) and strictly enforces Head-of-Line (HoL) blocking. If packet 3 is dropped, packets 4, 5, and 6 sit blocked in the kernel buffer until packet 3 is retransmitted, adding 100–300ms of jitter latency. In human conversation, late video is worse than missing video. WebRTC operates over <strong>UDP using SRTP (RFC 3711)</strong>: if a video frame packet is lost, WebRTC drops it and displays the next frame. To mitigate packet loss without latency spikes, WebRTC uses: (1) <strong>NACK (Negative Acknowledgement)</strong> for fast, bounded retransmission within the jitter buffer (50ms); (2) <strong>Forward Error Correction (FEC)</strong>, appending redundant parity packets so lost packets can be reconstructed mathematically; and (3) <strong>PLI (Picture Loss Indication)</strong>, requesting a new I-frame keyframe from the encoder if corruption is severe."
     }
   ];
@@ -367,24 +367,24 @@ export function renderWebRtcRealTimeMediaContent(topic) {
           </div>
         </div>
 
-        <!-- INTERVIEW FOLLOW-UPS Box (Q1–Q4) -->
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
         <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
           <div class="flex items-center gap-2">
-            <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider flex items-center gap-2">
-              <span class="material-symbols-outlined text-[16px]">contact_support</span>
-              INTERVIEW FOLLOW-UPS (Q1–Q4)
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
             </span>
           </div>
 
           <div class="flex flex-col gap-4">
-            ${interviewFollowUps.map(item => `
+            ${architecturalDeepDives.map(item => `
               <div class="flex flex-col gap-2 pb-4 border-b border-[#24314A]/60 last:border-0 last:pb-0">
                 <div class="flex items-start gap-2.5">
-                  <span class="font-code text-[12px] font-bold text-[#818CF8] shrink-0 pt-0.5">${item.qNum}</span>
-                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.question}</span>
+                  <span class="font-code text-[12px] font-bold text-cyan-400 shrink-0 pt-0.5">${item.conceptId}</span>
+                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.title}</span>
                 </div>
                 <div class="text-[13px] text-slate-300 leading-relaxed font-sans pl-6">
-                  <strong>A.</strong> ${item.answer}
+                  ${item.answer}
                 </div>
               </div>
             `).join('')}

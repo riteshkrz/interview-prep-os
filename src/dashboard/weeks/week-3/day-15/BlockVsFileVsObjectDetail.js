@@ -80,10 +80,10 @@ export function renderBlockVsFileVsObjectContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "Why can't you run a production relational database (e.g. PostgreSQL or MySQL) directly on S3 Object Storage?",
+      conceptId: "#01",
+      title: "Relational Database Engines on Object Storage: POSIX Invariants vs. REST Immutability",
       answer: `Running a high-concurrency database directly against S3 violates four fundamental operating requirements of database engines:
       <br/><br/>
       <strong class="text-indigo-400">The Four Architectural Roadblocks:</strong>
@@ -95,8 +95,8 @@ export function renderBlockVsFileVsObjectContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q2",
-      question: "What is Multipart Upload in S3 and when is it mandatory in system architecture?",
+      conceptId: "#02",
+      title: "Multipart Upload Protocols: High-Throughput Chunking & Fault-Tolerant Resumption",
       answer: `<strong>Multipart Upload</strong> is an S3 protocol feature that allows uploading a single large object as a set of independent parts concurrently:
       <br/><br/>
       <strong class="text-indigo-400">Operational Mechanics & Requirements:</strong>
@@ -108,8 +108,8 @@ export function renderBlockVsFileVsObjectContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q3",
-      question: "How does Amazon S3 achieve 99.999999999% (11 9s) of durability without bankrupting storage costs?",
+      conceptId: "#03",
+      title: "11 Nines of Durability: Reed-Solomon Erasure Coding & Geographic Cross-AZ Quorum",
       answer: `Achieving 11 nines of durability means that if you store 10,000,000 objects in S3, you can expect to lose a single object once every 10,000 years.
       <br/><br/>
       <strong class="text-indigo-400">The Hyperscale Storage Architecture:</strong>
@@ -120,8 +120,8 @@ export function renderBlockVsFileVsObjectContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q4",
-      question: "How do Pre-Signed URLs work and what security and scalability problem do they solve?",
+      conceptId: "#04",
+      title: "Pre-Signed URLs & Direct Client-to-S3 Offload: Bypassing Application Tier Bottlenecks",
       answer: `In naive system designs, when a user uploads a video, the file routes: <br/>
       <code class="text-rose-300 bg-black/40 px-2 py-0.5 rounded text-[11.5px] inline-block my-1">Browser ──► API Web Server ──► AWS S3 Bucket</code>
       <br/>
@@ -295,24 +295,24 @@ export function renderBlockVsFileVsObjectContent(topic) {
           </p>
         </div>
 
-        <!-- Interview Follow-ups: Deep Dive Technical Q&As -->
+        <!-- Critical Architectural Deep-Dives & Production Edge Cases -->
         <div class="flex flex-col gap-4">
           <div class="flex items-center gap-2 border-b border-[#24314A] pb-2">
-            <span class="material-symbols-outlined text-[18px] text-indigo-400">quiz</span>
+            <span class="material-symbols-outlined text-[18px] text-cyan-400">account_tree</span>
             <h3 class="font-sans text-[15px] font-bold text-white tracking-wide uppercase">
-              Senior Interview Deep-Dives: Real-World Follow-Ups
+              Critical Architectural Deep-Dives &amp; Production Edge Cases
             </h3>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            ${interviewFollowUps.map(item => `
+            ${architecturalDeepDives.map(item => `
               <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 flex flex-col gap-2">
                 <div class="flex items-center gap-2">
-                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/30 shrink-0">
-                    ${item.qNum}
+                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30 shrink-0">
+                    ${item.conceptId}
                   </span>
                   <h4 class="font-sans text-[13px] font-bold text-white leading-snug">
-                    ${item.question}
+                    ${item.title}
                   </h4>
                 </div>
                 <div class="text-[12.5px] text-slate-300 font-sans leading-relaxed pt-1 border-t border-[#24314A]/60">

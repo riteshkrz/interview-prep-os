@@ -98,25 +98,25 @@ export function renderScalingLongLivedConnectionsContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "How do you size RAM for 1 million concurrent idle WebSocket connections on a single server?",
+      conceptId: "#01",
+      title: "Linux Kernel Memory Sizing for 1M Idle WebSockets: TCP Buffers & sk_buff Overhead",
       answer: "Work from the Linux kernel primitives: (1) <strong>Kernel Socket Buffers</strong>: Tuning <code>tcp_rmem</code> and <code>tcp_wmem</code> to a 4KB minimum allocates $\\approx 8\\text{ KB}$ per socket. For 1M sockets, this requires $1,000,000 \\times 8\\text{ KB} \\approx 8\\text{ GB}$ kernel RAM. (2) <strong>Kernel Socket Data Structures</strong>: Linux <code>struct sock</code> and <code>struct sk_buff</code> consume $\\approx 3.25\\text{ KB}$ per connection ($3.25\\text{ GB}$). (3) <strong>Application Runtime Overhead</strong>: A high-performance non-blocking event loop runtime (Go goroutines with 2KB stack, or epoll C/Rust structs) requires $\\approx 2-4\\text{ KB}$ per connection ($2-4\\text{ GB}$). Total memory for 1M idle connections is $\\approx 14-16\\text{ GB}$ RAM. A standard 32GB or 64GB cloud instance comfortably handles 1M idle sockets if properly tuned."
     },
     {
-      qNum: "Q2",
-      question: "When a message arrives for User 42, how does Connection Server 1 find which server in the cluster holds User 42's socket?",
+      conceptId: "#02",
+      title: "Cluster-Wide Socket Routing: Distributed Registries vs. Pub/Sub vs. Consistent Hash Rings",
       answer: "Three production routing patterns solve this: (1) <strong>Global Distributed Registry (Redis Hash / DynamoDB)</strong>: When User 42 connects to Gateway 7, the gateway writes <code>user:42 -&gt; gateway_7_ip</code> with a TTL refreshed by heartbeats. Server 1 looks up the gateway and forwards the message via internal gRPC. (2) <strong>Pub/Sub Backplane (Redis Pub/Sub / Kafka / NATS)</strong>: Each gateway subscribes to channels for its locally connected users. Server 1 publishes to channel <code>user:42:events</code>; only Gateway 7 picks it up. (3) <strong>Consistent Hashing on User ID</strong>: Connection servers are arranged in a consistent hash ring. User 42 always connects to Gateway $H(\\text{user\\_42})$. Server 1 hashes the ID and delivers directly without a shared lookup store."
     },
     {
-      qNum: "Q3",
-      question: "When should you choose Server-Sent Events (SSE) over WebSockets in a system design interview?",
+      conceptId: "#03",
+      title: "Server-Sent Events (SSE) vs. WebSockets: Unidirectional Streaming, Firewalls & HTTP/2",
       answer: "Choose Server-Sent Events (SSE) whenever communication is <strong>unidirectional (server-to-client only)</strong> and the client uses regular HTTP POST/PUT for actions. Examples: LLM streaming token generation (OpenAI ChatGPT API), live ticker prices, notification feeds, or sports score trackers. SSE advantages over WebSockets: (1) Operates over standard HTTP/1.1 and HTTP/2 (seamlessly traverses corporate firewalls, proxies, and API gateways that block WebSockets); (2) <strong>Built-in automatic reconnection with Last-Event-ID</strong> resume natively in the browser EventSource API; (3) Multiplexes over a single HTTP/2 TCP connection alongside regular API calls."
     },
     {
-      qNum: "Q4",
-      question: "How do you perform rolling deployments on a stateful WebSocket connection fleet without triggering a reconnection storm?",
+      conceptId: "#04",
+      title: "Rolling Deployments on Stateful Fleets: Connection Draining & Reconnection Storm Jitter",
       answer: "Rebooting a server with 100,000 active connections immediately floods load balancers with 100,000 simultaneous reconnect handshakes. Production defense requires a 4-step rolling drain: (1) <strong>Deregister from Load Balancer</strong>: Mark the node as unhealthy in the LB so it receives no new handshakes. (2) <strong>Paced Disconnection with Jitter</strong>: The gateway iterates through its active sockets and sends a WebSocket close frame (Code 1001: Going Away) with a custom requested reconnect delay spread randomly across a 60–120 second window (e.g. at 1,000 closes per second). (3) <strong>Client Full Jitter Backoff</strong>: Client SDKs must implement exponential backoff with full jitter: $T = \\text{random}(0, \\min(T_{max}, T_{base} \\times 2^{attempt}))$. (4) <strong>Connection Rate-Limiting</strong>: The Layer 4 edge load balancer caps incoming TLS handshakes per second."
     }
   ];
@@ -363,24 +363,24 @@ export function renderScalingLongLivedConnectionsContent(topic) {
           </div>
         </div>
 
-        <!-- INTERVIEW FOLLOW-UPS Box (Q1–Q4) -->
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
         <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
           <div class="flex items-center gap-2">
-            <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider flex items-center gap-2">
-              <span class="material-symbols-outlined text-[16px]">contact_support</span>
-              INTERVIEW FOLLOW-UPS (Q1–Q4)
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
             </span>
           </div>
 
           <div class="flex flex-col gap-4">
-            ${interviewFollowUps.map(item => `
+            ${architecturalDeepDives.map(item => `
               <div class="flex flex-col gap-2 pb-4 border-b border-[#24314A]/60 last:border-0 last:pb-0">
                 <div class="flex items-start gap-2.5">
-                  <span class="font-code text-[12px] font-bold text-[#818CF8] shrink-0 pt-0.5">${item.qNum}</span>
-                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.question}</span>
+                  <span class="font-code text-[12px] font-bold text-cyan-400 shrink-0 pt-0.5">${item.conceptId}</span>
+                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.title}</span>
                 </div>
                 <div class="text-[13px] text-slate-300 leading-relaxed font-sans pl-6">
-                  <strong>A.</strong> ${item.answer}
+                  ${item.answer}
                 </div>
               </div>
             `).join('')}

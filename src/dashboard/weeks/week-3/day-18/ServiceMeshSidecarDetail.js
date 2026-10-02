@@ -79,25 +79,25 @@ export function renderServiceMeshSidecarContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "How does an Envoy sidecar intercept incoming and outgoing traffic without modifying application code?",
+      conceptId: "#01",
+      title: "Transparent Traffic Interception: Linux Network Namespaces & iptables PREROUTING Redirection",
       answer: "In a Kubernetes pod, all containers share the exact same Linux Network Namespace (<code>netns</code>) and network loopback interface. During pod initialization, an <code>initContainer</code> (such as <code>istio-init</code>) runs with <code>NET_ADMIN</code> Linux capabilities and executes <code>iptables</code> (or <code>nftables</code>) rules. These rules configure <code>PREROUTING</code> and <code>OUTPUT</code> chains to inspect all inbound and outbound TCP packets on port 80/443 and transparently redirect them using <code>REDIRECT</code> or <code>TPROXY</code> to Envoy's local listening port (e.g. port 15001/15006). The application thinks it is connecting directly to an external IP, while Envoy intercepts the socket."
     },
     {
-      qNum: "Q2",
-      question: "A single RPC between Service A and Service B experiences double latency overhead in a mesh. Why?",
+      conceptId: "#02",
+      title: "The Double Proxy Hop Latency Penalty: Context Switches, Socket Buffers & TLS Cryptography",
       answer: "Every internal service-to-service call in a standard sidecar service mesh passes through <strong>two separate proxies</strong>: (1) Service A calls <code>http://service-b</code>. Outbound iptables redirects the packet to <strong>Envoy Proxy A</strong> (Hop 1). (2) Envoy Proxy A encrypts the payload via mTLS, evaluates routing rules, and transmits the packet over the node network to Service B's host. (3) On arrival, inbound iptables on Pod B redirects the encrypted packet to <strong>Envoy Proxy B</strong> (Hop 2). (4) Envoy Proxy B decrypts mTLS, validates the SPIFFE identity certificate, checks authorization policies, and forwards the plaintext packet over <code>localhost</code> to Service B's application container. Each proxy traversal incurs user-space context switching, socket buffer copying, and TLS crypto processing, adding ~0.5ms to 1.5ms per proxy (total 1-3ms per RPC)."
     },
     {
-      qNum: "Q3",
-      question: "When should an architecture use both an API Gateway and a Service Mesh, and what are their respective boundaries?",
+      conceptId: "#03",
+      title: "API Gateway (North-South) vs. Service Mesh (East-West): Architectural Trust Boundaries",
       answer: "Use both in enterprise production: they solve fundamentally different problems across distinct trust boundaries. The <strong>API Gateway</strong> sits at the public edge (North-South) to protect the internal network: it terminates public SSL, maps public REST/GraphQL endpoints to internal gRPC contracts, validates user JWT sessions, enforces corporate API rate limits, and defends against DDoS. The <strong>Service Mesh</strong> operates strictly behind the DMZ (East-West): it assumes all traffic is already authenticated to enter the cluster, and its sole mission is providing uniform zero-trust encryption (mTLS with SPIFFE identities between pods), transparent retry budgets, distributed tracing context propagation (W3C TraceContext headers), and canary deployment traffic shifting across polyglot microservices."
     },
     {
-      qNum: "Q4",
-      question: "What is the 'Mesh Tax' and how does Istio Ambient Mesh / Cilium eBPF eliminate it?",
+      conceptId: "#04",
+      title: "The 'Mesh Tax' & Ambient Mesh Architecture: Per-Node ztunnel & Dynamic Waypoints",
       answer: "The 'Mesh Tax' refers to the cumulative CPU and RAM consumed by running an Envoy sidecar in every single pod (e.g. 50-100MB RAM × 5,000 pods = 250-500 GB RAM overhead), plus the operational headache of pod restarts whenever sidecar configurations or versions update. <strong>Istio Ambient Mesh</strong> eliminates sidecars by splitting the mesh into two layers: (1) <strong>ztunnel (Zero-trust tunnel)</strong>: A shared, lightweight per-node Layer 4 daemon that handles mTLS encryption and mutual authentication with virtually zero CPU overhead and no pod injection. (2) <strong>Waypoint Proxies</strong>: Optional, dynamically provisioned Layer 7 Envoy proxies that run per namespace or per service <em>only</em> when complex features (like HTTP header routing or JWT validation) are explicitly required. Cilium achieves a similar revolution at the Linux kernel level using eBPF socket maps."
     }
   ];
@@ -367,21 +367,21 @@ export function renderServiceMeshSidecarContent(topic) {
           </p>
         </div>
 
-        <!-- INTERVIEW FOLLOW-UPS Box (Q1–Q4) -->
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
         <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
           <div class="flex items-center gap-2">
-            <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider flex items-center gap-2">
-              <span class="material-symbols-outlined text-[16px]">contact_support</span>
-              DEEP-DIVE INTERVIEW FOLLOW-UPS (Q1–Q4)
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
             </span>
           </div>
 
           <div class="flex flex-col gap-4">
-            ${interviewFollowUps.map(item => `
+            ${architecturalDeepDives.map(item => `
               <div class="flex flex-col gap-2 pb-4 border-b border-[#24314A]/60 last:border-0 last:pb-0">
                 <div class="flex items-start gap-2.5">
-                  <span class="font-code text-[12px] font-bold text-[#818CF8] shrink-0 pt-0.5">${item.qNum}</span>
-                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.question}</span>
+                  <span class="font-code text-[12px] font-bold text-cyan-400 shrink-0 pt-0.5">${item.conceptId}</span>
+                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.title}</span>
                 </div>
                 <div class="text-[13px] text-slate-300 leading-relaxed font-sans pl-6">
                   ${item.answer}

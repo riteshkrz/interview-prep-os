@@ -40,52 +40,52 @@ export function renderEventDrivenArchitectureContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "Event Sourcing vs. CQRS: Do you always need to implement both patterns together?",
-      answer: `<strong>No, they are orthogonal architectural patterns that can be used independently:</strong>
+      conceptId: "#01",
+      title: "Decoupling CQRS & Event Sourcing: Asymmetric Query Loads vs. Materialized Projections",
+      answer: `<strong>CQRS and Event Sourcing are orthogonal architectural patterns that can be used independently:</strong>
       <br/><br/>
       <ul class="list-disc list-inside mt-1 space-y-1 text-slate-300">
-        <li><strong>CQRS without Event Sourcing:</strong> Extremely common. A relational database (PostgreSQL) handles transactional write commands, and changes are streamed via Change Data Capture (Debezium CDC) into an <em>Elasticsearch cluster for text search</em> or a <em>Redis cache for profile lookups</em>. The write model stores standard current state, not an event log.</li>
-        <li><strong>Event Sourcing without CQRS:</strong> Feasible for simple domains where the event stream itself is small enough to be queried directly, or where all reads are handled by an in-memory projection within the same process.</li>
-        <li><strong>Why They Synergize:</strong> When you use Event Sourcing, querying an append-only log for complex joins (e.g. <em>"Find all orders placed in Germany with total &gt; $100"</em>) is computationally prohibitive. <strong>CQRS is the natural companion to Event Sourcing</strong> because materialized view projections transform the event log into fast, read-optimized database tables.</li>
+        <li><strong>CQRS without Event Sourcing:</strong> Extremely common in production. A relational database (PostgreSQL) handles transactional write commands, and changes are streamed via Change Data Capture (Debezium CDC) into an <em>Elasticsearch cluster for full-text search</em> or a <em>Redis cache for profile lookups</em>. The write model stores standard current state, not an event log.</li>
+        <li><strong>Event Sourcing without CQRS:</strong> Feasible for simple audit domains where the event stream itself is small enough to be queried directly, or where all reads are handled by an in-memory projection within the same process.</li>
+        <li><strong>Why They Synergize:</strong> When using Event Sourcing, querying an append-only log for complex joins (e.g. <em>"Find all orders placed in Germany with total &gt; $100"</em>) is computationally prohibitive. <strong>CQRS is the natural companion to Event Sourcing</strong> because materialized view projections transform the event log into fast, read-optimized database tables.</li>
       </ul>`
     },
     {
-      qNum: "Q2",
-      question: "What is the concrete tradeoff between Event Notification and Event-Carried State Transfer?",
-      answer: `In system design interviews, this is the classic <strong>"Thin Event" vs. "Fat Event"</strong> architectural dilemma:
+      conceptId: "#02",
+      title: "Event Notification vs. Event-Carried State Transfer: Producer Thundering Herd vs. Payload Bloat",
+      answer: `The trade-off between <strong>Thin Events</strong> and <strong>Fat Events</strong> governs consumer autonomy and system coupling:
       <br/><br/>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
         <div class="bg-black/30 p-2.5 rounded border border-[#24314A]">
           <strong class="text-amber-300 block mb-1">Event Notification (Thin Event)</strong>
           <span class="text-slate-300 text-[12px]">
-            Payload only includes ID: <code class="text-cyan-300">{ orderId: "9823" }</code>.
+            Payload only includes minimal identifiers: <code class="text-cyan-300">{ orderId: "9823" }</code>.
             <br/><br/>
             <strong>Pros:</strong> Zero data duplication; broker stays lean; privacy-friendly (no PII in logs).
             <br/>
-            <strong>Cons:</strong> 5 downstream consumers all fire synchronous HTTP GET requests back to Order Service at the exact same instant, creating a <em>thundering herd on the producer</em>.
+            <strong>Cons:</strong> Downstream consumers all fire synchronous HTTP GET requests back to Order Service at the exact same instant, creating a <em>thundering herd on the producer</em>.
           </span>
         </div>
         <div class="bg-black/30 p-2.5 rounded border border-[#24314A]">
           <strong class="text-cyan-300 block mb-1">Event-Carried State (Fat Event)</strong>
           <span class="text-slate-300 text-[12px]">
-            Payload includes all fields: customer, items, shipping, payment details.
+            Payload includes all required state: customer, items, shipping, payment snapshot.
             <br/><br/>
             <strong>Pros:</strong> Consumers are 100% autonomous; zero callback traffic; resilient to producer outages.
             <br/>
-            <strong>Cons:</strong> Broker message size grows; consumers may cache stale data; schema changes impact every consumer.
+            <strong>Cons:</strong> Broker message size grows; consumers risk caching stale projections; schema changes impact every downstream consumer.
           </span>
         </div>
       </div>`
     },
     {
-      qNum: "Q3",
-      question: "How do you solve the Dual-Write race condition in Event-Driven Systems?",
-      answer: `When an application must update its local database AND emit an event to Kafka, doing both in separate network calls guarantees inconsistency (if the DB commits but Kafka fails, the event is lost; if Kafka succeeds but DB rolls back, you publish a phantom event).
+      conceptId: "#03",
+      title: "Eliminating the Dual-Write Race Condition: The Transactional Outbox Pattern via CDC",
+      answer: `When an application must update its local database AND emit an event to a message broker, performing both in separate network calls guarantees inconsistency (if the DB commits but Kafka fails, the event is lost; if Kafka succeeds but DB rolls back, you publish a phantom event).
       <br/><br/>
-      <strong class="text-indigo-400">The Universal Solution: The Transactional Outbox Pattern:</strong>
+      <strong class="text-cyan-400">The Universal Solution: The Transactional Outbox Pattern:</strong>
       <ol class="list-decimal list-inside mt-1.5 space-y-1 text-slate-300">
         <li>Create an <code class="text-cyan-300 bg-black/40 px-1 py-0.5 rounded">outbox</code> table in the service's relational database.</li>
         <li>Within a <strong>single ACID local transaction</strong>, write the business entity update AND insert the outgoing event payload into the <code class="text-cyan-300 bg-black/40 px-1 py-0.5 rounded">outbox</code> table. Both atomically commit or abort together.</li>
@@ -93,8 +93,8 @@ export function renderEventDrivenArchitectureContent(topic) {
       </ol>`
     },
     {
-      qNum: "Q4",
-      question: "How does Event Sourcing satisfy GDPR's 'Right to be Forgotten' when the event log is strictly immutable?",
+      conceptId: "#04",
+      title: "Cryptographic Shredding for Immutable Event Logs: Regulatory Deletion Under GDPR",
       answer: `Because Event Sourcing relies on an append-only, immutable commit log (Kafka, EventStoreDB), deleting or modifying past events to erase personal data (PII) violates the core architectural invariant of the system.
       <br/><br/>
       <strong class="text-emerald-400">The Industry Standard: Cryptographic Shredding (Crypto-Shredding):</strong>
@@ -102,7 +102,7 @@ export function renderEventDrivenArchitectureContent(topic) {
         <li>When creating events containing Personally Identifiable Information (PII like name, address, email), encrypt the sensitive payload fields using a <strong>unique per-user cryptographic key</strong> stored in an external Key Management Service (AWS KMS / HashiCorp Vault).</li>
         <li>Store the encrypted ciphertext inside the immutable event log.</li>
         <li>When the user exercises their GDPR Right to be Forgotten, <strong>permanently delete the user's specific encryption key</strong> from the KMS.</li>
-        <li>The historical events remain physically intact in the log (preserving sequence numbers, timestamps, and financial ledger integrity), but the encrypted PII becomes <strong>mathematically unrecoverable random noise</strong>, fully satisfying GDPR erasure requirements!</li>
+        <li>The historical events remain physically intact in the log (preserving sequence numbers, timestamps, and financial ledger integrity), but the encrypted PII becomes <strong>mathematically unrecoverable random noise</strong>, fully satisfying GDPR erasure requirements without log mutation!</li>
       </ul>`
     }
   ];
@@ -281,24 +281,24 @@ export function renderEventDrivenArchitectureContent(topic) {
           </p>
         </div>
 
-        <!-- Interview Follow-ups: Deep Dive Technical Q&As -->
-        <div class="flex flex-col gap-4">
-          <div class="flex items-center gap-2 border-b border-[#24314A] pb-2">
-            <span class="material-symbols-outlined text-[18px] text-indigo-400">quiz</span>
-            <h3 class="font-sans text-[15px] font-bold text-white tracking-wide uppercase">
-              Senior Interview Deep-Dives: Real-World Follow-Ups
-            </h3>
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
+        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
+          <div class="flex items-center gap-2">
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
+            </span>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            ${interviewFollowUps.map(item => `
-              <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 flex flex-col gap-2">
+            ${architecturalDeepDives.map(item => `
+              <div class="bg-[#0B1120] border border-[#24314A] rounded-xl p-4 flex flex-col gap-2">
                 <div class="flex items-center gap-2">
-                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/30 shrink-0">
-                    ${item.qNum}
+                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30 shrink-0">
+                    ${item.conceptId}
                   </span>
                   <h4 class="font-sans text-[13px] font-bold text-white leading-snug">
-                    ${item.question}
+                    ${item.title}
                   </h4>
                 </div>
                 <div class="text-[12.5px] text-slate-300 font-sans leading-relaxed pt-1 border-t border-[#24314A]/60">

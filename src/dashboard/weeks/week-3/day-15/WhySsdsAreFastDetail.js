@@ -62,10 +62,10 @@ export function renderWhySsdsAreFastContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "What is Write Amplification (WA) and how do modern databases minimize it?",
+      conceptId: "#01",
+      title: "Write Amplification Factor (WAF): LSM-Trees vs. In-Place B-Tree Updates",
       answer: `<strong>Write Amplification (WA)</strong> is the ratio of the physical data written to NAND flash chips relative to the logical data submitted by the host operating system:
       <br/><br/>
       <code class="text-amber-300 bg-black/40 px-2 py-1 rounded text-[12px] block font-code">
@@ -80,8 +80,8 @@ export function renderWhySsdsAreFastContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q2",
-      question: "How does the Flash Translation Layer (FTL) perform Dynamic and Static Wear Leveling?",
+      conceptId: "#02",
+      title: "Flash Translation Layer (FTL) Algorithms: Dynamic vs. Static Wear Leveling",
       answer: `NAND flash memory cells physically degrade every time they are erased (Program/Erase or P/E cycles). If a single block exceeds its cycle limit (e.g. 3,000 cycles for TLC flash), the cells fail and data is corrupted.
       <br/><br/>
       <strong class="text-indigo-400">The Two Wear Leveling Algorithms:</strong>
@@ -92,8 +92,8 @@ export function renderWhySsdsAreFastContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q3",
-      question: "Why do random write workloads degrade SSD performance and lifespan much faster than sequential writes?",
+      conceptId: "#03",
+      title: "Block Fragmentation & GC Stalls: Sequential vs. Random I/O Physics",
       answer: `In traditional spinning disks, random I/O was slow due to mechanical arm movements. In SSDs, random writes hurt performance due to <strong>Block Fragmentation and Garbage Collection Stalls</strong>:
       <br/><br/>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
@@ -108,8 +108,8 @@ export function renderWhySsdsAreFastContent(topic) {
       </div>`
     },
     {
-      qNum: "Q4",
-      question: "What is the purpose of the OS TRIM (UNMAP) command and what happens if it is disabled?",
+      conceptId: "#04",
+      title: "The OS TRIM (UNMAP) Command: Preventing Synchronous GC Latency Spikes",
       answer: `When a file is deleted in a traditional operating system, the filesystem simply marks the file's index entry as free in the inode table—it <strong>does not physically overwrite the disk sectors with zeros</strong>.
       <br/><br/>
       <strong class="text-indigo-400">The Problem Without TRIM:</strong>
@@ -275,24 +275,24 @@ export function renderWhySsdsAreFastContent(topic) {
           </p>
         </div>
 
-        <!-- Interview Follow-ups: Deep Dive Technical Q&As -->
+        <!-- Critical Architectural Deep-Dives & Production Edge Cases -->
         <div class="flex flex-col gap-4">
           <div class="flex items-center gap-2 border-b border-[#24314A] pb-2">
-            <span class="material-symbols-outlined text-[18px] text-indigo-400">quiz</span>
+            <span class="material-symbols-outlined text-[18px] text-cyan-400">account_tree</span>
             <h3 class="font-sans text-[15px] font-bold text-white tracking-wide uppercase">
-              Senior Interview Deep-Dives: Real-World Follow-Ups
+              Critical Architectural Deep-Dives &amp; Production Edge Cases
             </h3>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            ${interviewFollowUps.map(item => `
+            ${architecturalDeepDives.map(item => `
               <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 flex flex-col gap-2">
                 <div class="flex items-center gap-2">
-                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/30 shrink-0">
-                    ${item.qNum}
+                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30 shrink-0">
+                    ${item.conceptId}
                   </span>
                   <h4 class="font-sans text-[13px] font-bold text-white leading-snug">
-                    ${item.question}
+                    ${item.title}
                   </h4>
                 </div>
                 <div class="text-[12.5px] text-slate-300 font-sans leading-relaxed pt-1 border-t border-[#24314A]/60">

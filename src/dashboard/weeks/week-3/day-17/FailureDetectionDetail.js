@@ -38,25 +38,25 @@ export function renderFailureDetectionContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "How do you choose the heartbeat interval and failure threshold?",
+      conceptId: "#01",
+      title: "Heartbeat Interval & Failure Threshold Tuning: Balancing Detection Speed vs. False Positives",
       answer: "Work backwards from the recovery budget. If leadership must move within two seconds, and you want three missed beats before acting, the interval is roughly 500 ms with a 1.5 s threshold. Then sanity-check it against your p99.9 GC pause and network jitter; if either exceeds the threshold, you have designed in false positives. When they conflict, do not just widen the timeout — make the failover safe with fencing (sec. 10.1), which lets you detect aggressively without risking corruption."
     },
     {
-      qNum: "Q2",
-      question: "Your health check returns 200 but the node is useless. What went wrong?",
+      conceptId: "#02",
+      title: "Semantic Health Probes & Deep Dependency Testing: Liveness vs. Readiness Pitfalls",
       answer: "The check tested the wrong thing — usually that the process is up and the HTTP stack responds, rather than that the node can do its job. A useful check exercises the critical dependency path (can I reach the database, is my cache warm, is my queue consumer actually progressing) and fails when it cannot, while deliberately not failing on non-critical dependencies, or one downstream blip will cascade into the whole fleet marking itself unhealthy. Separating liveness from readiness exists precisely for this distinction."
     },
     {
-      qNum: "Q3",
-      question: "Why does SWIM ask other nodes to probe before declaring death?",
+      conceptId: "#03",
+      title: "The SWIM Protocol: Indirect Probing & Constant O(1) Network Overhead at Scale",
       answer: "Because a failed probe has two explanations: the target is dead, or the path between these two particular nodes is broken. Indirect probing distinguishes them cheaply — if three other members can reach the target, the problem is your link, not the node. It also keeps load flat as the cluster grows, since each node probes a constant number of peers instead of all of them, which is why gossip detection scales to thousands of nodes where all-to-all heartbeating does not."
     },
     {
-      qNum: "Q4",
-      question: "Half your cluster is reported dead. What do you do?",
+      conceptId: "#04",
+      title: "Correlated Fleet Failures & Mass Failover Circuit Breakers: Preventing Self-Inflicted Disasters",
       answer: "Assume the detector is wrong, not the fleet. The right behaviour is built in beforehand: a circuit breaker on failover itself that stops automated recovery when the suspected-dead fraction crosses a threshold, and pages a human instead. Mass automated recovery under a mistaken signal is how a network blip becomes a multi-hour outage — the failure mode sec. 8.4 describes, where the recovery machinery was the outage."
     }
   ];
@@ -344,24 +344,24 @@ outlier_detection:
           </div>
         </div>
 
-        <!-- INTERVIEW FOLLOW-UPS Box (Q1–Q4) -->
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
         <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
           <div class="flex items-center gap-2">
-            <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider flex items-center gap-2">
-              <span class="material-symbols-outlined text-[16px]">contact_support</span>
-              INTERVIEW FOLLOW-UPS (Q1–Q4)
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
             </span>
           </div>
 
           <div class="flex flex-col gap-4">
-            ${interviewFollowUps.map(item => `
+            ${architecturalDeepDives.map(item => `
               <div class="flex flex-col gap-2 pb-4 border-b border-[#24314A]/60 last:border-0 last:pb-0">
                 <div class="flex items-start gap-2.5">
-                  <span class="font-code text-[12px] font-bold text-[#818CF8] shrink-0 pt-0.5">${item.qNum}</span>
-                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.question}</span>
+                  <span class="font-code text-[12px] font-bold text-cyan-400 shrink-0 pt-0.5">${item.conceptId}</span>
+                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.title}</span>
                 </div>
                 <div class="text-[13px] text-slate-300 leading-relaxed font-sans pl-6">
-                  <strong>A.</strong> ${item.answer}
+                  ${item.answer}
                 </div>
               </div>
             `).join('')}

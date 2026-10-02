@@ -71,13 +71,13 @@ export function renderDistributedTransactionsSagaContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "Why is Two-Phase Commit (2PC) considered an anti-pattern in cloud microservices?",
+      conceptId: "#01",
+      title: "Why Two-Phase Commit (2PC) Fails in Microservices: Blocking Locks and Coordinator SPOF",
       answer: `While 2PC provides strict ACID guarantees in monolithic databases, it breaks catastrophically in distributed cloud architectures:
       <br/><br/>
-      <strong class="text-indigo-400">The Four 2PC Failure Modes:</strong>
+      <strong class="text-cyan-400">The Four 2PC Failure Modes:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
         <li><strong>Blocking Database Locks:</strong> During Phase 1 (Prepare), every participating database acquires exclusive row locks. These locks remain held across multiple network hops until Phase 2 finishes. If one participant is slow, <em>all other services freeze waiting for locks to release</em>.</li>
         <li><strong>Coordinator Single Point of Failure (SPOF):</strong> If the transaction coordinator crashes after participants vote "YES" but before sending "COMMIT", participants are left in an <strong>in-doubt state</strong>. They cannot abort or commit independently and must hold locks indefinitely.</li>
@@ -86,8 +86,8 @@ export function renderDistributedTransactionsSagaContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q2",
-      question: "Choreography vs. Orchestration: What are the concrete criteria for choosing between them?",
+      conceptId: "#02",
+      title: "Choreography vs. Orchestration Selection Framework: Workflow Topology and State Visibility",
       answer: `Choosing between Choreography and Orchestration depends on workflow complexity, team boundaries, and state visibility requirements:
       <br/><br/>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
@@ -112,11 +112,11 @@ export function renderDistributedTransactionsSagaContent(topic) {
       </div>`
     },
     {
-      qNum: "Q3",
-      question: "What is the Transactional Outbox Pattern and why is it mandatory in Saga implementations?",
+      conceptId: "#03",
+      title: "Dual-Write Elimination in Sagas: The Transactional Outbox Pattern via CDC Log Tailing",
       answer: `In any Saga step, a service must execute two actions: <strong>(1) update its local database</strong> and <strong>(2) publish a domain event to a message broker</strong> (e.g. Kafka).
       <br/><br/>
-      <strong class="text-indigo-400">The Dual-Write Race Condition:</strong>
+      <strong class="text-cyan-400">The Dual-Write Race Condition:</strong>
       <p class="text-slate-300 mt-1">
         If you commit to the database first and the message broker is unreachable, the event is never published (downstream services never run). If you publish to the broker first and the database commit fails, downstream services process a phantom transaction.
       </p>
@@ -129,11 +129,11 @@ export function renderDistributedTransactionsSagaContent(topic) {
       </ol>`
     },
     {
-      qNum: "Q4",
-      question: "How do you handle a Compensating Transaction that itself fails?",
+      conceptId: "#04",
+      title: "Compensating Transaction Failure Recovery: Forward Recovery, Idempotent Retries, and SRE Fencing",
       answer: `In a Saga, <strong>compensating transactions are not allowed to fail</strong>. You cannot "rollback a rollback."
       <br/><br/>
-      <strong class="text-indigo-400">Production Remediation Strategy:</strong>
+      <strong class="text-cyan-400">Production Remediation Strategy:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
         <li><strong>Indefinite Retries with Exponential Backoff:</strong> Transient network glitches, database locks, or rate limits will eventually resolve. The orchestrator must retry the compensating step until it succeeds.</li>
         <li><strong>Strict Idempotency:</strong> Because the compensation may be executed multiple times due to retries, the compensating endpoint (e.g., <code class="text-amber-300 bg-black/40 px-1 py-0.5 rounded">refundPayment(orderId)</code>) must be strictly idempotent to prevent duplicate refunds.</li>
@@ -313,24 +313,24 @@ export function renderDistributedTransactionsSagaContent(topic) {
           </p>
         </div>
 
-        <!-- Interview Follow-ups: Deep Dive Technical Q&As -->
-        <div class="flex flex-col gap-4">
-          <div class="flex items-center gap-2 border-b border-[#24314A] pb-2">
-            <span class="material-symbols-outlined text-[18px] text-indigo-400">quiz</span>
-            <h3 class="font-sans text-[15px] font-bold text-white tracking-wide uppercase">
-              Senior Interview Deep-Dives: Real-World Follow-Ups
-            </h3>
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
+        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
+          <div class="flex items-center gap-2">
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
+            </span>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            ${interviewFollowUps.map(item => `
-              <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 flex flex-col gap-2">
+            ${architecturalDeepDives.map(item => `
+              <div class="bg-[#0B1120] border border-[#24314A] rounded-xl p-4 flex flex-col gap-2">
                 <div class="flex items-center gap-2">
-                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/30 shrink-0">
-                    ${item.qNum}
+                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30 shrink-0">
+                    ${item.conceptId}
                   </span>
                   <h4 class="font-sans text-[13px] font-bold text-white leading-snug">
-                    ${item.question}
+                    ${item.title}
                   </h4>
                 </div>
                 <div class="text-[12.5px] text-slate-300 font-sans leading-relaxed pt-1 border-t border-[#24314A]/60">

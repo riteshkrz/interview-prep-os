@@ -85,10 +85,10 @@ export function renderMicroserviceCollaborationContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "What is the 'Event Pinball' (or Event Spaghetti) anti-pattern in pure choreography, and how do you diagnose it?",
+      conceptId: "#01",
+      title: "The 'Event Pinball' Anti-Pattern: Unbounded Choreography & OTel Trace Diagnosis",
       answer: `<strong>Event Pinball</strong> occurs when a system relies exclusively on choreographing asynchronous domain events without a central coordinator:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>The Failure Mode:</strong> An event from Service A triggers an action in Service B, which publishes an event triggering Service C, which triggers Service D, which publishes an event that triggers Service B again! The event bounces unpredictably across microservices like a silver ball in a pinball machine.</li>
@@ -97,8 +97,8 @@ export function renderMicroserviceCollaborationContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q2",
-      question: "How does a modern workflow orchestrator like Temporal guarantee fault tolerance without losing state during machine crashes?",
+      conceptId: "#02",
+      title: "Temporal Workflow Fault Tolerance: Deterministic Event Sourcing & State Replay",
       answer: `Modern orchestrators reject traditional volatile in-memory job queues in favor of <strong>Event Sourcing & Replay History</strong>:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>Immutable Append-Only Event History:</strong> Every workflow step, timer schedule, activity dispatch, and activity result is appended as an immutable event record in a strongly consistent database (PostgreSQL, Cassandra, or Raft).</li>
@@ -108,8 +108,8 @@ export function renderMicroserviceCollaborationContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q3",
-      question: "Why is the 'Hybrid Architecture' (Orchestrate the Core, Choreograph the Tail) the universal standard in hyperscale tech companies?",
+      conceptId: "#03",
+      title: "The Hybrid Enterprise Blueprint: Orchestrate the Core, Choreograph the Reactive Tail",
       answer: `Hyperscale architectures (Uber, Amazon, Netflix, Stripe) deliberately avoid dogmatic extremes:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>The Transactional Core Must Be Orchestrated:</strong>
@@ -124,8 +124,8 @@ export function renderMicroserviceCollaborationContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q4",
-      question: "How do you handle schema evolution and backward compatibility in choreographed event systems?",
+      conceptId: "#04",
+      title: "Schema Evolution in Asynchronous Streams: Protobuf, Avro & Compatibility Gates",
       answer: `Because choreographed producers do not know who is listening to their events, updating an event schema can silently crash downstream consumers:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>Binary Serialization Formats:</strong> Reject loose JSON payloads in favor of strict binary schema contracts like <strong>Protocol Buffers (Protobuf)</strong> or <strong>Apache Avro</strong>.</li>
@@ -415,21 +415,21 @@ export function renderMicroserviceCollaborationContent(topic) {
           </p>
         </div>
 
-        <!-- INTERVIEW FOLLOW-UPS Box (Q1–Q4) -->
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
         <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
           <div class="flex items-center gap-2">
-            <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider flex items-center gap-2">
-              <span class="material-symbols-outlined text-[16px]">contact_support</span>
-              DEEP-DIVE INTERVIEW FOLLOW-UPS (Q1–Q4)
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
             </span>
           </div>
 
           <div class="flex flex-col gap-4">
-            ${interviewFollowUps.map(item => `
+            ${architecturalDeepDives.map(item => `
               <div class="flex flex-col gap-2 pb-4 border-b border-[#24314A]/60 last:border-0 last:pb-0">
                 <div class="flex items-start gap-2.5">
-                  <span class="font-code text-[12px] font-bold text-[#818CF8] shrink-0 pt-0.5">${item.qNum}</span>
-                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.question}</span>
+                  <span class="font-code text-[12px] font-bold text-cyan-400 shrink-0 pt-0.5">${item.conceptId}</span>
+                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.title}</span>
                 </div>
                 <div class="text-[13px] text-slate-300 leading-relaxed font-sans pl-6">
                   ${item.answer}

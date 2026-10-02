@@ -77,10 +77,10 @@ export function renderWhyKafkaIsFastContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "Why is sequential disk access faster than random memory (RAM) access in modern computer architecture?",
+      conceptId: "#01",
+      title: "Sequential Disk I/O vs. Random RAM Access: Hardware Physics & Cache Line Prefetching",
       answer: `This counter-intuitive hardware physics principle is central to Kafka's design:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>Random Memory (RAM) Pointer Chasing:</strong> When CPU instructions jump randomly across gigabytes of memory (e.g. traversing linked lists, pointer-heavy Java objects), the CPU experiences cascading <strong>L1, L2, and L3 cache misses</strong>. Each cache miss stalls the CPU for ~50–100 nanoseconds waiting for a main memory bus cycle.</li>
@@ -91,8 +91,8 @@ export function renderWhyKafkaIsFastContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q2",
-      question: "How does the Linux sendfile() syscall implement Zero-Copy via DMA scatter-gather descriptors?",
+      conceptId: "#02",
+      title: "The Linux sendfile() Syscall: Zero-Copy Transfers via DMA Scatter-Gather Descriptors",
       answer: `In a traditional file transfer (<code>read()</code> followed by <code>write()</code>), data crosses the user-space boundary twice, causing <strong>4 context switches and 4 memory copies</strong> (2 DMA, 2 CPU).
       <br/><br/>
       With Linux <code>sendfile()</code>:
@@ -106,8 +106,8 @@ export function renderWhyKafkaIsFastContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q3",
-      question: "Why does Kafka delegate caching entirely to the OS Page Cache rather than managing an in-memory cache in the JVM heap?",
+      conceptId: "#03",
+      title: "OS Page Cache Architecture vs. JVM Heap: Eliminating Stop-The-World GC Latency Spikes",
       answer: `Jay Kreps and the original Kafka designers rejected in-memory JVM caching due to three severe enterprise JVM flaws:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>Memory Bloat & Object Overhead:</strong> Java objects carry heavy memory overhead. A 4-byte string or primitive can easily require 24–32 bytes of heap metadata and padding. Caching raw byte buffers in the OS Page Cache is 2× to 4× more space-efficient.</li>
@@ -116,8 +116,8 @@ export function renderWhyKafkaIsFastContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q4",
-      question: "How does end-to-end message batching and compression work across producer, broker, and consumer?",
+      conceptId: "#04",
+      title: "End-to-End Batching & Compression Pipeline: Producer Accumulators to Broker Zero-Overhead",
       answer: `Kafka treats batching as a first-class citizen across the entire messaging lifecycle:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
         <li><strong>Producer Accumulator:</strong> Producers do not send messages individually. The Kafka producer buffers records in memory up to <code>batch.size</code> (e.g. 64 KB) or waits up to <code>linger.ms</code> (e.g. 5–20 ms). Multiple messages bound for the same partition are coalesced into a single <code>RecordBatch</code>.</li>
@@ -298,7 +298,7 @@ export function renderWhyKafkaIsFastContent(topic) {
 
 
       <!-- ================================================================= -->
-      <!-- PAGE 98: CALLOUTS, INTERVIEW FOLLOW-UPS & KEY TAKEAWAY -->
+      <!-- PAGE 98: CALLOUTS, ARCHITECTURAL DEEP-DIVES & KEY TAKEAWAY -->
       <!-- ================================================================= -->
       <div class="relative overflow-hidden rounded-2xl bg-[#0F172A] border border-[#24314A] shadow-2xl p-6 sm:p-8 flex flex-col gap-6">
 
@@ -324,31 +324,31 @@ export function renderWhyKafkaIsFastContent(topic) {
           </p>
         </div>
 
-        <!-- Bar: OVER TO YOU -->
+        <!-- Page Cache Sizing Architectural Study -->
         <div class="bg-[#1E293B]/70 border border-[#334155] rounded-xl px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-3 text-[12.5px]">
-          <span class="px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-code text-[10.5px] font-bold uppercase tracking-wider shrink-0 w-fit">
-            OVER TO YOU
+          <span class="px-2.5 py-1 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-code text-[10.5px] font-bold uppercase tracking-wider shrink-0 w-fit">
+            PRODUCTION FORMULA
           </span>
           <span class="text-slate-300 font-medium">
-            If a Kafka cluster experiences severe consumer lag and consumers fall behind the active page cache (causing cold reads from physical disk), what happens to broker throughput? How do you size Linux RAM to keep active consumers reading 100% from Page Cache?
+            <strong>Linux Page Cache Sizing Formula:</strong> To prevent cold disk reads when consumers fall behind during minor outages: <code class="text-cyan-300 font-code text-[11px]">RAM_needed = Ingress_Throughput (MB/s) * Max_Tolerable_Lag (Seconds) * Safety_Margin (1.3)</code>. For 100 MB/s ingress and 1-hour lag tolerance, provision $100 \times 3600 \times 1.3 \approx 468\text{ GB}$ of RAM across the broker cluster dedicated to Page Cache.
           </span>
         </div>
 
-        <!-- INTERVIEW FOLLOW-UPS Box -->
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
         <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
           <div class="flex items-center gap-2">
-            <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider flex items-center gap-2">
-              <span class="material-symbols-outlined text-[16px]">contact_support</span>
-              DEEP-DIVE INTERVIEW FOLLOW-UPS (Q1–Q4)
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
             </span>
           </div>
 
           <div class="flex flex-col gap-4">
-            ${interviewFollowUps.map(item => `
+            ${architecturalDeepDives.map(item => `
               <div class="flex flex-col gap-2 pb-4 border-b border-[#24314A]/60 last:border-0 last:pb-0">
                 <div class="flex items-start gap-2.5">
-                  <span class="font-code text-[12px] font-bold text-[#818CF8] shrink-0 pt-0.5">${item.qNum}</span>
-                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.question}</span>
+                  <span class="font-code text-[12px] font-bold text-cyan-400 shrink-0 pt-0.5">${item.conceptId}</span>
+                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.title}</span>
                 </div>
                 <div class="text-[13px] text-slate-300 leading-relaxed font-sans pl-6">
                   ${item.answer}

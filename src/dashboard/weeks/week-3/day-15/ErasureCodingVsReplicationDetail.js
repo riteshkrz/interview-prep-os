@@ -80,10 +80,10 @@ export function renderErasureCodingVsReplicationContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "How does Reed-Solomon Erasure Coding mathematically reconstruct missing data chunks?",
+      conceptId: "#01",
+      title: "Reed-Solomon Galois Field Linear Algebra: Matrix Reconstruction Mechanics",
       answer: `<strong>Reed-Solomon ($k + m$)</strong> relies on linear algebra over finite Galois Fields ($GF(2^8)$ or $GF(2^{16})$):
       <br/><br/>
       <strong class="text-indigo-400">The Encoding & Decoding Mathematics:</strong>
@@ -95,8 +95,8 @@ export function renderErasureCodingVsReplicationContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q2",
-      question: "Why is Erasure Coding inefficient for small files (< 1MB), and how do hyperscale systems handle them?",
+      conceptId: "#02",
+      title: "The Small File (< 1MB) Bottleneck: Protocol Metadata & Compaction Aggregation",
       answer: `Applying an 8+4 Erasure Coding scheme to a 16KB file splits it into 12 chunks of only ~1.3 KB each:
       <br/><br/>
       <strong class="text-indigo-400">The Small File Dilemma:</strong>
@@ -107,8 +107,8 @@ export function renderErasureCodingVsReplicationContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q3",
-      question: "How does Erasure Coding achieve 11 nines of durability with only 50% overhead compared to 3-way replication?",
+      conceptId: "#03",
+      title: "11 Nines of Durability vs. 6 Nines: MTTR Calculations & 3-AZ Dispersion",
       answer: `Durability calculations depend on the <strong>Mean Time to Failure (MTTF)</strong> of disks versus the <strong>Mean Time to Repair (MTTR)</strong>:
       <br/><br/>
       <strong class="text-indigo-400">Durability Math Comparison:</strong>
@@ -118,8 +118,8 @@ export function renderErasureCodingVsReplicationContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q4",
-      question: "What is a 'Reconstruction Storm' and how do storage clusters throttle repair bandwidth?",
+      conceptId: "#04",
+      title: "Reconstruction Storms & Network Saturation: Token-Bucket Throttling Defense",
       answer: `When an entire storage rack or high-density storage server (holding 500 Terabytes of erasure-coded chunks) suffers a catastrophic hardware failure, the storage orchestrator detects that hundreds of thousands of objects are now missing chunks.
       <br/><br/>
       <strong class="text-rose-400">The Reconstruction Storm:</strong>
@@ -297,24 +297,24 @@ export function renderErasureCodingVsReplicationContent(topic) {
           </p>
         </div>
 
-        <!-- Interview Follow-ups: Deep Dive Technical Q&As -->
+        <!-- Critical Architectural Deep-Dives & Production Edge Cases -->
         <div class="flex flex-col gap-4">
           <div class="flex items-center gap-2 border-b border-[#24314A] pb-2">
-            <span class="material-symbols-outlined text-[18px] text-indigo-400">quiz</span>
+            <span class="material-symbols-outlined text-[18px] text-cyan-400">account_tree</span>
             <h3 class="font-sans text-[15px] font-bold text-white tracking-wide uppercase">
-              Senior Interview Deep-Dives: Real-World Follow-Ups
+              Critical Architectural Deep-Dives &amp; Production Edge Cases
             </h3>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            ${interviewFollowUps.map(item => `
+            ${architecturalDeepDives.map(item => `
               <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 flex flex-col gap-2">
                 <div class="flex items-center gap-2">
-                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/30 shrink-0">
-                    ${item.qNum}
+                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30 shrink-0">
+                    ${item.conceptId}
                   </span>
                   <h4 class="font-sans text-[13px] font-bold text-white leading-snug">
-                    ${item.question}
+                    ${item.title}
                   </h4>
                 </div>
                 <div class="text-[12.5px] text-slate-300 font-sans leading-relaxed pt-1 border-t border-[#24314A]/60">

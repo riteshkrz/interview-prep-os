@@ -56,25 +56,25 @@ export function renderGlobalTrafficManagementContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "When should you use Anycast vs. GeoDNS (GSLB) in a planetary system design?",
+      conceptId: "#01",
+      title: "Layered Global Traffic Steering: Public Edge Anycast vs. Backend GeoDNS (GSLB)",
       answer: "Use both in a layered hybrid hierarchy: (1) <strong>Anycast at the Public Edge</strong> for DNS resolution, CDN caching, and edge TLS termination. Anycast absorbs volumetric DDoS attacks across hundreds of PoPs and withdraws dead PoP routes in seconds. (2) <strong>GeoDNS / GSLB Behind the Edge</strong> for directing traffic between regional cloud datacenters (e.g. AWS us-east-1 vs. eu-central-1) based on business logic, compliance boundaries (GDPR data residency), or maintenance windows where minute-level failover is acceptable."
     },
     {
-      qNum: "Q2",
-      question: "Why can BGP Anycast break long-lived TCP connections, and how do modern hyper-scalers prevent it?",
+      conceptId: "#02",
+      title: "BGP Route Flapping & Stateful TCP Disruption: Consistent Hashing (Maglev) & Tunneling",
       answer: "BGP is dynamic and stateless: if an intermediate transit provider drops a link or an AS path changes, the Internet may suddenly route mid-stream TCP packets for IP <code>198.51.100.1</code> to a <em>different</em> physical PoP (e.g. from Frankfurt to Amsterdam). Because the Amsterdam PoP has no TCP socket state for that connection, it responds with a <code>TCP RST</code>, abruptly terminating file downloads or WebSockets. Cloudflare and Google mitigate this using: (1) <strong>Consistent Hashing Load Balancers (Maglev / Katran)</strong> that synchronize connection tables across edge nodes; and (2) <strong>Internal Cross-PoP BGP Encapsulation</strong> (GRE or Geneve tunnels) that transparently forwards displaced packets to the origin PoP that holds the socket state."
     },
     {
-      qNum: "Q3",
-      question: "What is EDNS Client Subnet (ECS, RFC 7871) and why does GeoDNS fail without it?",
+      conceptId: "#03",
+      title: "EDNS Client Subnet (ECS, RFC 7871): Solving Geographic Misrouting via Public Resolvers",
       answer: "Traditional DNS queries only tell the authoritative nameserver the IP address of the <em>recursive resolver</em> (e.g., Google DNS 8.8.8.8 in California), not the actual end user. If a user in Sydney Australia uses Google DNS, standard GeoDNS sees the query coming from California and incorrectly returns the IP of an Oregon datacenter (+140ms latency penalty!). <strong>EDNS Client Subnet (ECS)</strong> fixes this by having the recursive resolver append the first 24 bits of the client's actual IP subnet to the DNS query. The authoritative nameserver then returns an IP tailored to the user's geographic location."
     },
     {
-      qNum: "Q4",
-      question: "If a regional datacenter fails, why is shifting DNS traffic alone insufficient for active-active distributed databases?",
+      conceptId: "#04",
+      title: "Regional Failover Realities: Why DNS Shifting Fails Without Database Replication Drain",
       answer: "Routing network packets is instantaneous compared to storage consistency. In multi-region active-active architectures, data is replicated asynchronously across regions. If you flip DNS from Region A to Region B: (1) <strong>Replication Lag</strong>: Region B may be 200ms–2s behind on writes, resulting in read-after-write anomalies for shifted users. (2) <strong>Write Collisions</strong>: Concurrently shifted writes can conflict with in-flight transactions. (3) <strong>Capacity Tsunami</strong>: Region B instantly receives 2x traffic load, risking CPU exhaustion. True disaster recovery requires pre-warmed backend caches, automated replication drain verification, and database-level leader fencing before completing DNS traffic shift."
     }
   ];
@@ -331,23 +331,24 @@ export function renderGlobalTrafficManagementContent(topic) {
             By announcing Anycast BGP prefixes directly to consumer ISPs (Comcast, Deutsche Telekom) over IXP fabric, content providers eliminate intermediate router hops, shave 30–60ms off round-trip times, and reduce egress network transit bills by over 70%.
           </p>
         </div>
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
         <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
           <div class="flex items-center gap-2">
-            <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider flex items-center gap-2">
-              <span class="material-symbols-outlined text-[16px]">contact_support</span>
-              INTERVIEW FOLLOW-UPS (Q1–Q4)
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
             </span>
           </div>
 
           <div class="flex flex-col gap-4">
-            ${interviewFollowUps.map(item => `
+            ${architecturalDeepDives.map(item => `
               <div class="flex flex-col gap-2 pb-4 border-b border-[#24314A]/60 last:border-0 last:pb-0">
                 <div class="flex items-start gap-2.5">
-                  <span class="font-code text-[12px] font-bold text-[#818CF8] shrink-0 pt-0.5">${item.qNum}</span>
-                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.question}</span>
+                  <span class="font-code text-[12px] font-bold text-cyan-400 shrink-0 pt-0.5">${item.conceptId}</span>
+                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.title}</span>
                 </div>
                 <div class="text-[13px] text-slate-300 leading-relaxed font-sans pl-6">
-                  <strong>A.</strong> ${item.answer}
+                  ${item.answer}
                 </div>
               </div>
             `).join('')}

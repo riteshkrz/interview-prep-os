@@ -64,25 +64,25 @@ export function renderRabbitMqVsKafkaContent(topic) {
     }
   ];
 
-  const interviewFollowUps = [
+  const architecturalDeepDives = [
     {
-      qNum: "Q1",
-      question: "How does Kafka guarantee message ordering, and what happens if you need total global ordering?",
+      conceptId: "#01",
+      title: "Partition-Level Ordering vs. Global Total Ordering: Murmur2 Hashing and Bottlenecks",
       answer: `Kafka guarantees <strong>strict FIFO ordering only within a single partition</strong>, never globally across the entire topic.
       <br/><br/>
-      <strong class="text-indigo-400">Ordering Mechanics & Scaling Tradeoffs:</strong>
+      <strong class="text-cyan-400">Ordering Mechanics & Scaling Tradeoffs:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
         <li><strong>Partition Key Hashing:</strong> When producing messages, supply a partition key (e.g., <code class="text-cyan-300 bg-black/40 px-1 py-0.5 rounded">user_id</code>, <code class="text-cyan-300 bg-black/40 px-1 py-0.5 rounded">account_id</code>). Kafka applies a consistent hash (<code class="text-amber-300 bg-black/40 px-1 py-0.5 rounded">murmur2(key) % num_partitions</code>) to guarantee all events for that specific entity always route to the exact same partition.</li>
         <li><strong>Consumer Assignment:</strong> Within a Consumer Group, each partition is consumed by <strong>exactly one consumer thread</strong> at any given time. This guarantees strict sequential processing per entity.</li>
-        <li><strong>The Global Ordering Trap:</strong> If an interviewer asks for <em>global ordering across all events in a topic</em>, you must configure the topic with <strong>exactly 1 partition</strong>. This bottlenecks the entire topic to a single consumer instance, capping throughput to ~5,000–10,000 msgs/sec and completely destroying horizontal scalability.</li>
+        <li><strong>The Global Ordering Trap:</strong> If an architecture requires <em>global ordering across all events in a topic</em>, you must configure the topic with <strong>exactly 1 partition</strong>. This bottlenecks the entire topic to a single consumer instance, capping throughput to ~5,000–10,000 msgs/sec and completely destroying horizontal scalability.</li>
       </ul>`
     },
     {
-      qNum: "Q2",
-      question: "What is Kafka Log Compaction and when should it be used instead of time-based retention?",
+      conceptId: "#02",
+      title: "Kafka Log Compaction Internals: State Retention vs. Time-Based Segments and Tombstones",
       answer: `By default, Kafka deletes records older than a retention threshold (e.g., <code class="text-cyan-300 bg-black/40 px-1 py-0.5 rounded">log.retention.hours=168</code> / 7 days). <strong>Log Compaction</strong> provides a fundamentally different retention strategy based on state rather than time.
       <br/><br/>
-      <strong class="text-indigo-400">How Log Compaction Operates:</strong>
+      <strong class="text-cyan-400">How Log Compaction Operates:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
         <li>Kafka's background cleaner thread periodically scans log segment files and <strong>removes older duplicate records with identical keys</strong>, retaining only the most recent value for each key.</li>
         <li>If a message is published with a specific key and a <code class="text-rose-400 bg-black/40 px-1 py-0.5 rounded">null</code> payload (known as a <strong>Tombstone</strong>), the cleaner eventually deletes the key entirely after a configurable grace period (<code class="text-slate-300 bg-black/40 px-1 py-0.5 rounded">delete.retention.ms</code>).</li>
@@ -90,8 +90,8 @@ export function renderRabbitMqVsKafkaContent(topic) {
       </ul>`
     },
     {
-      qNum: "Q3",
-      question: "When would a senior architect deliberately choose RabbitMQ over Apache Kafka in production?",
+      conceptId: "#03",
+      title: "Strategic Selection Criteria: Why and When to Deploy RabbitMQ Over Apache Kafka",
       answer: `While Kafka dominates big data and event streams, RabbitMQ is deliberately chosen for transactional workflows and task scheduling:
       <br/><br/>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
@@ -114,11 +114,11 @@ export function renderRabbitMqVsKafkaContent(topic) {
       </div>`
     },
     {
-      qNum: "Q4",
-      question: "How does Kafka achieve Exactly-Once Semantics (EOS) across producer, broker, and consumer?",
+      conceptId: "#04",
+      title: "Kafka Exactly-Once Semantics (EOS): Idempotent Producer PIDs and Transactional Coordinator 2PC",
       answer: `In distributed systems, true end-to-end Exactly-Once processing requires coordinating two distinct mechanisms:
       <br/><br/>
-      <strong class="text-indigo-400">The Two Pillars of Kafka Exactly-Once Semantics:</strong>
+      <strong class="text-cyan-400">The Two Pillars of Kafka Exactly-Once Semantics:</strong>
       <ol class="list-decimal list-inside mt-1.5 space-y-1 text-slate-300">
         <li><strong>Idempotent Producers (<code class="text-cyan-300 bg-black/40 px-1 py-0.5 rounded">enable.idempotence=true</code>):</strong> The broker assigns each producer a 64-bit <strong>Producer ID (PID)</strong>. Every message sent to a partition includes a monotonically increasing <strong>Sequence Number</strong>. If a network timeout causes the producer to re-send a batch, the broker recognizes the already-committed sequence number and silently drops the duplicate.</li>
         <li><strong>Transactional API (Consume-Transform-Produce):</strong> Kafka uses an internal <strong>Transaction Coordinator</strong> and transaction log topic (<code class="text-amber-300 bg-black/40 px-1 py-0.5 rounded">__transaction_state</code>). A two-phase commit atomically binds the produced output messages across multiple partitions with the consumer's offset commit. If the application crashes halfway through, uncommitted batches are discarded by downstream transactional consumers (<code class="text-emerald-300 bg-black/40 px-1 py-0.5 rounded">isolation.level=read_committed</code>).</li>
@@ -284,24 +284,24 @@ export function renderRabbitMqVsKafkaContent(topic) {
           </p>
         </div>
 
-        <!-- Interview Follow-ups: Deep Dive Technical Q&As -->
-        <div class="flex flex-col gap-4">
-          <div class="flex items-center gap-2 border-b border-[#24314A] pb-2">
-            <span class="material-symbols-outlined text-[18px] text-indigo-400">quiz</span>
-            <h3 class="font-sans text-[15px] font-bold text-white tracking-wide uppercase">
-              Senior Interview Deep-Dives: Real-World Follow-Ups
-            </h3>
+        <!-- CRITICAL ARCHITECTURAL DEEP-DIVES Box -->
+        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
+          <div class="flex items-center gap-2">
+            <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">account_tree</span>
+              CRITICAL ARCHITECTURAL DEEP-DIVES &amp; DISTRIBUTED EDGE CASES
+            </span>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            ${interviewFollowUps.map(item => `
-              <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 flex flex-col gap-2">
+            ${architecturalDeepDives.map(item => `
+              <div class="bg-[#0B1120] border border-[#24314A] rounded-xl p-4 flex flex-col gap-2">
                 <div class="flex items-center gap-2">
-                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/30 shrink-0">
-                    ${item.qNum}
+                  <span class="font-code text-[11px] font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30 shrink-0">
+                    ${item.conceptId}
                   </span>
                   <h4 class="font-sans text-[13px] font-bold text-white leading-snug">
-                    ${item.question}
+                    ${item.title}
                   </h4>
                 </div>
                 <div class="text-[12.5px] text-slate-300 font-sans leading-relaxed pt-1 border-t border-[#24314A]/60">
