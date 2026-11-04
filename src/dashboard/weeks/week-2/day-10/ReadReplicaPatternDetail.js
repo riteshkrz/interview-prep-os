@@ -30,7 +30,7 @@ export function renderReadReplicaPatternContent(topic) {
     {
       strategy: "4. Dynamic Lag Ejection",
       mechanism: "Health monitor polls pg_stat_replication or Seconds_Behind_Master; ejects replicas with lag > 500ms.",
-      consistency: "Bounded Bounded-Staleness",
+      consistency: "Bounded Staleness",
       tradeoff: "Risk of cascading overload if high lag causes all replicas to be ejected simultaneously.",
       tradeoffClass: "text-rose-400 font-bold"
     }
@@ -39,37 +39,37 @@ export function renderReadReplicaPatternContent(topic) {
   const interviewFollowUps = [
     {
       qNum: "Q1",
-      question: "How do you guarantee 'Read-Your-Own-Writes' for a mutating user without routing all read traffic to the Primary database?",
-      answer: `In a naive implementation, routing all user reads to read replicas results in immediate user complaints: a user updates their profile or posts a comment, refreshes the page, and the change is missing because the replica is 250ms behind.
+      question: "How do you guarantee 'Read-Your-Own-Writes' without overloading the Primary database?",
+      answer: `In a naive architecture, routing all reads to read replicas results in an immediate user complaint: a user edits their name, clicks save, page refreshes, and the old name is still displayed because the replica is 250ms behind.
       <br/><br/>
-      <strong class="text-indigo-400">The Senior Architecture: Sticky Write-Window Routing</strong>
+      <strong class="text-indigo-400">The Sticky Write-Window Architecture:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
-        <li><strong>Cookie / Token Tracking:</strong> When a user issues a mutating write (<code>POST</code>, <code>PUT</code>, <code>DELETE</code>), the API Gateway injects an encrypted timestamp cookie: <code>last_write_at=1710765430</code>.</li>
-        <li><strong>Gateway Read Routing:</strong> On subsequent <code>GET</code> requests, if <code>currentTime - last_write_at &lt; 5 seconds</code> (the configured SLA window for replication), route the read directly to the Primary database.</li>
-        <li><strong>Replica Offloading for Others:</strong> All anonymous users and users who have not written in the last 5 seconds are routed to the read replica pool. This preserves 90–95% of replica read offloading while guaranteeing absolute consistency for the actor who made the change.</li>
+        <li><strong>Timestamp Cookie:</strong> When a user performs any write operation (<code>POST</code>, <code>PUT</code>, <code>DELETE</code>), the API gateway returns an encrypted cookie: <code>last_write_at = timestamp</code>.</li>
+        <li><strong>Smart Read Routing:</strong> On subsequent <code>GET</code> requests, the routing proxy checks the cookie. If <code>current_time - last_write_at &lt; 5 seconds</code>, route the read directly to the Primary database.</li>
+        <li><strong>The 95% Offload Win:</strong> Since 95%+ of active users are simply browsing without writing in that 5-second window, they continue reading from the read replica pool. Only the active writer hits the primary, preserving database scalability while eliminating user confusion!</li>
       </ul>`
     },
     {
       qNum: "Q2",
       question: "What happens when the Primary crashes? How do production systems handle failover without split-brain?",
-      answer: `When the Primary fails, an automated orchestration system (e.g. GitHub's <em>Orchestrator</em>, Postgres <em>Patroni</em> with Etcd consensus, or AWS Aurora storage quorum) must promote a replica.
+      answer: `When the Primary database fails, an orchestration tool (e.g. GitHub's <em>Orchestrator</em>, Postgres <em>Patroni</em> with Etcd consensus, or AWS Aurora storage quorum) must promote a replica.
       <br/><br/>
-      <strong class="text-indigo-400">The Failover Protocol:</strong>
+      <strong class="text-indigo-400">The 4-Step Failover Protocol:</strong>
       <ol class="list-decimal list-inside mt-1.5 space-y-1 text-slate-300">
-        <li><strong>Consensus Leader Check:</strong> Health probes across multiple availability zones confirm the Primary is dead (not just an isolated network hiccup).</li>
-        <li><strong>Select Most Advanced Replica:</strong> Inspect all replicas' current log position (LSN in Postgres, GTID in MySQL). Select the replica with the smallest replication lag (highest LSN) to minimize $RPO$.</li>
-        <li><strong>Fencing / STONITH:</strong> Hard-isolate the old Primary (Shoot The Other Node In The Head via cloud API or power fence) to prevent it from ever accepting writes again if it revives.</li>
-        <li><strong>Promotion & DNS/Proxy Repoint:</strong> Promote the chosen replica to Read-Write Primary, configure remaining replicas to follow the new leader, and update database proxies (ProxySQL, PgBouncer, Envoy) or DNS CNAME.</li>
+        <li><strong>Consensus Leader Check:</strong> Health probes across multiple independent nodes confirm the Primary is truly unreachable (not just a single network hiccup).</li>
+        <li><strong>Pick Most Up-to-Date Replica:</strong> Inspect all replicas' current log position (LSN in Postgres, GTID in MySQL). Promote the replica with the smallest replication lag to minimize data loss.</li>
+        <li><strong>Fencing (STONITH):</strong> Hard-isolate the old Primary ("Shoot The Other Node In The Head" via cloud API or revoking network access) to guarantee it can never accept writes again if it revives.</li>
+        <li><strong>Traffic Repoint:</strong> Update database connection pool proxies (ProxySQL, PgBouncer, Envoy) or DNS records to point application traffic to the new leader.</li>
       </ol>`
     },
     {
       qNum: "Q3",
-      question: "Why do asynchronous read replicas have an RPO > 0? How can an engineer quantify the risk of data loss?",
-      answer: `In asynchronous replication, the Primary commits a transaction locally to its disk and immediately sends a success ACK to the client. The write is placed in the replication log (binlog/WAL) to be pulled or pushed to replicas in the background.
+      question: "Why do asynchronous read replicas have an RPO > 0? How can an engineer quantify the risk?",
+      answer: `In asynchronous replication, the Primary commits a transaction locally to its disk and immediately sends a success confirmation to the client. The write is sent to replicas asynchronously in the background.
       <br/><br/>
-      If the Primary experiences a sudden catastrophic hardware crash (kernel panic, power outage, memory bus failure) before that log entry reaches any replica:
+      If the Primary experiences a sudden hardware crash (power loss, motherboard failure) before that log entry reaches any replica:
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
-        <li>The committed transaction exists <em>only</em> on the dead primary's local SSD.</li>
+        <li>The committed transaction exists <em>only</em> on the dead primary's local disk.</li>
         <li>When a replica is promoted to new Primary, that transaction is completely missing.</li>
         <li>$RPO$ (Recovery Point Objective) equals the exact duration of replication lag at the millisecond of crash (typically 50ms to 2 seconds).</li>
         <li>If $RPO = 0$ is a strict compliance requirement (e.g., banking ledgers), you must use <strong>Semi-Synchronous replication</strong> or a consensus-backed engine (Spanner/Raft) where writes are acked only after persisting to at least one remote replica.</li>
@@ -80,7 +80,7 @@ export function renderReadReplicaPatternContent(topic) {
       question: "When is the exact threshold to transition from Read Replicas to Database Sharding?",
       answer: `Read replicas are the easiest horizontal scaling pattern, but they hit an inescapable physical ceiling. You must transition to database sharding when:
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
-        <li><strong>Write Throughput Ceiling:</strong> The Primary reaches 80%+ write IOPS or CPU capacity. Because replicas must replay every write, adding replicas cannot alleviate write load.</li>
+        <li><strong>Write Capacity Ceiling:</strong> The Primary reaches 80%+ write IOPS or CPU capacity. Because replicas must replay every write, adding replicas cannot alleviate write load.</li>
         <li><strong>Primary Replication Overhead:</strong> The Primary is spending excessive CPU and network bandwidth broadcasting binlogs to 10+ replicas (replication fanout tax).</li>
         <li><strong>Dataset Exceeds Single-Instance Storage:</strong> The table data and indexes exceed what can fit efficiently on a single database server (e.g. &gt; 5–10 TB), causing cache miss thrashing and slow maintenance operations (vacuum, backups, index builds).</li>
         <li><strong>Cross-Region Write Latency:</strong> Users worldwide require low-latency writes that cannot travel back to a single primary region.</li>
@@ -104,26 +104,40 @@ export function renderReadReplicaPatternContent(topic) {
               4.5 The Read-Replica Pattern & Replication Lag
             </h2>
           </div>
+          <p class="text-slate-400 text-[13px] font-sans">
+            How to horizontally scale read-heavy applications, handle follower lag, and prevent missing-update anomalies.
+          </p>
         </div>
 
-        <!-- Overview Text -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 sm:p-5 flex flex-col gap-3 font-sans text-[13px] leading-relaxed">
-          <p class="text-slate-300">
-            In modern web and mobile applications, traffic is overwhelmingly <strong class="text-cyan-400">read-heavy</strong> (typically a 10:1 to 100:1 read-to-write ratio). The <strong class="text-indigo-400">Read-Replica Pattern</strong> isolates write operations to a single authoritative Primary (Leader) node, while fanning out read queries across a fleet of Read Replicas (Followers). This scales read throughput horizontally and protects the primary from analytical query exhaustion.
+        <!-- Everyday Mental Model Card -->
+        <div class="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/50 border border-indigo-500/30 rounded-xl p-5 flex flex-col gap-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-400 text-[20px]">lightbulb</span>
+            <span class="font-code text-[11px] font-bold text-indigo-300 uppercase tracking-wider">
+              EVERYDAY MENTAL MODEL: THE PROFESSOR AND THE TEACHING ASSISTANTS
+            </span>
+          </div>
+          <p class="text-slate-300 text-[13px] leading-relaxed font-sans">
+            Imagine a lecture hall with 1,000 students:
           </p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-            <div class="bg-[#0F1626] border border-indigo-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-indigo-300 uppercase">1. Write Authority</span>
-              <span class="text-[12px] text-slate-300">All INSERT, UPDATE, DELETE traffic executes strictly on the Primary to maintain serialized ordering and ACID invariants.</span>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-indigo-500/20 flex flex-col gap-1.5">
+              <strong class="text-indigo-300 text-[12px] font-code">The Professor (Primary Leader)</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                Only the professor writes the official lecture notes on the board. All homework submissions and grade changes must go directly to the professor.
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-cyan-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-cyan-300 uppercase">2. Horizontal Read Pool</span>
-              <span class="text-[12px] text-slate-300">Add 2 to 10+ read-only replicas behind a load balancer (ProxySQL / PgBouncer) to absorb massive read spikes without sizing up the primary.</span>
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-cyan-500/20 flex flex-col gap-1.5">
+              <strong class="text-cyan-300 text-[12px] font-code">Teaching Assistants (Read Replicas)</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                Three TAs continuously copy the professor's board into their own notebooks. When 1,000 students have questions, they ask the TAs. This protects the professor from exhaustion!
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-amber-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-amber-300 uppercase">3. The Lag Tax</span>
-              <span class="text-[12px] text-slate-300">Asynchronous propagation introduces a time delay (&Delta;t). A read hitting a lagging replica can return stale data or missing rows.</span>
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-amber-500/20 flex flex-col gap-1.5">
+              <strong class="text-amber-300 text-[12px] font-code">The Copy Delay (Replication Lag)</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                It takes TA #2 about 5 seconds to copy the board. If a student asks TA #2 a question right after the professor writes a new formula, TA #2 hasn't written it down yet and gives an outdated answer!
+              </p>
             </div>
           </div>
         </div>
@@ -134,7 +148,7 @@ export function renderReadReplicaPatternContent(topic) {
             <span class="font-bold text-indigo-400 tracking-wider text-[11px] uppercase">
               READ-REPLICA ARCHITECTURE & THE REPLICATION LAG RACE CONDITION
             </span>
-            <span class="text-slate-500 text-[10.5px]">Client Routing & Lag Anomaly</span>
+            <span class="text-slate-500 text-[10.5px]">Sequence Walkthrough</span>
           </div>
 
           <pre class="text-slate-300 leading-relaxed overflow-x-auto p-3 bg-[#050811] rounded-lg border border-slate-800">
@@ -202,14 +216,14 @@ export function renderReadReplicaPatternContent(topic) {
         <div class="bg-gradient-to-r from-[#064E3B]/40 to-[#022C22]/30 border-l-4 border-emerald-500 rounded-r-xl p-5 flex flex-col gap-2.5">
           <span class="font-code text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[15px]">verified</span>
-            SENIOR PERSPECTIVE: READ-YOUR-OWN-WRITES & REPLICA HEALTH DRAINING
+            SENIOR PERSPECTIVE: READ-YOUR-OWN-WRITES & ACTIVE LAG DRAINING
           </span>
           <div class="text-[13px] text-slate-300 font-sans leading-relaxed space-y-2">
             <p>
-              In high-throughput distributed systems, do not rely on hope for replication lag. Always architect an explicit <strong class="text-emerald-300">Read-Your-Own-Writes</strong> path. When a user submits a mutation, attach a <code>last_modified_timestamp</code> or session flag in Redis. For the next <strong>5 seconds</strong>, force that user's read requests to execute on the Primary. All other users (95%+ of traffic) continue reading from replicas, maintaining high offload efficiency while eliminating the phantom missing update anomaly.
+              In high-traffic web applications, never leave replication lag to chance. Always implement an explicit <strong class="text-emerald-300">Read-Your-Own-Writes</strong> path. When a user submits an update, inject a timestamp in their session cookie. For the next <strong>5 seconds</strong>, force that user's read requests to hit the Primary database. The other 95% of users continue reading from replicas, maintaining high throughput without confusing the active user.
             </p>
             <p>
-              Additionally, implement <strong class="text-white">Active Replica Health Draining</strong>. In MySQL, continuously scrape <code>Seconds_Behind_Master</code> (or <code>pg_stat_replication</code> replay lag in PostgreSQL). If network congestion or long-running queries cause a replica's lag to exceed <strong>500ms</strong>, your load balancer (ProxySQL/Envoy) must automatically drain traffic from that replica. Never allow a severely lagging node to serve user-facing production traffic.
+              Additionally, configure <strong class="text-white">Active Lag Draining</strong> on your database proxy (ProxySQL/PgBouncer). Monitor replication lag (e.g. <code>Seconds_Behind_Master</code> in MySQL or replay lag in PostgreSQL). If a replica falls more than <strong>500ms</strong> behind, automatically eject it from the active read pool until it catches up.
             </p>
           </div>
         </div>
@@ -222,10 +236,10 @@ export function renderReadReplicaPatternContent(topic) {
           </span>
           <div class="text-[13px] text-slate-300 font-sans leading-relaxed space-y-2">
             <p>
-              <strong class="text-white">Read Replicas NEVER scale write throughput.</strong> Every single replica in your cluster must execute and replay 100% of all write operations committed on the primary. If your application executes 5,000 writes per second, every replica is burning CPU and disk I/O executing those exact 5,000 writes.
+              <strong class="text-white">Read Replicas NEVER scale write capacity.</strong> Every single replica in your fleet must replay 100% of all write operations committed on the primary. If your application takes 10,000 writes/sec, every single replica is burning CPU and disk I/O executing those exact 10,000 writes.
             </p>
             <p>
-              Furthermore, adding too many replicas creates a <strong class="text-amber-300">Primary Replication Fanout Tax</strong>: the Primary must maintain separate network sockets and compress/broadcast binary logs to each follower. When write throughput saturates your hardware, the only solutions are <strong>Write-Batching Queues</strong>, <strong>Vertical Scaling</strong>, or transitioning to <strong>Database Sharding</strong>.
+              Furthermore, having too many replicas creates a <strong class="text-amber-300">Replication Fanout Tax</strong>: the Primary must maintain separate network connections and push binary logs to each follower. When write throughput exhausts your server hardware, the only solutions are <strong>Write-Batching Queues</strong>, <strong>Vertical Scaling</strong>, or transitioning to <strong>Database Sharding</strong>.
             </p>
           </div>
         </div>
@@ -265,7 +279,7 @@ export function renderReadReplicaPatternContent(topic) {
             KEY INTERVIEW TAKEAWAY
           </span>
           <p class="text-[13.5px] font-sans font-medium text-white leading-relaxed">
-            Read replicas are the most cost-effective lever to scale reads, but replication lag is the inevitable price. In every interview, articulate an explicit Read-Your-Own-Writes strategy (sticky session routing for 5s post-mutation), emphasize that replicas never scale write throughput, and explain automated consensus failover with active lag draining.
+            Read replicas are the most practical pattern to scale read-heavy applications, but replication lag is the inevitable trade-off. In every interview, articulate an explicit Read-Your-Own-Writes mechanism (sticky session routing for 5s post-mutation), emphasize that replicas never scale write throughput, and explain automated consensus failover with active lag draining.
           </p>
         </div>
 

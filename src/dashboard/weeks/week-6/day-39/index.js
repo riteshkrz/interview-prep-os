@@ -1,1 +1,1 @@
-export { renderServiceDecompositionContent } from './ServiceDecompositionDetail.js';
+export { renderPaymentSystemDetail } from './PaymentSystemDetail.js';

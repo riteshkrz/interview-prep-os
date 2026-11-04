@@ -999,626 +999,309 @@ export const SYSTEM_DESIGN_TOPICS_BY_DAY = {
   ],
   "22": [
     {
-      "id": "spec-1-interview",
-      "tabTitle": "Spec 1: Interview Blueprint",
-      "title": "URL Shortener — 45-Minute Interview Design",
-      "section": "Applied Design · Spec 1 (TinyURL / Bitly)",
-      "whatItIs": "45-minute end-to-end interview blueprint. Speak this sequence: clarify -> FR/NFR -> numbers -> API -> write/read path -> how short code is made -> let them grill.",
+      "id": "mc-framework",
+      "tabTitle": "Framework",
+      "title": "Part I — The System Design Interview Framework",
+      "section": "Masterclass · Part I",
+      "whatItIs": "The 7-step repeatable process, standard answer template, what to write vs. explain verbally, and 45-minute interview budget.",
       "tradeoffs": [
-        "Base62 7-char keys (3.5T keys, 41 bits) vs. 64-bit Snowflake (encodes to ~11 chars; do not default to full Snowflake for 7-char links)",
-        "Counter + Base62 with XOR sequence obfuscation (prevents scraping) vs. MD5/SHA URL hashing (dedup but requires collision retry loop)",
-        "HTTP 302 Found (retains full click analytics) vs. HTTP 301 Moved Permanently (browser cached, eliminates server traffic)",
-        "Single-region primary ID sequencing vs. Multi-region GeoDNS routing with read-replicas & Redis cache-aside"
+        "Drawing boxes immediately vs. Pinning down problem boundaries and numbers first",
+        "Documenting every detail vs. Writing high-level anchors on the board and explaining nuances verbally"
       ],
-      "keyTakeaway": "Lock scope first, state numbers before boxes, defend 7-char Base62 key space (~41 bits), obfuscate sequential counter with XOR, and default to 302 for telemetry."
+      "keyTakeaway": "Strong candidates do not start by drawing boxes. They first nail down the problem and the constraints that will drive the architecture."
     },
     {
-      "id": "4.10",
-      "tabTitle": "4.10 Unique IDs",
-      "title": "4.10 Generating Globally Unique IDs",
-      "section": "Part 4 · Databases & Consistency",
-      "whatItIs": "Generating 64-bit sortable, collision-free numeric IDs across distributed clusters at millions of requests per second without coordination bottlenecks.",
-      "architecture": "TWITTER SNOWFLAKE 64-BIT LAYOUT:\n 1 bit  | 41 bits timestamp (ms) | 10 bits machine ID | 12 bits sequence\n [ 0 ]  | [ 69 years from epoch ] | [ 1,024 nodes ]   | [ 4,096 IDs/node/ms ]\nCapacity: ~4.1 Million IDs per second per machine!\nLocal generation: Zero network round-trips on ID creation path!",
+      "id": "mc-q1",
+      "tabTitle": "Q1: URL Shortener",
+      "title": "Question 1. Design a URL Shortener like Bitly",
+      "section": "Module 1 · Core System Design",
+      "whatItIs": "Ingest long URLs and emit short URLs; quick redirects, Base62 codes, high read traffic, and dependable key-value storage.",
       "tradeoffs": [
-        "Snowflake vs. UUIDv4 (128-bit random UUIDs fragment B-Tree index pages due to random writes; 64-bit Snowflake IDs append to index leaf edge)",
-        "The Two Failure Modes: 1. Clock Skew / NTP rollback (refuse to generate IDs if `now < last_ms`); 2. Duplicate Machine IDs (assign via ZooKeeper/etcd lease)",
-        "Rough Time Ordering: IDs sort naturally by creation timestamp, enabling O(1) cursor pagination (`WHERE id < :last_seen_id`)"
+        "Base62 encoded IDs (compact, fast decode) vs. Random codes (collision retry loop)",
+        "HTTP 302 Found (full click telemetry) vs. HTTP 301 Moved Permanently (browser cached)"
       ],
-      "keyTakeaway": "Restate requirements: unique, roughly sortable, 64-bit numeric, zero network hop per ID — and Snowflake falls out as the answer. Volunteer clock skew and machine ID allocation."
-    },
-    {
-      "id": "kgs-base62",
-      "tabTitle": "KGS & Base62",
-      "title": "Base62 Encoding & Key Generation Service (KGS)",
-      "section": "Architecture & Key Encoding",
-      "whatItIs": "Pre-generating compact alphanumeric short keys (Base62: [a-zA-Z0-9]) to eliminate runtime collision checks during high-throughput URL shortening.",
-      "architecture": "KEY GENERATION SERVICE ARCHITECTURE:\nKGS Worker Pool ──pre-generates Base62 keys──► Key DB [Used: false, Key: '7bXq9A']\n                          │\n                          ▼\n              Loads key blocks into RAM\n                          │\nTinyURL Web Nodes ◄──fetch block (1,000 keys)──\n• Web node serves URL shortens instantly from memory with zero database collisions!",
-      "tradeoffs": [
-        "Pre-Generated Keys vs. MD5/SHA256 Hash Truncation (Hashing requires base62 encoding + collision retry query loops; KGS eliminates collision queries entirely)",
-        "HTTP 301 Permanent Redirect (Browser caches redirect; zero server load, but blinds analytics) vs. HTTP 302 Temporary Redirect (Server tracks every click and user agent)"
-      ],
-      "keyTakeaway": "Pre-allocating key ranges in memory turns an expensive distributed synchronization problem into a fast local memory lookup."
+      "keyTakeaway": "Favor read-heavy throughput, cache hot mappings with Redis, and use 302 redirects for click measurement."
     }
   ],
   "23": [
     {
-      "id": "3.4",
-      "tabTitle": "3.4 Rate Limiting",
-      "title": "3.4 Rate Limiting Algorithms",
-      "section": "Part 3 · Security, Auth & API Access",
-      "whatItIs": "Techniques for controlling traffic rate, protecting backend capacity, enforcing fair tenant quotas, and blunting credential stuffing attacks.",
-      "architecture": "ALGORITHMS COMPARED:\n• Token Bucket: Refill at fixed rate; burst up to bucket capacity (Industry default, e.g. Stripe)\n• Leaky Bucket: FIFO queue drains at constant rate; smooths out bursts into steady stream\n• Fixed Window: Counter per window; vulnerable to 2× burst at window boundaries!\n• Sliding Window Counter: Weighted sum of current + previous window; accurate and memory-efficient\nATOMIC REDIS TOKEN BUCKET (Lua):\nlocal tokens = redis.call('get', key); tokens = min(burst, tokens + elapsed*rate)\nif tokens >= 1 then redis.call('set', key, tokens - 1); return 1 else return 0 end",
+      "id": "mc-q2",
+      "tabTitle": "Q2: Rate Limiter",
+      "title": "Question 2. Design a Distributed Rate Limiter",
+      "section": "Module 1 · Core System Design",
+      "whatItIs": "Limit request rates per user, API key, IP, or endpoint using Token Bucket with atomic Redis Lua scripts.",
       "tradeoffs": [
-        "Where to Enforce: Edge CDN (volumetric DDoS) → API Gateway (per-user/IP quotas) → Internal Service (per-tenant DB query limits)",
-        "Fail-Open vs. Fail-Closed: If Redis cluster dies, failing closed causes a full outage; usually fail-open with conservative local limits",
-        "Rate Limiting vs. Load Shedding: Rate limiting enforces fairness per client; load shedding drops excess traffic when system is overloaded regardless of caller"
+        "Global Redis state (tighter consistency) vs. In-memory limits (faster, but vanishes on restart)",
+        "Fail open (keeps API up, risk flooding) vs. Fail closed (shields services, risk denying callers)"
       ],
-      "keyTakeaway": "Token bucket at the gateway, keyed per tenant, with distributed counters in Redis and a local in-process lease for speed. Return 429 with Retry-After headers."
-    },
-    {
-      "id": "11.2-gw",
-      "tabTitle": "11.2 Edge Gateways",
-      "title": "11.2 API Gateways & Reverse Proxies",
-      "section": "Part 11 · Networking",
-      "whatItIs": "The front door of modern distributed systems, decoupling client interfaces from internal microservice topologies.",
-      "architecture": "INGRESS TIERS:\nClient ──► CDN (static cache, DDoS) ──► L4 LB (NLB Anycast) ──► API Gateway (Envoy/Kong) ──► Microservices\n• Gateway handles: TLS offloading, token validation (JWT), rate limiting, path-based routing, request shaping\n• Internal services receive validated identity headers (`X-User-Id`), skipping duplicated auth checks",
-      "tradeoffs": [
-        "Authentication at Edge vs. Authorization in Service (Validate credentials once at gateway; enforce object-level data permissions inside domain services)",
-        "Backend-for-Frontend (BFF): Dedicated thin aggregation gateway for mobile (coarse payloads, low bandwidth) vs. web applications"
-      ],
-      "keyTakeaway": "The gateway answers: 'Who are you and may you make this call at this rate?' The service answers: 'May you do this to THIS object?' Never put business logic in the gateway."
+      "keyTakeaway": "Token bucket at gateway with atomic Redis Lua script; fail-open with conservative local limits during dependency outage."
     }
   ],
   "24": [
     {
-      "id": "2.5",
-      "tabTitle": "2.5 CDN Architecture",
-      "title": "2.5 Content Delivery Networks (CDN)",
-      "section": "Part 2 · Networking & Protocols",
-      "whatItIs": "A globally distributed network of edge cache proxy servers delivering static and dynamic content with minimum latency.",
-      "architecture": "CDN HIERARCHY & ORIGIN SHIELDING:\nClient (Tokyo) ──► Edge PoP (Tokyo, ~10ms)\n                     │ miss\n                     ▼\n                 Regional Cache (Asia, ~30ms)\n                     │ miss\n                     ▼\n                 Origin Shield Cache (~60ms) ──► Origin Server (London, ~180ms)\nOrigin Shield collapses hundreds of worldwide edge misses into ONE single request to your origin!",
+      "id": "mc-q3",
+      "tabTitle": "Q3: Notifications",
+      "title": "Question 3. Design a Notification System",
+      "section": "Module 1 · Core System Design",
+      "whatItIs": "Deliver user notifications via push, SMS, or email; respect priority, preferences, provider outages, and delivery state.",
       "tradeoffs": [
-        "Hit Ratio is the Game: 90%+ offload protects origin. Cache-key pollution (tracking params, over-broad Vary: User-Agent) destroys hit ratios",
-        "Dynamic Content Acceleration: Terminating TLS at edge PoP removes handshake RTTs over long-haul WAN; uses optimized persistent TCP connections to origin",
-        "Purging: Prefer immutable versioned URLs (`app.9f3ac1.js`) with 1-year TTL over expensive wildcard cache purges"
+        "Asynchronous delivery (adds resilience, but introduces slight latency)",
+        "Priority queues (protect critical transactional alerts, require capacity planning)"
       ],
-      "keyTakeaway": "A CDN is a hierarchical cache plus a routing decision: Anycast/DNS picks nearest edge, each tier shields the tier behind it. Cache key hygiene dictates system hit ratio."
-    },
-    {
-      "id": "11.4-anycast",
-      "tabTitle": "11.4 Anycast & BGP",
-      "title": "11.4 Global Traffic Management with Anycast",
-      "section": "Part 11 · Networking",
-      "whatItIs": "Steering users to the topologically nearest edge server using BGP Anycast routing for sub-second failover.",
-      "architecture": "ANYCAST ROUTING MECHANICS:\n• Single IP address announced from 150+ edge datacenters worldwide via BGP\n• Internet routers route each client to topologically closest PoP via shortest AS-path\n• If PoP fails: Withdrawing the BGP route prefix causes internet routers to re-route to next closest PoP within seconds!",
-      "tradeoffs": [
-        "Anycast (Seconds failover, no DNS caching delays) vs. DNS Routing (Minutes failover due to ISP resolver TTL disrespect)",
-        "Route Flapping: Anycast routes by AS hops, not latency; routing flaps can reset long-lived stateful TCP connections"
-      ],
-      "keyTakeaway": "DNS steers in minutes; Anycast steers in seconds. Use Anycast for edge CDN ingress and fast regional evacuation."
+      "keyTakeaway": "Separate transactional and bulk marketing queues; use stable idempotency keys and transactional outbox to prevent duplicates."
     }
   ],
   "25": [
     {
-      "id": "5.4",
-      "tabTitle": "5.4 Why Redis Fast",
-      "title": "5.4 Why Redis Is So Fast",
-      "section": "Part 5 · Caching",
-      "whatItIs": "The three core architectural reasons behind Redis's sub-millisecond execution and deterministic high throughput.",
-      "architecture": "THE THREE PILLARS:\n1. RAM Access: RAM random reads take ~100ns vs. NVMe SSDs taking ~16–100µs (100–1,000× faster)\n2. Lock-Free Single Thread Loop: Execution runs on one thread via `epoll`/`kqueue`. No locks, no mutexes, no context switching, atomic commands!\n3. Adaptive Internal Encodings:\n   • Small hashes/zsets → listpack (contiguous memory, cache-friendly linear scan)\n   • Large hashes → hashtables; Large zsets → skiplist + hashtable",
+      "id": "mc-q4",
+      "tabTitle": "Q4: Distributed Cache",
+      "title": "Question 4. Design a Distributed Cache",
+      "section": "Module 1 · Core System Design",
+      "whatItIs": "Distributed key-value cache across nodes with consistent hashing, LRU/LFU eviction policies, TTL expiration, and stampede protection.",
       "tradeoffs": [
-        "Single-Threaded Benefit (Every command is atomic: `INCR`, `SETNX`, Lua scripts are free of race conditions) vs. Pitfall (Slow O(N) commands like `KEYS *` block all clients)",
-        "Scaling Past One Node: Redis Cluster shards 16,384 hash slots across nodes; multi-key operations require hash tags: `user:{123}:profile`"
+        "Cache-aside pattern (straightforward, but exposed to stampedes)",
+        "Write-through caching (improves freshness, but increases write latency)"
       ],
-      "keyTakeaway": "RAM + lock-free event loop + adaptive data structures. Single-threading buys atomicity and predictable latency, making Redis the ideal primitive for locks and counters."
-    },
-    {
-      "id": "5.5-cache",
-      "tabTitle": "5.5 Bloom Filters",
-      "title": "5.5 Bloom Filters for Cache Penetration Defense",
-      "section": "Part 5 · Caching",
-      "whatItIs": "Probabilistic memory-efficient bit array that tests set membership with zero false negatives and tunable false positives.",
-      "architecture": "BLOOM FILTER MECHANICS:\nBit Vector of $m$ bits initialized to 0. Feed input through $k$ independent hash functions:\n• Insert: Hash element with $h_1..h_k$, set corresponding bit positions to 1\n• Query: Hash element with $h_1..h_k$. If ANY bit is 0 → DEFINITELY NOT IN SET (drop query!)\n• If all bits are 1 → PROBABLY IN SET (query cache/DB)",
-      "tradeoffs": [
-        "Defending Against Cache Penetration: Filter rejects nonexistent IDs in memory before hitting DB; prevents malicious miss attacks",
-        "Sizing Formula: Optimal hash count $k = (m/n) \\cdot \\ln 2 \\approx 0.693 \\cdot (m/n)$. ~10 bits per element achieves a 1% false positive rate!"
-      ],
-      "keyTakeaway": "A bloom filter trades a bounded false-positive rate for order-of-magnitude memory savings, with zero false negatives. Use it as a lightweight pre-filter in front of expensive storage."
+      "keyTakeaway": "Consistent hashing for key partitioning; protect databases from thundering herds using singleflight request coalescing and TTL jitter."
     }
   ],
   "26": [
     {
-      "id": "5.5-crawler",
-      "tabTitle": "5.5 URL Deduplication",
-      "title": "5.5 Bloom Filters: Avoiding Duplicate URL Crawls",
-      "section": "Part 5 · Caching & Indexing",
-      "whatItIs": "Preventing web crawlers from re-crawling billions of duplicate URLs using memory-compact bit vectors.",
-      "architecture": "1 BILLION URLS SIZING MATH:\nTarget: 1 Billion URLs, 1% false positive probability ($p = 0.01$)\nFormula: $m = -(n \\cdot \\ln p) / (\\ln 2)^2 \\approx 9.6 \\times 10^9$ bits $\\approx$ 1.2 GB RAM!\nOptimal hashes: $k = 0.693 \\times (9.6/1) \\approx 7$ hash functions\nCompare: Storing 1 Billion URLs (70 bytes each) in a hash set requires 70+ GB of memory!",
+      "id": "mc-q5",
+      "tabTitle": "Q5: API Gateway",
+      "title": "Question 5. Design an API Gateway",
+      "section": "Module 1 · Core System Design",
+      "whatItIs": "Single external-facing entry point for backend access handling TLS termination, token auth, rate limiting, and route resolution.",
       "tradeoffs": [
-        "False Positive Cost in Crawling: A URL is falsely assumed to be visited and skipped; acceptable for broad crawling, but targeted crawls verify against DB",
-        "Inability to Delete: Standard Bloom filters cannot delete bits (clearing a bit breaks other elements). Solution: Counting Bloom filters or periodic rebuilds"
+        "Shared policy enforcement (uniformity, but adds hop latency)",
+        "Embedding business logic in gateway (simplifies clients, but couples routing to domain)"
       ],
-      "keyTakeaway": "1.2 GB of RAM deduplicates 1 billion URLs with a 1% false positive rate. Always quote the 10-bits-per-element rule in web crawler interviews."
-    },
-    {
-      "id": "4.12-indexer",
-      "tabTitle": "4.12 Inverted Index",
-      "title": "4.12 Big Data Distributed Inverted Indexing",
-      "section": "Part 4 · Databases & Consistency",
-      "whatItIs": "Building distributed full-text search indexes across web documents using MapReduce batch pipelines and posting list shards.",
-      "architecture": "INVERTED INDEX PIPELINE:\nHTML Documents ──► Map (Tokenize, Stem, Extract terms) ──► [term, doc_id, position]\n                        │\n                        ▼\nShuffle & Sort by Term ──► Reduce ──► Posting List: 'distributed' → [Doc 1, Doc 4, Doc 9...]\nPosting lists partitioned across search cluster nodes by term hash or document ID.",
-      "tradeoffs": [
-        "Partition by Document (Local index on each shard; scatter-gather search across all nodes) vs. Partition by Term (Single node holds term's entire posting list, but creates hot terms)",
-        "Real-Time Indexing: Memory buffer (In-memory segment) + commit log for fresh documents, merged into immutable segments via background compaction"
-      ],
-      "keyTakeaway": "Search indexing separates tokenization from posting list storage. Use document-partitioned shards with scatter-gather for balanced indexing throughput."
+      "keyTakeaway": "Keep domain business logic out of the gateway; let the gateway enforce authentication, rate limits, and coarse-grained routing."
     }
   ],
   "27": [
     {
-      "id": "1.6-trie",
-      "tabTitle": "1.6 Big Data Storage",
-      "title": "1.6 Big Data Analytics for Search Logs",
-      "section": "Part 1 · Compute Foundations",
-      "whatItIs": "Processing billions of raw search keystrokes and queries to generate prefix frequency aggregations.",
-      "architecture": "BATCH AGGREGATION ARCHITECTURE:\nSearch Queries ──► Kafka ──► S3 Data Lake (Parquet format) ──► Spark Weekly Batch Job\nSpark computes top-5 historical query completions for every prefix ──► Serializes updated Trie ──► Uploads to In-Memory Trie Serving Cluster",
+      "id": "mc-q6",
+      "tabTitle": "Q6: Instagram",
+      "title": "Question 6. Design Instagram",
+      "section": "Module 2 · Consumer-Scale Applications",
+      "whatItIs": "Photo-sharing service with presigned direct object storage uploads, asynchronous variants processing, and hybrid fan-out feeds.",
       "tradeoffs": [
-        "Data Warehouse vs. Data Lakehouse for Query Logs (S3 + Parquet gives cheap storage; Spark reads columnar slices efficiently)",
-        "Weekly Batch vs. Real-Time Streaming (Historical search trends change slowly; batch updates avoid complex distributed state synchronization)"
+        "Push fan-out at write time (snappy feed reads, but high cost at celebrity scale)",
+        "Pull fan-out at read time (reduced write amplification, heavier work at read time)",
+        "Hybrid approach (push for normal users, pull for celebrities merged at read time)"
       ],
-      "keyTakeaway": "Keep offline analytics separate from the online serving path. Process heavy prefix ranking aggregations offline in Spark."
-    },
-    {
-      "id": "trie-arch",
-      "tabTitle": "Prefix Trie Internals",
-      "title": "In-Memory Prefix Trie & Top-K Node Caching",
-      "section": "Data Structures & Prefix Search",
-      "whatItIs": "Prefix tree data structure optimized for sub-30ms autocomplete suggestions by caching top-K completions on each branch node.",
-      "architecture": "TOP-K TRIE NODE STRUCTURE:\n       [root]\n      /   \\\n    's'   'g'\n    /       \\\n  [s]       [g]\n  top_5:    top_5:\n  ['system', 'google', 'gmail...]\nKeystroke query 'sys' directly reads top-5 list at node 's-y-s' in O(prefix_length) time without traversing children!",
-      "tradeoffs": [
-        "Trie Node Top-K Caching (Drastically improves read latency from $O(V+E)$ to $O(L)$, at the cost of additional node memory overhead)",
-        "Handling Sensitive & Trending Queries: Filter bad queries via blacklist in Redis; inject real-time breaking news via ephemeral cache overlay"
-      ],
-      "keyTakeaway": "Precomputing top-K results directly on Trie nodes eliminates subtree traversals during live search queries."
+      "keyTakeaway": "Upload media directly to object storage with presigned URLs; use hybrid fan-out to balance write amplification against feed read latency."
     }
   ],
   "28": [
     {
-      "id": "rev-4",
-      "tabTitle": "Whiteboard Mocks",
-      "title": "Revision Day 4 · Ingress, Caching & Search Timed Mocks",
-      "section": "Week 4 Review & Applied Drills",
-      "whatItIs": "Timed 45-minute whiteboard simulations covering Week 4 applied designs: TinyURL, Rate Limiter, CDN, Distributed Cache, Web Crawler, and Autocomplete.",
-      "architecture": "WEEK 4 DRILL TARGETS:\n• TinyURL: 45-min mock; derive Base62 KGS pre-allocation in RAM; defend HTTP 301 vs. 302\n• API Rate Limiter: Write atomic Redis Lua script for token bucket; design Envoy gateway gRPC filter\n• Autocomplete: Diagram serialized Trie in memory with top-5 query caching; budget memory for 10M prefixes\n• CDN: Trace cache miss from Edge PoP to Regional Shield to Origin; design tag-based soft purging",
+      "id": "mc-q7",
+      "tabTitle": "Q7: WhatsApp",
+      "title": "Question 7. Design WhatsApp",
+      "section": "Module 2 · Consumer-Scale Applications",
+      "whatItIs": "Real-time messaging system with persistent WebSocket connections, offline message queuing, delivery receipts, and end-to-end encryption.",
       "tradeoffs": [
-        "Interview Pacing: 8m requirements & scale → 7m API → 15m architecture → 15m deep dive bottlenecks",
-        "Proactive Trade-offs: Contrast distributed Redis locks with single-flight mutex request coalescing"
+        "Persistent connections (cut per-message overhead, demand careful resource management)",
+        "End-to-end encryption (strengthens privacy, prevents server-side search and moderation)"
       ],
-      "keyTakeaway": "Simulate real interview pressure: talk out loud, draw clean ASCII boxes, and justify every architectural component with numerical scale."
-    },
-    {
-      "id": "rev-4-cheat",
-      "tabTitle": "C.1 & C.2 Cheat Sheet",
-      "title": "Appendix C Cheat Sheet & Tip-of-the-Tongue Numbers",
-      "section": "Week 4 Review & Applied Drills",
-      "whatItIs": "Quick-reference memory drill for essential latency numbers and standardized interview response phrases.",
-      "architecture": "TIP-OF-THE-TONGUE NUMBERS:\n• RAM Read: 100 ns | SSD Read: ~16–100 µs | Intra-DC RTT: ~0.5 ms | Cross-Continent: ~150 ms\n• Traffic: 1 M/day ≈ 12 QPS | 1 B/day ≈ 12 K QPS | 1 KB × 10K QPS ≈ 80 MBPS\n• Availability: 99.9% = 43.8 min/month | 99.99% = 4.4 min/month\n• Bloom Filter: ~10 bits/element buys 1% false positive rate",
-      "tradeoffs": [
-        "Opening Phrase: 'Before I design, let me pin down functional requirements and non-functional targets: QPS, p99 latency, and consistency.'",
-        "Closing Phrase: 'The main trade-offs I made were X and Y. With more time, I would examine Z.'"
-      ],
-      "keyTakeaway": "Having concrete numbers ready on the tip of your tongue instantly distinguishes senior candidates from mid-level engineers."
+      "keyTakeaway": "Manage persistent connections with connection gateways; partition ordering per conversation; never decrypt message bodies on the server."
     }
   ],
   "29": [
     {
-      "id": "10.3",
-      "tabTitle": "10.3 Conflict Resolution",
-      "title": "10.3 Conflict Resolution and Anti-Entropy",
-      "section": "Part 10 · Distributed Systems Fundamentals",
-      "whatItIs": "Background protocols and algebraic data types for reconciling diverging replicas in leaderless, multi-master storage systems.",
-      "architecture": "THREE REPAIR MECHANISMS (CHEAPEST FIRST):\n1. Read Repair: Opportunistic on read path. Client receives quorum responses (v7, v7, v5) → returns v7 and pushes v7 to lagging replica in background (Near zero cost!)\n2. Hinted Handoff: Short write outage. Coordinator stores temporary 'hint' on local disk; replays to replica once back online\n3. Merkle Tree Sync: Full anti-entropy comparison for long divergence. Replicas compare root hashes; descend only differing branch subtrees to sync data!",
+      "id": "mc-q8",
+      "tabTitle": "Q8: YouTube",
+      "title": "Question 8. Design YouTube",
+      "section": "Module 2 · Consumer-Scale Applications",
+      "whatItIs": "Video-sharing platform with resumable chunked uploads, distributed transcoding DAGs, HLS/DASH adaptive bitrate streaming, and CDN edge delivery.",
       "tradeoffs": [
-        "Last-Write-Wins (Simple, but silently discards concurrent updates due to clock drift) vs. Multi-Version Sibling Values",
-        "Conflict-Free Replicated Data Types (CRDTs): Commutative and associative merge functions guarantee convergence, but cannot enforce invariants like 'balance ≥ 0'",
-        "Deletes in Distributed Stores: Deletes must be written as tombstones and retained until anti-entropy repair finishes, otherwise deleted rows get resurrected!"
+        "Several resolutions (broaden device support, but raise storage and encoding costs)",
+        "Adaptive streaming (improves viewing experience, demands more processing and player logic)"
       ],
-      "keyTakeaway": "Divergence in multi-master systems is a state to resolve, not a bug. Use read repair for hot data, hinted handoff for blips, and Merkle tree sync for cold data."
-    },
-    {
-      "id": "4.3-quorum",
-      "tabTitle": "4.3 Tunable Quorums",
-      "title": "4.3 Tunable Quorum Math in Key-Value Stores",
-      "section": "Part 4 · Databases & Consistency",
-      "whatItIs": "Configuring replica read/write quorum sizes ($R$, $W$, $N$) to dial between strict linearizability and high write availability.",
-      "architecture": "QUORUM MATHEMATICS:\nTotal Replicas = N (typically 3 or 5)\nWrite Quorum = W (nodes acknowledging write before success)\nRead Quorum = R (nodes queried on read)\n• If R + W > N: Overlap is guaranteed! At least 1 node in read set contains latest write (Strong Consistency)\n• If W = 1, R = 1: Lowest latency and maximum availability, but reads may return stale data (Eventual Consistency)",
-      "tradeoffs": [
-        "High Write Availability ($W=1$): Absorbs network partitions, but requires background read repair and anti-entropy to resolve conflicts",
-        "Leaderless Replication vs. Leader-Based: Leaderless eliminates single write bottlenecks at the expense of client-side conflict resolution complexity"
-      ],
-      "keyTakeaway": "Quorum math ($R + W > N$) lets you tune consistency per operation: strong consistency for checkout payments, low latency for browsing."
+      "keyTakeaway": "Stream bytes directly to object storage; transcode into multi-bitrate HLS/DASH segments asynchronously; serve playback via CDN edge."
     }
   ],
   "30": [
     {
-      "id": "6.4",
-      "tabTitle": "6.4 Multipart Upload",
-      "title": "6.4 Uploading Large Files (Multipart Upload)",
-      "section": "Part 6 · Storage Systems & Object Storage",
-      "whatItIs": "Decomposing multi-gigabyte files into independent parallel chunks to maximize network bandwidth and provide resilient upload resumption.",
-      "architecture": "MULTIPART UPLOAD PROTOCOL:\nClient ──1. InitiateMultipartUpload(bucket, key)──► Object Store (returns uploadID)\nClient splits 5GB file into parts (e.g. 50 × 100MB chunks)\nClient ──2. UploadPart(uploadID, partNumber, payload)──► Object Store (returns MD5/ETag)\n(Parts uploaded IN PARALLEL; failed parts retry independently without restarting!)\nClient ──3. CompleteMultipartUpload(uploadID, [(1,etag1), (2,etag2)...])──► Store reassembles!",
+      "id": "mc-q9",
+      "tabTitle": "Q9: Uber",
+      "title": "Question 9. Design Uber",
+      "section": "Module 2 · Consumer-Scale Applications",
+      "whatItIs": "Ride-hailing platform with high-frequency driver location ingestion, geospatial indexing (H3 / Geohash), candidate ranking, and atomic trip matching.",
       "tradeoffs": [
-        "Part Sizing Trade-offs: Small parts (5MB) mean cheaper retries but excessive HTTP metadata overhead; Large parts (1GB) risk wasting minutes of bandwidth on network drops. Sweet spot: 16–64MB",
-        "Presigned URLs: Client uploads chunks directly to storage nodes, bypassing application web servers entirely and saving gigabytes of server bandwidth",
-        "Abandoned Uploads Cost: Uncompleted multipart parts remain invisible in bucket listings but continue accruing storage billing; require S3 lifecycle rules to abort incomplete uploads after 7 days"
+        "More frequent location pings (improve freshness, but drain phone battery and bandwidth)",
+        "Serial driver offers (simple locks, slower matching) vs. Parallel offers (faster matching, more contention)"
       ],
-      "keyTakeaway": "Multipart upload turns one fragile, serial transfer into many small, parallel, retryable chunks. Add presigned URLs and lifecycle rules to reap abandoned parts."
-    },
-    {
-      "id": "6.5",
-      "tabTitle": "6.5 Design S3",
-      "title": "6.5 Designing S3: The Data vs. Metadata Split",
-      "section": "Part 6 · Storage Systems & Object Storage",
-      "whatItIs": "Architecting a planetary-scale object storage system by separating the immutable data plane from the strongly consistent metadata plane.",
-      "architecture": "DATA / METADATA ARCHITECTURAL SEPARATION:\nClient ──HTTP PUT──► API Gateway ──► Auth & Rate Limit\n                      │\n         ┌────────────┴────────────┐\n         ▼ payload                 ▼ metadata\n  [DATA PLANE]              [METADATA PLANE]\n  Immutable Blobs by UUID   Mutable small records\n  Reed-Solomon Erasure      Sharded CockroachDB/Spanner\n  Dense HDDs / NVMe         Strongly consistent, indexed for LIST\n  Scales by CAPACITY        Scales by REQUEST RATE (QPS)",
-      "tradeoffs": [
-        "Why Separate Systems: Data is huge, immutable, and throughput-oriented; Metadata is tiny, mutable, queried at 100K+ QPS, and consistency-critical",
-        "Partial Failure Recovery: Write data blob first, commit metadata second. If metadata write fails, garbage collector reaps orphaned data blob safely without dangling pointers",
-        "Prefix Listing Scalability: S3 object listings are prefix range scans; shard metadata by bucket ID and maintain lexicographical key order"
-      ],
-      "keyTakeaway": "Design S3 as two systems with one API: an immutable erasure-coded data plane sized by capacity, and a mutable strongly-consistent metadata plane sized by request rate."
+      "keyTakeaway": "Separate ephemeral location indexing from durable trip records; use atomic conditional writes to guarantee a driver is assigned to at most one trip."
     }
   ],
   "31": [
     {
-      "id": "7.1-kafka",
-      "tabTitle": "7.1 Delivery Guarantees",
-      "title": "7.1 Messaging Delivery Semantics & Outbox",
-      "section": "Part 7 · Messaging & Streaming",
-      "whatItIs": "Guaranteeing message durability and exactly-once processing effects across distributed broker architectures.",
-      "architecture": "TRANSACTIONAL OUTBOX PATTERN:\nApplication Service DB Transaction:\n  BEGIN;\n    INSERT INTO orders (id, user_id, amount) VALUES (...);\n    INSERT INTO outbox_events (event_id, payload) VALUES (...);\n  COMMIT; -- Both commit atomically or neither!\nCDC Relay (Debezium) reads outbox table commit log → streams to Kafka with zero message loss!",
+      "id": "mc-q10",
+      "tabTitle": "Q10: Food Delivery",
+      "title": "Question 10. Design a Food Delivery Platform",
+      "section": "Module 2 · Consumer-Scale Applications",
+      "whatItIs": "Connects customers, restaurants, and delivery partners with cached menus, idempotent order submission, payment orchestration, and courier matching.",
       "tradeoffs": [
-        "At-Least Once + Deduplication: The robust standard for distributed streaming; consumers enforce idempotency via unique constraints",
-        "Poison Messages: Malformed payloads that crash consumer threads must be routed to a Dead-Letter Queue (DLQ) with backoff alerting to avoid blocking partition progress"
+        "Saga-style compensation (replaces distributed 2PC, demands durable retries on compensation failures)",
+        "Strict checkout validation (improves correctness, adds latency)"
       ],
-      "keyTakeaway": "Never publish an event directly before or after committing to a database: network failure will create inconsistencies. Use the Transactional Outbox pattern."
-    },
-    {
-      "id": "7.2-internals",
-      "tabTitle": "7.2 Kafka Internals",
-      "title": "7.2 Kafka Broker & Consumer Group Internals",
-      "section": "Part 7 · Messaging & Streaming",
-      "whatItIs": "Partitioning, sequential log segments, consumer offset commits, and rebalancing protocols in Apache Kafka.",
-      "architecture": "PARTITION & CONSUMER GROUP MODEL:\nTopic [Orders] ── 4 Partitions:\n[Partition 0] ──► Consumer 1\n[Partition 1] ──► Consumer 2  } Consumer Group A (Independent offsets)\n[Partition 2] ──► Consumer 3\n[Partition 3] ──► Consumer 4\nOrdering is guaranteed strictly within a partition. Horizontal scaling is capped by partition count!",
-      "tradeoffs": [
-        "Kafka (Dumb broker, smart consumer: consumers track their own offsets, enabling message replay and multi-tenant fanout) vs. RabbitMQ (Smart broker: tracks per-message ACK/delete)",
-        "Scaling a Lagging Consumer: Add partitions and consumers; batch downstream database writes; ensure partition key does not concentrate hot keys"
-      ],
-      "keyTakeaway": "Kafka scales throughput horizontally by adding partitions. Ordering is strictly per-partition. Design the partition key around the entity that requires sequencing."
-    },
-    {
-      "id": "7.5-metrics",
-      "tabTitle": "7.5 & 7.6 Metrics & Alerting",
-      "title": "7.5 & 7.6 Metrics Monitoring, Alerting & Pull vs. Push",
-      "section": "Part 7 · Messaging & Streaming",
-      "whatItIs": "Architecting an enterprise metrics pipeline with Kafka buffers, TSDB Gorilla storage, and symptom-based SLO alerting.",
-      "architecture": "App/Hosts ──► Collector (Pull/Push) ──► Kafka Buffer ──► Flink Consumers ──► TSDB (Gorilla) ──► Query/Grafana ──► Alerting (PagerDuty)",
-      "tradeoffs": [
-        "Pull (Prometheus: free 'up' liveness signal, rate-limiting control) vs. Push (OTel/StatsD: NAT-friendly, ephemeral jobs, but silent failures)",
-        "Symptom vs. Cause Alerting: Alert strictly on customer-visible 4 Golden Signals (Latency, Traffic, Errors, Saturation) and multi-window burn rate; never CPU % alone"
-      ],
-      "keyTakeaway": "Buffer metrics with Kafka, size TSDB ingest with gorilla compression, and alert strictly on user-visible symptoms with SLO error budgets."
+      "keyTakeaway": "Store price snapshots in order lines to protect past orders; orchestrate order confirmation, payment, and courier dispatch using sagas."
     }
   ],
   "32": [
     {
-      "id": "2.7-push",
-      "tabTitle": "2.7 Push Channels",
-      "title": "2.7 Server-to-Client Push: Polling, SSE, WebSockets",
-      "section": "Part 2 · Networking & Protocols",
-      "whatItIs": "Evaluating the trade-offs between client polling, Server-Sent Events (SSE), and bidirectional WebSockets for live notifications.",
-      "architecture": "PUSH PROTOCOLS COMPARED:\n• Short Polling: Client sends HTTP request every N seconds (Wasteful, high server load)\n• Long Polling: Server holds connection open until event occurs, then responds (Near real-time, connection churn)\n• Server-Sent Events (SSE): HTTP text/event-stream; persistent unidirectional push with auto-reconnect and Last-Event-ID (Simple, HTTP/2 friendly)\n• WebSockets: Full-duplex bidirectional TCP socket; lowest latency (Stateful, requires dedicated connection tier)",
+      "id": "mc-q11",
+      "tabTitle": "Q11: Web Crawler",
+      "title": "Question 11. Design a Web Crawler",
+      "section": "Module 3 · Data-Intensive Systems",
+      "whatItIs": "Distributed crawler starting from seed URLs, scheduling via polite URL frontiers, caching robots.txt, Bloom filter deduplication, and S3 content storage.",
       "tradeoffs": [
-        "Unidirectional Updates (Notifications, stock ticker: SSE gets you 90% of the value for 20% of the operational complexity)",
-        "Stateful Scaling Trap: 1M WebSockets requires connection-aware load balancers, heartbeat ping/pong, and a Redis Pub/Sub cross-server routing backplane"
+        "Aggressive crawling (freshens index faster, but burns bandwidth and risks overloading origin sites)",
+        "Bloom filters for URL deduplication (fast in-memory checks, but false positives cause some pages to be skipped)"
       ],
-      "keyTakeaway": "Pick the weakest mechanism that meets the latency requirement: polling < long polling < SSE < WebSocket. Use SSE for one-way feeds and WebSockets for interactive chat."
-    },
-    {
-      "id": "13.5",
-      "tabTitle": "13.5 Webhooks Outbound",
-      "title": "13.5 Webhooks and Outbound Integrations",
-      "section": "Part 13 · Architecture & Integration",
-      "whatItIs": "Delivering event payloads to untrusted third-party customer HTTP endpoints reliably and securely without starvation.",
-      "architecture": "WEBHOOK DELIVERY PIPELINE:\nEvent Outbox ──► Partition by Tenant ──► Delivery Queue ──► Worker Pool ──► Customer URL\n• Per-Tenant Queues: A slow customer endpoint (taking 30s) only blocks their own worker queue, avoiding head-of-line blocking for others!\n• Exponential Retry: Immediately → +10s → +1m → +5m → +30m → +2h → +12h → +24h (then disable endpoint & alert)\n• Security: Sign payload using HMAC-SHA256(secret, timestamp + '.' + body); customer verifies signature in constant time.",
-      "tradeoffs": [
-        "SSRF Defense: Customer webhook URLs are attacker-controlled; validate and resolve IP, reject loopback (127.0.0.1) and link-local cloud metadata IPs (169.254.169.254)",
-        "Per-Endpoint Circuit Breakers: Trip breaker after consecutive failures to park events and protect your worker thread pool"
-      ],
-      "keyTakeaway": "Webhooks make you the unreliable caller. Partition queues by tenant so slow customers only hurt themselves. Sign payloads with HMAC and treat URLs as SSRF risks."
+      "keyTakeaway": "Shard the URL frontier by host to enforce politeness; canonicalize URLs and deduplicate with Bloom filters; store page bodies in object storage."
     }
   ],
   "33": [
     {
-      "id": "11.5",
-      "tabTitle": "11.5 Long-Lived Conns",
-      "title": "11.5 Scaling Long-Lived Connections (C10M)",
-      "section": "Part 11 · Networking",
-      "whatItIs": "Maintaining millions of concurrent stateful WebSocket connections with Linux kernel tuning and connection backplanes.",
-      "architecture": "1 MILLION CONCURRENT WEBSOCKETS CAPACITY MATH:\n• Memory per connection: ~10 KB kernel socket buffer + ~4 KB application state $\\approx$ 14 KB\n• Memory per node (50K conns): 50,000 × 14 KB $\\approx$ 700 MB RAM (Very comfortable!)\n• Cluster Sizing: 1M / 50K = 20 nodes → Run 30 nodes across 3 AZs for N+1 redundancy\n• Reconnect Storm: 1M reconnects simultaneously = 1M TLS handshakes! Jitter backoff over 5 mins (1M / 300s = ~3,300 handshakes/sec)",
+      "id": "mc-q12",
+      "tabTitle": "Q12: Autocomplete",
+      "title": "Question 12. Design Search Autocomplete",
+      "section": "Module 3 · Data-Intensive Systems",
+      "whatItIs": "Prefix query suggestion service with in-memory tries, precomputed top-K candidates at prefix nodes, caching, and versioned offline index rollouts.",
       "tradeoffs": [
-        "Linux OS Limits: Raise `ulimit -n` file descriptors; allocate multiple source IPs on load balancer to avoid 28K ephemeral port exhaustion per IP pair",
-        "Connection Churn: Enforce max connection lifetime with jitter (e.g. 45 ± 15 mins) to continuously reshuffle connections and avoid post-deploy load imbalances"
+        "In-memory Tries (intuitive and fast O(p) traversal, but consume considerable RAM)",
+        "Precomputed top-K results (cut request-time calculation, but suggestions may lag newly emerging trends)"
       ],
-      "keyTakeaway": "Long-lived connections turn a stateless tier into a sticky, memory-bound one. Scale on connection count and memory, not CPU. Design for the deploy and the reconnect storm."
-    },
-    {
-      "id": "11.6-chat",
-      "tabTitle": "11.6 WebRTC & SFU",
-      "title": "11.6 Selective Forwarding Units (SFU) for Audio/Video",
-      "section": "Part 11 · Networking",
-      "whatItIs": "Architecting real-time group voice and video channels using Selective Forwarding Units without expensive transcoding.",
-      "architecture": "SFU FORWARDING ARCHITECTURE:\nPeer A (Speaker) ──publish 1 stream (Simulcast: 1080p, 720p, 360p)──► SFU Server\n                                                                          │\n       ┌──────────────────────────────────────────────────────────────────┴──────────────────┐\n       ▼ (Desktop, fast link)                                                                ▼ (Mobile, lossy link)\nForward 1080p stream                                                                  Forward 360p stream",
-      "tradeoffs": [
-        "SFU vs. Mesh P2P: P2P requires $N-1$ uplinks per client; collapses at 5+ users. SFU requires only 1 uplink per client and scales to hundreds of participants",
-        "Simulcast: The magic that makes SFUs work without CPU transcoding — sender publishes multiple bitrates; SFU forwards appropriate stream based on receiver downlink"
-      ],
-      "keyTakeaway": "SFUs are bandwidth-heavy and CPU-light. Route rooms to SFU nodes using consistent hashing and use simulcast to accommodate diverse client network conditions."
+      "keyTakeaway": "Precompute top-K results at each trie prefix node; swap index snapshots atomically in memory without rebuilding the live index."
     }
   ],
   "34": [
     {
-      "id": "13.1",
-      "tabTitle": "13.1 Event Sourcing",
-      "title": "13.1 Event Sourcing and CQRS",
-      "section": "Part 13 · Architecture & Integration",
-      "whatItIs": "Storing the immutable append-only log of domain events as the source of truth, deriving current application state by replaying history.",
-      "architecture": "COMMAND IN, EVENTS STORED, PROJECTIONS OUT:\nCommand ('Edit Doc') ──► Aggregate validates ──► Emits Event ('CharInserted')\n                                                       │\n                                                       ▼\n                          [EVENT STORE: Append-only, Immutable Log]\n                                                       │\n        ┌──────────────────────────────┬───────────────┴──────────────────────────────┐\n        ▼                              ▼                                              ▼\n[Document Projection]          [Search Inverted Index]                    [Analytics Warehouse]\nCurrent text state             Full-text index                            Columnar ClickHouse",
+      "id": "mc-q13",
+      "tabTitle": "Q13: Logging & Monitoring",
+      "title": "Question 13. Design a Logging and Monitoring System",
+      "section": "Module 3 · Data-Intensive Systems",
+      "whatItIs": "Telemetry ingestion pipeline with edge ring buffers, Kafka buffering, hot search indexes (OpenSearch), time-series metric rollups, and cold S3 archives.",
       "tradeoffs": [
-        "Event Sourcing vs. CQRS: Event Sourcing is about storage (keep events, derive state); CQRS is about separation (different models for reading and writing)",
-        "Snapshots: Every N events (e.g. 500 events), persist a state snapshot so rebuilding an entity reads the snapshot plus short tail rather than 100K historical events",
-        "Schema Evolution: Never edit historical stored events; use upcasting functions to transform v1 event schemas into v2 on-the-fly during read replay"
+        "Indexing every field (aids rich search, but dramatically raises memory and storage costs)",
+        "High-cardinality metric labels (enable fine-grained views, but can crash time-series metric databases)"
       ],
-      "keyTakeaway": "Event sourcing is for domains where history is the product: ledgers, audit trails, collaborative docs. Projections lag writes; use read-your-writes version tokens."
-    },
-    {
-      "id": "10.2-time",
-      "tabTitle": "10.2 Vector Clocks",
-      "title": "10.2 Vector Clocks & Concurrent Edit Merging",
-      "section": "Part 10 · Distributed Systems Fundamentals",
-      "whatItIs": "Tracking causality and detecting concurrent multi-user edits in collaborative systems without a centralized lock.",
-      "architecture": "VECTOR CLOCK COMPARISON:\nClient A: writes 'Hello' → Vector {A:1, B:0}\nClient B: writes 'World' → Vector {A:0, B:1}\nMerge comparison: Neither vector dominates → TRUE CONCURRENCY DETECTED!\nSystem retains both siblings and triggers operational transformation or CRDT merge algorithms to resolve without silent data overwrites.",
-      "tradeoffs": [
-        "Operational Transformation (OT: central server transforms index positions, used by Google Docs) vs. CRDTs (convergent peer-to-peer data types, used by Figma)",
-        "Vector Clock Pruning: Prune old vector clock entries using causal stability watermarks to prevent unbounded metadata growth"
-      ],
-      "keyTakeaway": "Wall-clock timestamps silently lose concurrent edits. Vector clocks preserve concurrency information so applications can merge concurrent edits safely."
+      "keyTakeaway": "Buffer at edge with bounded limits so business apps never block; tier storage into hot search (7–14 days) and cold compressed S3 Parquet."
     }
   ],
   "35": [
     {
-      "id": "rev-5",
-      "tabTitle": "Whiteboard Mocks",
-      "title": "Revision Day 5 · Storage, Messaging & Real-Time Whiteboard Drills",
-      "section": "Week 5 Review & Applied Drills",
-      "whatItIs": "Timed whiteboard scenarios for Week 5 architectures: DynamoDB, S3, Kafka, Notification Service, WhatsApp, and Collaborative Docs.",
-      "architecture": "WEEK 5 DRILL TARGETS:\n• WhatsApp: Design 45-min real-time messaging architecture; diagram message status state machine (Sent → Delivered → Read)\n• S3: Walk through multipart upload failure recovery and 4+2 erasure coding parity reconstruction\n• DynamoDB: Calculate tunable quorum trade-offs ($R+W > N$); explain anti-entropy Merkle tree sync\n• Collaborative Docs: Defend Operational Transformation (OT) vs. CRDTs under poor mobile network conditions",
+      "id": "mc-q14",
+      "tabTitle": "Q14: Real-Time Analytics",
+      "title": "Question 14. Design a Real-Time Analytics Pipeline",
+      "section": "Module 3 · Data-Intensive Systems",
+      "whatItIs": "Continuous stream processing with Kafka, Flink windowing on event time, watermarks for late events, deduplication, and real-time OLAP stores.",
       "tradeoffs": [
-        "Stateful vs. Stateless: Explaining how to manage connection state across gateway fleets with Redis pub/sub backplanes",
-        "Failure Modes: Explaining how a Kafka consumer handles poison pills and consumer group rebalances"
+        "Bigger time windows (cut per-event overhead, but postpone when updated figures appear on dashboards)",
+        "At-least-once delivery (resilient across network blips, but forces idempotent aggregation logic at the sink)"
       ],
-      "keyTakeaway": "Practice drawing system boundaries clearly: separate data planes from metadata planes, and command paths from projection paths."
-    },
-    {
-      "id": "rev-5-patterns",
-      "tabTitle": "C.3 Pattern Index",
-      "title": "Appendix C.3 Problem-to-Pattern Index",
-      "section": "Week 5 Review & Applied Drills",
-      "whatItIs": "Flash-recall association drill mapping common interview prompt phrases directly to standard battle-tested architecture patterns.",
-      "architecture": "PROMPT PHRASE → PATTERN MAPPING:\n• 'Read-heavy, same data repeatedly' → Cache-Aside + TTL Jitter (5.1) + CDN (2.5)\n• 'Write-heavy, append-only' → LSM-Tree engine (4.9) + Kafka buffer (7.2)\n• 'Needs to be exactly once' → At-least-once + Idempotency key unique constraint (13.2)\n• 'Spiky 100× peak' → Queue buffer + admission control (9.6); pre-scale, don't autoscale\n• 'Must not lose data' → Synchronous quorum replication, RPO=0 (4.4) + double-entry ledger\n• 'Millions of concurrent connections' → Event loop + connection scaling + pub/sub backplane (11.5)\n• 'Find things near me' → Geohash / S2 / H3 + 8 neighbor cells (9.1)\n• 'Does this exist? at huge scale' → Bloom filter (5.5)",
-      "tradeoffs": [
-        "Reflexive Recall: Drilling the pattern index allows candidates to name the correct architecture in under 30 seconds"
-      ],
-      "keyTakeaway": "Match problem characteristics directly to architectural patterns. State the pattern and immediately name its primary operational trade-off."
+      "keyTakeaway": "Compute aggregations on event time using watermarks for late arrivals; dual-path enables live OLAP dashboards with batch reconciliation."
     }
   ],
   "36": [
     {
-      "id": "8.4",
-      "tabTitle": "8.4 Outage War Story",
-      "title": "8.4 War Story: Handling a 10-Hour Large-Scale Outage",
-      "section": "Part 8 · Deployment, Reliability & Operations",
-      "whatItIs": "Deconstructing Discord's real-world catastrophic outage where an administrative cloud control-plane bug terminated the entire production server fleet.",
-      "architecture": "WHAT HAPPENED (DISCORD INCIDENT):\nFriday 9 PM: Routine request to terminate an unused Memcache pool.\nVendor cloud management software confirmation dialog showed 1 node, but underlying code terminated EVERYTHING.\nEvery HAProxy, web server, MySQL DB, and cache node terminated simultaneously for 30M DAU service!\nTook 50 engineers 10 hours to rebuild from scratch.",
+      "id": "mc-q15",
+      "tabTitle": "Q15: Task Scheduler",
+      "title": "Question 15. Design a Distributed Task Scheduler",
+      "section": "Module 3 · Data-Intensive Systems",
+      "whatItIs": "Fires one-shot and recurring jobs with timing wheels, time-bounded database leases, durable queues, worker heartbeats, and audit trails.",
       "tradeoffs": [
-        "Control Plane Blast Radius: Control-plane tools are more dangerous than application code; require declarative diffable infrastructure (Terraform/GitOps)",
-        "Confirmation Dialogs are NOT a Safety Mechanism: Real safeguards are IAM authorization limits, termination protection, and two-person rule approvals",
-        "Recovery Time is a Design Property: Untested disaster recovery runbooks mean recovery takes hours; require regular game days and automated rebuild scripts"
+        "Database polling (simple to implement, but creates heavy I/O contention at millions of rows)",
+        "At-least-once dispatch (resilient, but requires idempotent execution handlers downstream)"
       ],
-      "keyTakeaway": "Your control plane is part of your attack and failure surface. Blast-radius limits, declarative infrastructure, and rehearsed restores are the answer — confirmation dialogs are not."
-    },
-    {
-      "id": "12.5",
-      "tabTitle": "12.5 Little's Law & Sizing",
-      "title": "12.5 Capacity Planning & Autoscaling Traps",
-      "section": "Part 12 · Reliability & Operations at Scale",
-      "whatItIs": "Using Little's Law to calculate concurrent connection capacity and avoiding common automated autoscaling collapse traps.",
-      "architecture": "LITTLE'S LAW FORMULA:\nConcurrency in flight $L = \\lambda \\times W$ (Arrival Rate $\\lambda$ × Service Time $W$)\n• Example: 5,000 requests/sec at 200ms average latency → $L = 5,000 \\times 0.2 = 1,000$ concurrent requests\n• The Queue Collapse Trap: Under load, latency doubles to 400ms → required concurrency doubles to 2,000!\nMore threads block on DB connections → DB melts → total cascade!",
-      "tradeoffs": [
-        "Autoscaling Traps: Scaling out opens more DB connections, exhausting DB pool; VM cold start takes 2 mins while traffic spikes in 10s (Pre-scale instead!)",
-        "Headroom Sizing (The N+1 Rule): In a 3-AZ deployment, size each AZ to run at $\\le 66\\%$ capacity so two AZs can absorb the loss of the third without degradation"
-      ],
-      "keyTakeaway": "Use Little's Law to size concurrency. Scale on queue depth or in-flight concurrency, not CPU. Autoscaling cannot beat a fast spike — that is what pre-scaling is for."
+      "keyTakeaway": "Separate task definitions from execution records; claim due runs with atomic time-bounded leases; handle failovers with heartbeats."
     }
   ],
   "37": [
     {
-      "id": "9.1",
-      "tabTitle": "9.1 Geohash vs Quadtree",
-      "title": "9.1 Proximity Search: Geohash and Quadtree",
-      "section": "Part 9 · Applied System Designs",
-      "whatItIs": "Algorithms for indexing two-dimensional geographic space (latitude/longitude) to query nearby businesses within milliseconds.",
-      "architecture": "GEOHASH (2D TO 1D SORTABLE STRING):\nRecursive quadrant subdivision, interleaving longitude and latitude bits.\n• 1 char $\\approx$ 5,000 km | 5 chars $\\approx$ 5 km | 6 chars $\\approx$ 1.2 km | 7 chars $\\approx$ 150 m\nProximity search becomes a STRING PREFIX SCAN on a standard B-Tree index: `WHERE geohash LIKE '9q8zn%'`!\nQUADTREE: In-memory tree where nodes split into 4 quadrants when count > 100 businesses. Adapts depth to density (ocean = 1 huge node; downtown = dense deep leaves).",
+      "id": "mc-q16",
+      "tabTitle": "Q16: E-Commerce Platform",
+      "title": "Question 16. Design an E-Commerce Platform",
+      "section": "Module 4 · Business-Critical Systems",
+      "whatItIs": "E-commerce platform covering product catalog, shopping cart, checkout, atomic inventory holds, orders, and payment orchestration.",
       "tradeoffs": [
-        "The Geohash Boundary Problem: Adjacent locations across cell boundaries share no prefix; must query target cell PLUS its 8 neighboring cells in parallel",
-        "The 1.71 GB RAM Estimate: The entire world's business quadtree/geohash index fits in ~1.71 GB RAM on ONE modern server! Proves sharding is unnecessary; use read replicas"
+        "Relational transactions (guarantee inventory correctness, but can bottleneck during flash sales)",
+        "Temporary inventory holds (prevent overselling, but tie up stock if users abandon checkout)"
       ],
-      "keyTakeaway": "Proximity search reduces 2D space to a 1D ordered key so an ordinary index can do the work. Quote the 1.71 GB estimate — it proves you optimize for operability over resume keywords."
-    },
-    {
-      "id": "9.2",
-      "tabTitle": "9.2 Google Maps Internals",
-      "title": "9.2 Google Maps Architecture: Tiling & Route Planning",
-      "section": "Part 9 · Applied System Designs",
-      "whatItIs": "Decomposing map platforms into pre-computed tile pyramids, real-time probe stream ingestion, and hierarchical routing graphs.",
-      "architecture": "THREE ARCHITECTURAL SHAPES:\n1. Rendering (Caching Problem): World broken into 256×256px pre-computed tiles across 21 zoom levels (4^z tiles). Client fetches viewport tiles from CDN edge!\n2. Location Ingestion (Write Problem): 1B DAU sending GPS probes every 4s = 10^6 writes/sec. Aggregated at edge into Kafka streams; never written raw to DB!\n3. Route Planning (Graph Compute): Road network divided into road segments and super segments. Shortest path via precomputed Contraction Hierarchies + A*.",
-      "tradeoffs": [
-        "Pre-computed Vector Tiles vs. Raster: Vector tiles send geometry rendered on client GPU, shrinking bandwidth and enabling crisp rotation",
-        "Dynamic ETA Computation: Static road topology combined with live traffic speed feeds from streaming probe logs"
-      ],
-      "keyTakeaway": "Google Maps decomposes into three different shapes: rendering is caching (tiles + CDN), navigation is graph compute (hierarchy + A*), and location is write throughput (stream aggregation)."
+      "keyTakeaway": "Use atomic conditional SQL updates (WHERE available_qty >= :qty) to prevent negative inventory; snap price on order creation; ensure idempotent checkout."
     }
   ],
   "38": [
     {
-      "id": "12.1",
-      "tabTitle": "12.1 Distributed Tracing",
-      "title": "12.1 Distributed Tracing & Context Propagation",
-      "section": "Part 12 · Reliability & Operations at Scale",
-      "whatItIs": "Stitching causally linked timed spans emitted by dozens of microservices into an end-to-end request latency waterfall.",
-      "architecture": "TRACE WATERFALL MODEL:\nTrace 7f3a... total 840 ms\n ├─ api-gateway [ 840 ms ]\n │   ├─ auth-service [ 45 ms ]\n │   └─ order-service [ 680 ms ]\n │       └─ inventory-service [ 580 ms ]\n │           └─ 6 × SELECT stock [ 6 × 95 ms ] ◄── N+1 sequential loop!\nTraces instantly reveal that inventory-service has an N+1 query loop, which dashboard averages hid!",
+      "id": "mc-q17",
+      "tabTitle": "Q17: Ticket Booking",
+      "title": "Question 17. Design a Ticket Booking System",
+      "section": "Module 4 · Business-Critical Systems",
+      "whatItIs": "Event ticketing with numbered seating, 5-minute optimistic holds, payment coordination, automatic hold expiry, and anti-double booking guarantees.",
       "tradeoffs": [
-        "Context Propagation: Passing W3C `traceparent` header across process and queue boundaries is the single most common implementation bug",
-        "Head-Based Sampling (Decide at start; 1% sample rate misses rare errors) vs. Tail-Based Sampling (Buffer all spans in collector; retain 100% of errors and SLO violations)",
-        "Logging vs. Tracing vs. Metrics: Metrics alert that something is wrong; traces show WHERE in the call graph time went; logs explain WHAT happened"
+        "Brief holds (free inventory faster, but frustrate slow payers) vs. Longer holds (ease checkout, but shrink sellable seats)",
+        "Redis locks alone (fast, but insufficient durability) vs. Authoritative DB conditional state transitions"
       ],
-      "keyTakeaway": "Tracing answers 'where did the time go across services?' — the one question metrics and logs cannot answer. Always carry trace ID in every log line."
-    },
-    {
-      "id": "12.2",
-      "tabTitle": "12.2 Logging Pipelines",
-      "title": "12.2 Logging Pipeline Design & Cost Control",
-      "section": "Part 12 · Reliability & Operations at Scale",
-      "whatItIs": "Ingesting, buffering, parsing, and storing terabytes of application logs daily without letting logging outages impact customer availability.",
-      "architecture": "PIPELINE & BUFFERS:\nApp ──► Local Daemon Agent ──► Kafka Buffer ──► Log Processor ──► Hot Index (OpenSearch: 7 days)\n                                                                │\n                                                                └─► S3 Cold Archive (Months, Parquet)\nApp NEVER blocks on logging: uses bounded in-memory queue, dropping oldest lines if saturated!",
-      "tradeoffs": [
-        "Log Volume Arithmetic: 10,000 RPS × 5 lines/req × 500B = 25 MB/s = ~2.16 TB/day raw = ~97 TB hot retention with indexing overhead",
-        "Cost Levers: Index only fields filtered in queries; delete health-check noise; sample high-volume 200 OK access logs; structure as JSON"
-      ],
-      "keyTakeaway": "Decouple logging via Kafka buffers so index outages never degrade application availability. Log decisions, not narration, and carry the trace ID everywhere."
+      "keyTakeaway": "Atomic state transitions from AVAILABLE to HELD ensure at most one buyer claims a seat; background cleanup clears abandoned holds safely."
     }
   ],
   "39": [
     {
-      "id": "7.3",
-      "tabTitle": "7.3 Orchestration vs Choreography",
-      "title": "7.3 Microservice Collaboration Styles",
-      "section": "Part 7 · Messaging & Streaming",
-      "whatItIs": "Comparing centralized workflow orchestrators against decentralized event-driven choreography for coordinating distributed microservices.",
-      "architecture": "TWO COORDINATION STYLES:\n• Orchestration (Central Authority): Orchestrator (Temporal/Conductor) sends explicit command to Payment → Inventory → Shipping. Flow is visible in one place; orchestrator state must be HA.\n• Choreography (Event-Driven): Services publish domain events to shared Kafka bus; services react independently. Loose coupling, but no single place shows the full flow.\nHYBRID REALITY: Orchestrate the transactional core (payment, reservation); choreograph the reactive tail (emails, search indexing, analytics)!",
+      "id": "mc-q18",
+      "tabTitle": "Q18: Payment System",
+      "title": "Question 18. Design a Payment System",
+      "section": "Module 4 · Business-Critical Systems",
+      "whatItIs": "Payment service with idempotency keys, payment state machines, immutable double-entry ledger entries, provider webhooks, and reconciliation.",
       "tradeoffs": [
-        "Debuggability in Choreography: When a choreographed flow stops halfway, tracking down why requires distributed tracing and correlation IDs",
-        "Schema Coupling in Choreography: Changes to event schemas break unknown downstream consumers; requires Schema Registries (Protobuf/Avro) with backward compatibility"
+        "Synchronous provider calls (simple initial response, but leave timeout ambiguity)",
+        "Double-entry ledger (guarantees auditability, but demands strict accounting balance rules)"
       ],
-      "keyTakeaway": "Orchestrate what must be correct, ordered, and observable; choreograph what must be decoupled, reactive, and extensible. Real architectures mix both."
-    },
-    {
-      "id": "13.4",
-      "tabTitle": "13.4 Strangler Fig",
-      "title": "13.4 Service Decomposition and the Strangler Fig",
-      "section": "Part 13 · Architecture & Integration",
-      "whatItIs": "Incrementally migrating capabilities out of a monolith into microservices without risky full-system rewrites.",
-      "architecture": "THE 4 PHASES OF THE STRANGLER FIG:\nPhase 1: Insert API Gateway facade in front of monolith (change nothing behind it)\nPhase 2: Extract new microservice; dual-read to verify matching outputs with monolith\nPhase 3: Flip the WRITER to new service behind feature flag (Exactly ONE writer per dataset!)\nPhase 4: Monolith reads via API/events; repeat for next capability until monolith shrinks to zero.",
-      "tradeoffs": [
-        "The Distributed Monolith Trap: Services that cannot be deployed independently create the operational headaches of microservices with the coupling of monoliths",
-        "Single Writer Rule: Never dual-write to two independent datastores simultaneously (no distributed transaction; they WILL diverge). Use CDC or outbox to migrate data"
-      ],
-      "keyTakeaway": "Draw boundaries from data ownership and change coupling, not nouns. Migrate with a strangler facade, one slice at a time, always with exactly ONE writer per dataset."
+      "keyTakeaway": "Enforce idempotency keys on payment initiation; verify webhook signatures; record immutable double-entry ledger lines; run daily reconciliation."
     }
   ],
   "40": [
     {
-      "id": "9.4",
-      "tabTitle": "9.4 Payment Architecture",
-      "title": "9.4 Payment Systems: Clearing, Settlement & Ledgers",
-      "section": "Part 9 · Applied System Designs",
-      "whatItIs": "Architecting monetary transaction pipelines with asynchronous clearing/settlement, double-entry ledgers, and automated reconciliation.",
-      "architecture": "INFORMATION FLOW VS. FUND FLOW:\n• Transaction Layer: User clicks Buy → Payment Executor authorizes card via PSP (real-time-ish info flow)\n• Clearing & Settlement: Banks net balances at end-of-day; actual money moves between reserve accounts at midnight (asynchronous fund flow!)\n• The Reconciliation Loop: Compares internal purchase orders, PSP statement files, and bank records to detect breaks automatically.",
+      "id": "mc-q19",
+      "tabTitle": "Q19: Cloud File Storage",
+      "title": "Question 19. Design a Cloud File Storage Service like Dropbox",
+      "section": "Module 4 · Business-Critical Systems",
+      "whatItIs": "Cloud storage where users upload files, sync across devices with cursors, manage versions, share files, and resolve simultaneous edit conflicts.",
       "tradeoffs": [
-        "Wallet vs. Ledger: Wallet holds current balance (mutable read model); Ledger records immutable double-entry debits/credits (`sum(debits) == sum(credits)` must always balance)",
-        "ID-Chaining: `order_id` → `psp_txn_id` → `payout_batch_id` → `invoice_id`. Every hop must carry upstream IDs so settlement records can be reconciled later"
+        "Chunking (resilient file transfers, but adds block metadata overhead)",
+        "Optimistic concurrency (allows offline edits, but demands conflict copy creation on collision)"
       ],
-      "keyTakeaway": "A payment system is an idempotent, append-only, reconcilable pipeline across untrusted boundaries. Ledger is source of truth; wallet is a derived projection."
-    },
-    {
-      "id": "13.2-pay",
-      "tabTitle": "13.2 Idempotency Keys",
-      "title": "13.2 Idempotency Keys & Avoiding Double Charges",
-      "section": "Part 13 · Architecture & Integration",
-      "whatItIs": "Eliminating duplicate credit card payments during network timeouts using client-generated idempotency tokens and atomic database state machines.",
-      "architecture": "IDEMPOTENCY STATE MACHINE:\nRequest arrives with Idempotency-Key: '7f3a...'\n  │\n  ▼ ATOMIC INSERT (key, state='IN_PROGRESS')\n  ├─ Insert Succeeds → Call PSP → Store Response, state='COMPLETED' → Return 200\n  ├─ Conflict (state='COMPLETED') → Return CACHED response (No re-charge!)\n  └─ Conflict (state='IN_PROGRESS') → Return 409 Conflict (Concurrent duplicate in flight)",
-      "tradeoffs": [
-        "Why 'Insert is the Lock': Two identical requests arriving at same millisecond both pass a 'check-then-act' query; an atomic unique constraint insert serializes the race",
-        "Payload Binding: Hash request body with key; if same key arrives with different amount, reject with 422 to catch client bugs",
-        "Downstream Propagation: Idempotency keys must be forwarded to external PSPs (Stripe) so network retries to payment gateways do not double charge"
-      ],
-      "keyTakeaway": "Exactly-Once = At-Least Once (retries) + At-Most Once (idempotency check). The unique index insert is the lock. Store and replay the original response."
+      "keyTakeaway": "Upload chunked blocks directly to object storage; client sync cursors pull deltas reliably after disconnects; retain conflict copies on clash."
     }
   ],
   "41": [
     {
-      "id": "9.6",
-      "tabTitle": "9.6 Flash Sale Funnel",
-      "title": "9.6 Flash Sale Systems: Funnel Architecture",
-      "section": "Part 9 · Applied System Designs",
-      "whatItIs": "Absorbing extreme traffic surges (10M clicks in 1 second) while strictly guaranteeing zero inventory overselling.",
-      "architecture": "THE 7-STAGE FUNNEL ARCHITECTURE:\n10M Users Click at 12:00:00\n  │\n  ▼ 1. Static Assets on CDN (Zero origin server traffic)\n  ▼ 2. Client-side Throttle (Button disabled after 1 click, CAPTCHA)\n  ▼ 3. Edge Rate Limiter (Token bucket per IP/device drops 90% traffic)\n  ▼ 4. Admission Control Gate (Only admit ~10× inventory through)\n  ▼ 5. Atomic Inventory Decrement in Redis (`DECR stock`; if < 0 reject immediately)\n  ▼ 6. Winning Requests Enqueued to Kafka\n  ▼ 7. DB Workers Drain Queue at safe rate to create orders and charge payment!",
+      "id": "mc-q20",
+      "tabTitle": "Q20: Ad Impression Tracking",
+      "title": "Question 20. Design an Ad Impression Tracking System",
+      "section": "Module 4 · Business-Critical Systems",
+      "whatItIs": "Pipeline ingesting ad impressions at 100K-500K eps, deduplicating with stable event IDs, event-time window aggregation, and batch reconciliation.",
       "tradeoffs": [
-        "Preventing Overselling: Atomic Redis Lua decrement is the authority; database constraint `CHECK (stock >= 0)` is the unbypassable backstop",
-        "Inventory Reservation: Hold stock with a 15-minute TTL; if user fails payment, saga compensation returns stock to waitlist pool automatically",
-        "Isolation: Separate the flash sale service, cache, and DB from normal store traffic so flash spikes do not take down standard purchases (Bulkheads)"
+        "Durable streaming (adds resilience and replay, but introduces operational overhead)",
+        "Near-real-time aggregation (responsive dashboards, while numbers remain provisional until batch reconciliation)"
       ],
-      "keyTakeaway": "A flash sale is a load-shedding funnel: shed orders of magnitude at every layer. Decide inventory with one atomic operation, then process orders asynchronously."
-    },
-    {
-      "id": "13.3",
-      "tabTitle": "13.3 Durable Execution",
-      "title": "13.3 Workflow Orchestration & Durable Execution",
-      "section": "Part 13 · Architecture & Integration",
-      "whatItIs": "Writing fault-tolerant long-running multi-step business sagas as standard code using durable execution engines (Temporal/Cadence).",
-      "architecture": "DURABLE CODE EXECUTION:\ndef checkout_workflow(order):\n  payment = call_activity(charge_card, order)   # Journaled; retried on failure\n  try:\n    call_activity(reserve_inventory, order)     # Survives process crashes!\n  except Unavailable:\n    call_activity(refund_payment, payment)      # Durable compensation\n  sleep(days = 30)                              # Real timer; server can restart 100×",
-      "tradeoffs": [
-        "Hand-rolled Sagas (Status columns + cron jobs + retry tables: reinvented badly by every team) vs. Durable Execution engines",
-        "Determinism Constraint: Workflow orchestration code must be purely deterministic; random numbers, wall clocks, and direct network I/O belong inside Activities"
-      ],
-      "keyTakeaway": "Durable execution products turn complex multi-day sagas into straightforward code. The engine journals every call and replays history to rebuild state after crashes."
+      "keyTakeaway": "Deduplicate on stable event IDs; compute real-time OLAP window rollups for dashboards; reconcile against raw archive for authoritative billing."
     }
   ],
   "42": [
     {
-      "id": "capstone-rubric",
-      "tabTitle": "Staff Rubric",
-      "title": "Staff & Principal 45-Minute Interview Rubric",
-      "section": "Capstone Simulation & Final Mastery",
-      "whatItIs": "The exact evaluation criteria used by FAANG/tier-1 tech companies to calibrate senior and staff software engineering design loops.",
-      "architecture": "THE SENIOR / STAFF DIFFERENTIATION SIGNALS:\n• Requirements: Mid-level starts designing immediately; Senior pins down scale, consistency, and latency targets first\n• Technology Choice: Mid-level recites buzzwords; Senior derives choices from query access patterns and operational cost\n• Trade-offs: Mid-level lists pros/cons; Senior quantifies: '50% storage overhead vs. 200% for 3× replication'\n• Failure Handling: Mid-level says 'add a replica'; Senior explains split-brain, fencing tokens, and read-after-write repair\n• Ownership: Mid-level designs happy path; Senior covers rollout, canary baking, data migration, and on-call blast radius",
+      "id": "mc-checklist",
+      "tabTitle": "Final Checklist",
+      "title": "Final Interview Checklist & 6 Core Principles",
+      "section": "Capstone · Masterclass Wrap-Up",
+      "whatItIs": "The 10-point system design readiness checklist, the 6 core architectural principles, and revised content scope from the Masterclass.",
       "tradeoffs": [
-        "Narrating Uncertainty: 'I don't know tool X's internals, but the property I need is Y' scores higher than a confident wrong claim",
-        "Numbers Before Boxes: Always do back-of-the-envelope estimation to prove whether a distributed solution is even required"
+        "Premature over-engineering (complex distributed systems) vs. Smallest viable architecture that satisfies scale targets",
+        "Passive review vs. Active 10-point readiness audit"
       ],
-      "keyTakeaway": "Interviews are a judgement test, not a recall test. For every design you propose: know what it costs, what it breaks, what you would monitor, and how to recover."
-    },
-    {
-      "id": "rapid-257",
-      "tabTitle": "257 Questions",
-      "title": "Appendix D: 257-Question Rapid-Fire Final Drill",
-      "section": "Capstone Simulation & Final Mastery",
-      "whatItIs": "Comprehensive 257-question self-test covering all 14 parts of the guide: foundations, protocols, databases, storage, messaging, resilience, and applied designs.",
-      "architecture": "THE 60-SECOND DRILL RULE:\nRead any question at random from the 257 bank:\n• If you cannot formulate a complete, concise 60-second verbal answer with trade-offs out loud, immediately review the referenced section.\nHigh-Yield Categories:\n1. Questions 1–30: Protocols, TCP/UDP, TLS 1.3, DNS, CDNs, Load Balancing\n2. Questions 31–70: ACID, MVCC, Sharding, Consistent Hashing, Storage Engines, Caching\n3. Questions 71–120: Kafka, Sagas, Consensus, Failure Detection, Outbox\n4. Questions 121–257: Applied Systems (TinyURL, S3, Maps, WhatsApp, Payments, Flash Sales)",
-      "tradeoffs": [
-        "Active Verbal Practice vs. Passive Reading: Speaking answers out loud builds conversational fluency under pressure"
-      ],
-      "keyTakeaway": "Congratulations on completing the 42-day curriculum. Trust the framework, do the math, name the trade-offs, and defend your boundaries."
+      "keyTakeaway": "Begin with the smallest design that satisfies requirements; tie every architectural pick to a concrete rationale; verify all 10 checklist points."
     }
   ]
 };

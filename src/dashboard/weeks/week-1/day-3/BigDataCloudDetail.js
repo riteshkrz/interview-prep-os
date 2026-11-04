@@ -14,36 +14,36 @@ export function renderBigDataCloudContent(topic) {
     },
     {
       stage: "Streaming Ingestion",
-      aws: "Amazon Kinesis / MSK",
+      aws: "Amazon Kinesis / MSK (Kafka)",
       gcp: "Cloud Pub/Sub",
       azure: "Event Hubs"
     },
     {
       stage: "Raw Data Lake Storage",
       aws: "Amazon S3",
-      gcp: "Cloud Storage",
+      gcp: "Google Cloud Storage (GCS)",
       azure: "Azure Data Lake Storage (ADLS)"
     },
     {
       stage: "Distributed Processing Engine",
-      aws: "Amazon EMR / AWS Glue",
-      gcp: "Dataproc / Dataflow",
-      azure: "Azure Synapse Analytics / HDInsight"
+      aws: "Amazon EMR / AWS Glue (Spark)",
+      gcp: "Dataproc / Cloud Dataflow",
+      azure: "Azure Synapse / HDInsight"
     },
     {
       stage: "Analytical Data Warehouse",
       aws: "Amazon Redshift",
-      gcp: "BigQuery",
-      azure: "Azure Synapse"
+      gcp: "Google BigQuery",
+      azure: "Azure Synapse Analytics"
     },
     {
-      stage: "Orchestration / Workflow",
-      aws: "AWS Step Functions / MWAA",
-      gcp: "Cloud Composer (Airflow)",
+      stage: "Workflow Orchestration",
+      aws: "AWS Step Functions / MWAA (Airflow)",
+      gcp: "Cloud Composer (Managed Airflow)",
       azure: "Azure Data Factory"
     },
     {
-      stage: "Visualization / BI",
+      stage: "Visualization / BI Dashboards",
       aws: "Amazon QuickSight",
       gcp: "Looker / Looker Studio",
       azure: "Power BI"
@@ -54,17 +54,30 @@ export function renderBigDataCloudContent(topic) {
     {
       qNum: "Q1",
       question: "What is the difference between a Data Lake and a Data Warehouse?",
-      answer: `A <strong>Data Lake</strong> stores raw, unstructured, semi-structured, and structured data in its original format (schema-on-read) using cheap object storage (S3, GCS). A <strong>Data Warehouse</strong> stores cleaned, structured, relational data transformed into a defined schema (schema-on-write) optimized for fast SQL aggregation and BI reporting. Modern architectures use a <strong>Lakehouse pattern</strong> (Delta Lake, Apache Iceberg) to combine the flexibility of a lake with the ACID transactions of a warehouse.`
+      answer: `The difference lies in <em>when</em> structure and schema are applied:
+      <ul class="list-disc pl-5 mt-1.5 space-y-1 text-slate-300">
+        <li><strong>Data Lake (Schema-on-Read):</strong> Like a giant digital storage room (Amazon S3, GCS) where you dump raw logs, JSON blobs, CSV files, and images in their original format at minimal cost. You define how to interpret the data only when you run a query.</li>
+        <li><strong>Data Warehouse (Schema-on-Write):</strong> Like an organized library with labeled shelves (BigQuery, Redshift, Snowflake). Data must be cleaned, transformed, and formatted into columnar tables <em>before</em> loading. Optimized for ultra-fast SQL aggregation queries over billions of rows.</li>
+        <li><strong>The Modern Data Lakehouse:</strong> Modern table formats like <strong>Apache Iceberg</strong> and <strong>Delta Lake</strong> allow teams to run fast ACID transactions directly on cheap S3 object storage without needing to duplicate all data into an expensive separate warehouse.</li>
+      </ul>`
     },
     {
       qNum: "Q2",
-      question: "Batch processing vs. Stream processing: when do you use which?",
-      answer: `Use <strong>batch processing</strong> (Hadoop, Spark, AWS Glue) when computing on large historical datasets where processing latency (hours, days) is acceptable (e.g. daily sales aggregation, ML training). Use <strong>stream processing</strong> (Apache Flink, Spark Streaming, GCP Dataflow) when low latency (milliseconds to seconds) is required to act on continuous events (e.g. fraud detection, live anomaly alerts, real-time leaderboards).`
+      question: "Batch processing vs. Stream processing: when do you use each in system design?",
+      answer: `Choose based on <strong>freshness SLA</strong> and <strong>compute cost</strong>:
+      <ul class="list-disc pl-5 mt-1.5 space-y-1 text-slate-300">
+        <li><strong>Batch Processing (Apache Spark / AWS EMR):</strong> Processes large chunks of historical data periodically (e.g. hourly or nightly). High throughput, cost-effective, but latency is minutes to hours. Use for daily financial reconciliation, monthly invoices, or training recommendation machine learning models.</li>
+        <li><strong>Stream Processing (Apache Flink / Google Dataflow):</strong> Processes events individually or in micro-batches with sub-second latency as they arrive over Kafka or Kinesis. Use for live credit card fraud detection, real-time gaming leaderboards, and instant ride-matching in Uber.</li>
+      </ul>`
     },
     {
       qNum: "Q3",
-      question: "How do you handle schema evolution in a big data pipeline?",
-      answer: `Use <strong>schema registries</strong> (Confluent Schema Registry, AWS Glue Schema Registry) with binary serialization formats like Apache Avro or Protocol Buffers. Enforce backward or full compatibility rules so newer producers do not break downstream consumers. In data lake tables, use open table formats (Apache Iceberg, Delta Lake) that support schema evolution without rewriting entire partitions.`
+      question: "How do you prevent OLAP analytical queries from crashing your transactional OLTP database?",
+      answer: `<strong>The Golden Rule: Never run analytical reports directly against your operational database.</strong>
+      <br/><br/>
+      If an analyst runs <code>SELECT COUNT(*), AVG(amount) FROM orders GROUP BY country</code> on your production PostgreSQL or MySQL database, it will scan millions of rows, exhaust RAM buffer pools, lock tables, and cause customer checkout requests to time out.
+      <br/><br/>
+      <strong>The Solution:</strong> Use <strong>Change Data Capture (CDC)</strong> via Debezium or AWS DMS to stream database write-ahead log (WAL) changes into Kafka or Kinesis, which asynchronously streams data into an analytical warehouse (BigQuery / Redshift / Snowflake). The production OLTP database remains 100% insulated from heavy reporting queries.`
     }
   ];
 
@@ -84,62 +97,101 @@ export function renderBigDataCloudContent(topic) {
               1.6 Choosing a Cloud Vendor for Big Data Solutions
             </h2>
           </div>
+          <p class="text-[13.5px] text-slate-400 font-sans pl-4">
+            The 5-Stage Data Pipeline Architecture · Data Lakes vs. Warehouses · Multi-Cloud Tool Matrix
+          </p>
         </div>
 
-        <!-- Introductory Paragraph -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 sm:p-5">
-          <p class="text-[13.5px] text-slate-300 leading-relaxed font-sans">
-            Modern big data architectures follow a vendor-neutral 5-stage pipeline pattern: <strong>Ingestion → Storage → Processing → Analytical Warehouse → Visualization</strong>. Every major cloud provider (AWS, Google Cloud Platform, Microsoft Azure) offers a suite of managed services that map to these pipeline stages [1]:
+        <!-- MENTAL MODEL BOX -->
+        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-5 flex flex-col gap-3">
+          <span class="font-code text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            THE SIMPLE MENTAL MODEL: DATA LAKES VS. DATA WAREHOUSES
+          </span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px] text-slate-300 leading-relaxed font-sans">
+            <div class="bg-[#0A0E1A] p-4 rounded-lg border border-[#24314A]">
+              <strong class="text-cyan-300 flex items-center gap-1.5 mb-1.5">
+                <span class="material-symbols-outlined text-[17px]">water</span>
+                Data Lake (Amazon S3 / GCS) = Raw Storage Room
+              </strong>
+              <p>
+                A cheap, massive storage bucket where you dump all data in its original format (raw JSON logs, images, CSVs, clickstreams). You don't clean it first; you store it cheaply and figure out what to do with it later.
+              </p>
+            </div>
+            <div class="bg-[#0A0E1A] p-4 rounded-lg border border-[#24314A]">
+              <strong class="text-indigo-300 flex items-center gap-1.5 mb-1.5">
+                <span class="material-symbols-outlined text-[17px]">table_chart</span>
+                Data Warehouse (BigQuery / Redshift) = Organized Filing Cabinet
+              </strong>
+              <p>
+                A high-speed columnar database where data has already been cleaned, structured, and organized into tables. Optimized for business intelligence analysts running complex SQL aggregations across billions of rows in seconds.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- WHY THIS MATTERS IN GENERAL SWE INTERVIEWS -->
+        <div class="bg-indigo-950/30 border border-indigo-500/40 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+          <span class="px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-code text-[10.5px] font-bold uppercase tracking-wider shrink-0 w-fit">
+            INTERVIEW SIGNAL
+          </span>
+          <p class="text-[12.5px] text-indigo-200/90 leading-relaxed font-sans">
+            <strong>Why interviewers ask this:</strong> Even in general backend system design interviews, interviewers check if you know <strong>never to run reporting/analytics on your primary transactional database</strong>. Showing that you know how to decouple OLTP (PostgreSQL) from OLAP (BigQuery/Redshift) using Kafka and Change Data Capture (CDC) demonstrates senior architectural maturity.
           </p>
         </div>
 
         <!-- 5-Stage Pipeline Pillars -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          <div class="bg-[#141C2E]/80 border border-cyan-500/30 rounded-xl p-3.5 flex flex-col gap-1.5">
-            <span class="font-code text-[10px] font-bold text-cyan-400 uppercase">1. Ingestion</span>
-            <span class="text-[12px] text-slate-300 leading-snug">Streaming and batch events from microservices, logs, and IoT devices.</span>
-          </div>
-          <div class="bg-[#141C2E]/80 border border-blue-500/30 rounded-xl p-3.5 flex flex-col gap-1.5">
-            <span class="font-code text-[10px] font-bold text-blue-400 uppercase">2. Raw Storage</span>
-            <span class="text-[12px] text-slate-300 leading-snug">Durable, scalable object storage acting as the central data lake.</span>
-          </div>
-          <div class="bg-[#141C2E]/80 border border-indigo-500/30 rounded-xl p-3.5 flex flex-col gap-1.5">
-            <span class="font-code text-[10px] font-bold text-indigo-400 uppercase">3. Processing</span>
-            <span class="text-[12px] text-slate-300 leading-snug">Distributed engines for batch transformations and low-latency streaming.</span>
-          </div>
-          <div class="bg-[#141C2E]/80 border border-emerald-500/30 rounded-xl p-3.5 flex flex-col gap-1.5">
-            <span class="font-code text-[10px] font-bold text-emerald-400 uppercase">4. Warehouse</span>
-            <span class="text-[12px] text-slate-300 leading-snug">Columnar OLAP databases built for high-concurrency SQL aggregations.</span>
-          </div>
-          <div class="bg-[#141C2E]/80 border border-purple-500/30 rounded-xl p-3.5 flex flex-col gap-1.5">
-            <span class="font-code text-[10px] font-bold text-purple-400 uppercase">5. Presentation</span>
-            <span class="text-[12px] text-slate-300 leading-snug">Interactive dashboards, BI exploration, and machine learning feeds.</span>
+        <div class="flex flex-col gap-3">
+          <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider">
+            THE 5 VENDOR-NEUTRAL PIPELINE STAGES
+          </span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div class="bg-[#141C2E]/80 border border-cyan-500/30 rounded-xl p-3.5 flex flex-col gap-1.5">
+              <span class="font-code text-[10px] font-bold text-cyan-400 uppercase">1. Ingestion</span>
+              <span class="text-[12px] text-slate-300 leading-snug">Collecting streaming events (Kafka/Kinesis) and batch files from microservices and logs.</span>
+            </div>
+            <div class="bg-[#141C2E]/80 border border-blue-500/30 rounded-xl p-3.5 flex flex-col gap-1.5">
+              <span class="font-code text-[10px] font-bold text-blue-400 uppercase">2. Raw Storage</span>
+              <span class="text-[12px] text-slate-300 leading-snug">Durable, cheap object storage (S3/GCS) acting as the centralized raw Data Lake.</span>
+            </div>
+            <div class="bg-[#141C2E]/80 border border-indigo-500/30 rounded-xl p-3.5 flex flex-col gap-1.5">
+              <span class="font-code text-[10px] font-bold text-indigo-400 uppercase">3. Processing</span>
+              <span class="text-[12px] text-slate-300 leading-snug">Distributed engines (Spark/Flink) transforming and aggregating raw files into structured data.</span>
+            </div>
+            <div class="bg-[#141C2E]/80 border border-emerald-500/30 rounded-xl p-3.5 flex flex-col gap-1.5">
+              <span class="font-code text-[10px] font-bold text-emerald-400 uppercase">4. Warehouse</span>
+              <span class="text-[12px] text-slate-300 leading-snug">Columnar OLAP databases (BigQuery/Redshift) built for lightning-fast SQL aggregation queries.</span>
+            </div>
+            <div class="bg-[#141C2E]/80 border border-purple-500/30 rounded-xl p-3.5 flex flex-col gap-1.5">
+              <span class="font-code text-[10px] font-bold text-purple-400 uppercase">5. Presentation</span>
+              <span class="text-[12px] text-slate-300 leading-snug">Interactive dashboards (Looker/QuickSight) and machine learning feature stores.</span>
+            </div>
           </div>
         </div>
 
         <!-- Big Data Tool Comparison Table -->
         <div class="flex flex-col gap-3 pt-2">
           <span class="font-code text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            BIG DATA TOOL COMPARISON ACROSS CLOUDS
+            BIG DATA CLOUD EQUIVALENCE MATRIX
           </span>
 
           <div class="overflow-x-auto rounded-xl border border-[#24314A]">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-[#1E1B4B] border-b border-[#312E81] text-[12px] font-code font-bold text-indigo-200">
-                  <th class="p-3">Pipeline Stage</th>
-                  <th class="p-3">AWS</th>
-                  <th class="p-3">Google Cloud (GCP)</th>
-                  <th class="p-3">Azure</th>
+                  <th class="p-3.5">Pipeline Stage</th>
+                  <th class="p-3.5">Amazon Web Services (AWS)</th>
+                  <th class="p-3.5">Google Cloud (GCP)</th>
+                  <th class="p-3.5">Microsoft Azure</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-[#24314A]/60 font-sans text-[12.5px]">
                 ${bigDataMatrix.map((row, idx) => `
                   <tr class="hover:bg-[#141C2E]/70 transition-colors ${idx % 2 === 1 ? 'bg-[#0F1626]/40' : ''}">
-                    <td class="p-3 font-semibold text-white">${row.stage}</td>
-                    <td class="p-3 font-code text-cyan-300 text-[12px]">${row.aws}</td>
-                    <td class="p-3 font-code text-emerald-300 text-[12px]">${row.gcp}</td>
-                    <td class="p-3 font-code text-blue-300 text-[12px]">${row.azure}</td>
+                    <td class="p-3.5 font-semibold text-white">${row.stage}</td>
+                    <td class="p-3.5 font-code text-cyan-300 text-[12px]">${row.aws}</td>
+                    <td class="p-3.5 font-code text-emerald-300 text-[12px]">${row.gcp}</td>
+                    <td class="p-3.5 font-code text-blue-300 text-[12px]">${row.azure}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -149,55 +201,57 @@ export function renderBigDataCloudContent(topic) {
 
         <!-- Green Callout Box: The Core Decision Rule -->
         <div class="bg-emerald-950/20 border-l-4 border-emerald-500 rounded-r-xl p-5 flex flex-col gap-2">
-          <span class="font-code text-[11px] font-bold text-emerald-400 uppercase tracking-wider">
-            THE CORE DECISION RULE
+          <span class="font-code text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">psychology</span>
+            SENIOR PRINCIPLE: "DATA GRAVITY" TRUMPS FEATURE CHECKLISTS
           </span>
           <p class="text-[13px] text-emerald-200/90 leading-relaxed font-sans">
-            Do not pick a big data vendor based on raw feature checklists — all three clouds have mature, capable equivalents. The deciding criteria are: <strong>(1) Existing organizational footprint</strong> (data gravity wins: move compute to where data lives, not vice versa), <strong>(2) Query model preference</strong> (BigQuery's serverless pay-per-query model vs. Redshift's provisioned cluster model), and <strong>(3) AI/ML ecosystem integration</strong> (GCP leads in Vertex AI / TensorFlow; AWS leads in breadth and partner tools).
+            Never choose a big data cloud based on tiny feature differences — all three clouds have mature, battle-tested solutions. The overriding law is <strong>Data Gravity</strong>: moving petabytes of data across cloud boundaries incurs massive bandwidth egress fees ($0.09/GB) and high latency. Always place your data processing pipeline directly inside the cloud where your application data already lives.
           </p>
         </div>
 
         <!-- Bar: OVER TO YOU -->
-        <div class="bg-[#1E293B]/70 border border-[#334155] rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-2.5 text-[12.5px]">
-          <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-code text-[10.5px] font-bold uppercase tracking-wider shrink-0 w-fit">
+        <div class="bg-[#1E293B]/70 border border-[#334155] rounded-xl px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-3 text-[12.5px]">
+          <span class="px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-code text-[10.5px] font-bold uppercase tracking-wider shrink-0 w-fit">
             OVER TO YOU
           </span>
           <span class="text-slate-300 font-medium">
-            Under what query patterns does BigQuery's on-demand pricing become significantly more expensive than a provisioned Redshift cluster?
+            Under what query patterns does Google BigQuery's on-demand per-terabyte pricing become significantly more expensive than a provisioned Redshift or Snowflake cluster?
           </span>
         </div>
 
         <!-- INTERVIEW FOLLOW-UPS Box -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-5 flex flex-col gap-4">
+        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-6 flex flex-col gap-5">
           <div class="flex items-center gap-2">
-            <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider">
-              INTERVIEW FOLLOW-UPS
+            <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">contact_support</span>
+              DEEP-DIVE INTERVIEW FOLLOW-UPS (Q1–Q3)
             </span>
           </div>
 
           <div class="flex flex-col gap-4">
             ${interviewFollowUps.map(item => `
-              <div class="flex flex-col gap-1.5 pb-3 border-b border-[#24314A]/50 last:border-0 last:pb-0">
+              <div class="flex flex-col gap-2 pb-4 border-b border-[#24314A]/60 last:border-0 last:pb-0">
                 <div class="flex items-start gap-2.5">
                   <span class="font-code text-[12px] font-bold text-[#818CF8] shrink-0 pt-0.5">${item.qNum}</span>
-                  <span class="text-[13.5px] font-bold text-white font-sans">${item.question}</span>
+                  <span class="text-[14px] font-bold text-white font-sans leading-snug">${item.question}</span>
                 </div>
-                <p class="text-[13px] text-slate-300 leading-relaxed font-sans pl-6">
+                <div class="text-[13px] text-slate-300 leading-relaxed font-sans pl-6">
                   ${item.answer}
-                </p>
+                </div>
               </div>
             `).join('')}
           </div>
         </div>
 
         <!-- Dark Blue Callout Box: KEY INTERVIEW TAKEAWAY -->
-        <div class="bg-gradient-to-r from-[#1E1B4B] to-[#312E81] border border-[#4338CA] rounded-xl p-5 flex flex-col gap-2 shadow-lg shadow-indigo-950/40">
-          <span class="font-code text-[11px] font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-[15px]">key</span>
+        <div class="bg-gradient-to-r from-[#1E1B4B] to-[#312E81] border border-[#4338CA] rounded-xl p-6 flex flex-col gap-2.5 shadow-lg shadow-indigo-950/40">
+          <span class="font-code text-[11px] font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">key</span>
             KEY INTERVIEW TAKEAWAY
           </span>
-          <p class="text-[13.5px] font-sans font-medium text-white leading-relaxed">
-            Big data architectures are vendor-neutral: Ingestion → Lake → Processing → Warehouse → Presentation. Focus on data gravity, query pricing models (serverless vs. provisioned), and schema governance. Never move petabytes across cloud boundaries — compute must travel to the data.
+          <p class="text-[14px] font-sans font-medium text-white leading-relaxed">
+            Every big data architecture follows the same universal 5 stages: Ingestion → Raw Lake → Distributed Processing → Columnar Warehouse → Visualization. Remember data gravity: compute moves to where data lives, never the reverse. In interviews, emphasize decoupling operational OLTP databases from analytical OLAP workloads using Change Data Capture (CDC).
           </p>
         </div>
 

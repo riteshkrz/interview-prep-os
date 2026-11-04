@@ -1,1 +1,1 @@
-export { renderConflictResolutionContent } from './ConflictResolutionDetail.js';
+export { renderYouTubeDetail } from './YouTubeDetail.js';

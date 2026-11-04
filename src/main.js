@@ -12,7 +12,7 @@ import { renderPricing } from './components/Pricing.js';
 import { renderClosingCTA } from './components/ClosingCTA.js';
 import { renderFooter } from './components/Footer.js';
 import { renderFaqModal } from './components/FaqModal.js';
-import { renderDashboardApp, attachDashboardListeners } from './dashboard/DashboardApp.js';
+import { renderDashboardApp, attachDashboardListeners, setDashboardTab } from './dashboard/DashboardApp.js';
 import { renderBlogApp, attachBlogListeners } from './blog/BlogApp.js';
 import { renderAuthPage, attachAuthPageListeners } from './auth/AuthPage.js';
 import { renderRoadmapLandingPage, setupRoadmapLandingListeners } from './roadmap-landing/RoadmapLandingPage.js';
@@ -34,7 +34,12 @@ function handleRouting() {
   const isRoadmap = hash === '#roadmap' || hash === '#/roadmap' || hash.startsWith('#/roadmap?') || hash.startsWith('#roadmap?') || path === '/roadmap' || path.startsWith('/roadmap');
   const isAuth = hash.includes('login') || hash.includes('signin') || hash.includes('signup') || hash.includes('auth') || path.includes('/login') || path.includes('/auth');
   const isBlog = hash.includes('blog') || path.includes('/blog');
-  const isDashboard = hash.includes('dashboard') || path.includes('/dashboard');
+  const isWhiteboard = hash.includes('whiteboard') || path.includes('/whiteboard');
+  const isDashboard = hash.includes('dashboard') || path.includes('/dashboard') || isWhiteboard;
+
+  if (isWhiteboard) {
+    setDashboardTab('whiteboard');
+  }
 
   if (isBuy) {
     renderLandingPage();

@@ -1,1 +1,1 @@
-export { renderMetricsMonitoringContent } from './MetricsMonitoringDetail.js';
+export { renderFoodDeliveryDetail } from './FoodDeliveryDetail.js';

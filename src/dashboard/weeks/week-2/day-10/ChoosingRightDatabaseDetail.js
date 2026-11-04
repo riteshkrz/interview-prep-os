@@ -9,71 +9,71 @@ export function renderChoosingRightDatabaseContent(topic) {
     {
       paradigm: "Relational (RDBMS)",
       engines: "PostgreSQL, MySQL",
-      dataModel: "Strict Normalized Tables (Rows & Columns), Foreign Keys",
-      scaling: "Vertical + Read Replicas; Horizontal via Citus / Vitess",
-      bestFor: "Financial ledgers, order checkouts, complex multi-table SQL joins, strict ACID compliance",
+      dataModel: "Normalized Tables (Rows & Columns), Foreign Keys, Schemas",
+      scaling: "Vertical primary + Read Replicas; Sharding via Citus / Vitess",
+      bestFor: "Financial transactions, user billing, order checkout, complex multi-table SQL joins",
       bestForClass: "text-emerald-400 font-medium",
-      avoidFor: "Massive write streams (>50k writes/sec single table), dynamic unstructured nested schemas",
+      avoidFor: "Massive append streams (>50k writes/sec single table), unstructured dynamic nested trees",
       avoidForClass: "text-rose-400"
     },
     {
       paradigm: "Document Store",
       engines: "MongoDB, Couchbase",
       dataModel: "Hierarchical JSON / BSON Trees with Dynamic Schema",
-      scaling: "Horizontal Sharding via Config Replica Sets",
-      bestFor: "Product catalogs, user profiles, rapidly evolving content management, polymorphic schemas",
+      scaling: "Horizontal Sharding across Replica Sets",
+      bestFor: "Product catalogs, user profiles, polymorphic schemas, content management",
       bestForClass: "text-emerald-400 font-medium",
-      avoidFor: "Deep relational graph traversals, highly normalized financial data requiring multi-table ACID",
+      avoidFor: "Deep relational graph joins, strict double-entry accounting ledgers",
       avoidForClass: "text-rose-400"
     },
     {
       paradigm: "Key-Value Store",
       engines: "AWS DynamoDB, Redis",
-      dataModel: "Opaque Key-Value Pairs, Hashes, Sorted Sets",
-      scaling: "Automatic horizontal partition hash rings, sub-10ms at petabyte scale",
-      bestFor: "User session caches, rate-limiting tokens, leaderboards, shopping carts, single-key lookups",
+      dataModel: "Key-Value Pairs, In-memory Hashes, Sorted Sets",
+      scaling: "Partition hash rings; sub-10ms latency at massive petabyte scale",
+      bestFor: "Session caches, rate limiting, shopping carts, fast single-key lookups",
       bestForClass: "text-emerald-400 font-medium",
-      avoidFor: "Ad-hoc range filtering, aggregation queries without pre-defined secondary indexes",
+      avoidFor: "Ad-hoc range filtering, aggregation across multiple dimensions",
       avoidForClass: "text-rose-400"
     },
     {
       paradigm: "Wide-Column (LSM)",
       engines: "Apache Cassandra, ScyllaDB",
-      dataModel: "Sparse Multidimensional Tables (Partition Key + Clustering Key)",
-      scaling: "Leaderless masterless peer-to-peer ring, linear horizontal write scaling",
-      bestFor: "High-velocity time-series ingest, IoT sensor data, user messaging history, multi-DC global writes",
+      dataModel: "Multi-dimensional tables (Partition Key + Clustering Key)",
+      scaling: "Masterless peer-to-peer ring; linear horizontal write scaling",
+      bestFor: "High-velocity sensor ingest, messaging inbox history, multi-region writes",
       bestForClass: "text-emerald-400 font-medium",
-      avoidFor: "Relational joins, ad-hoc aggregation across partitions, strong immediate ACID consistency",
+      avoidFor: "Cross-partition SQL joins, ad-hoc ad-hoc aggregation, ACID transactions",
       avoidForClass: "text-rose-400"
     },
     {
       paradigm: "Graph Database",
       engines: "Neo4j, AWS Neptune",
-      dataModel: "Nodes, Directed Edges, and First-Class Relationship Properties",
-      scaling: "Vertical primary; read replicas; sharding is notoriously complex",
-      bestFor: "Social networks, fraud detection networks, knowledge graphs, recommendation route traversal",
+      dataModel: "Nodes (Entities) & Directed Edges (Relationships)",
+      scaling: "Vertical primary; read replicas; cross-node sharding is complex",
+      bestFor: "Social networks (friends of friends), fraud ring detection, recommendation routing",
       bestForClass: "text-emerald-400 font-medium",
-      avoidFor: "High-volume bulk sequential time-series logging, simple tabular CRUD operations",
+      avoidFor: "High-volume sequential time-series logging, simple tabular CRUD apps",
       avoidForClass: "text-rose-400"
     },
     {
       paradigm: "Time-Series (TSDB)",
       engines: "TimescaleDB, InfluxDB",
       dataModel: "Append-only timestamped telemetry metrics + tag sets",
-      scaling: "Time-window Hypertables, Gorilla compression, automatic retention drops",
-      bestFor: "DevOps APM monitoring (Prometheus), financial tick streams, IoT telemetry",
+      scaling: "Time-window partitions, Gorilla compression, instant retention drops",
+      bestFor: "Server APM monitoring (Prometheus), IoT device telemetry, financial ticks",
       bestForClass: "text-emerald-400 font-medium",
-      avoidFor: "Frequent random record updates, arbitrary deletes, transactional e-commerce checkout",
+      avoidFor: "Frequent random record updates, transactional e-commerce checkout",
       avoidForClass: "text-rose-400"
     },
     {
       paradigm: "Search Engine",
       engines: "Elasticsearch, OpenSearch",
-      dataModel: "Inverted Index of Tokenized Text Documents",
-      scaling: "Distributed primary/replica shard clusters",
+      dataModel: "Inverted Index of tokenized text documents",
+      scaling: "Distributed primary and replica shard clusters",
       bestFor: "Full-text search, auto-complete fuzzy matching, log analytics (ELK stack)",
       bestForClass: "text-emerald-400 font-medium",
-      avoidFor: "Primary source of truth for transactional data, ACID transactions, financial balances",
+      avoidFor: "Primary authoritative source of truth, banking balances, ACID writes",
       avoidForClass: "text-rose-400"
     }
   ];
@@ -81,62 +81,56 @@ export function renderChoosingRightDatabaseContent(topic) {
   const interviewFollowUps = [
     {
       qNum: "Q1",
-      question: "How do you defend picking PostgreSQL as your default database in almost every System Design interview?",
-      answer: `Senior interviewers respect candidates who default to PostgreSQL because it avoids the premature polyglot trap.
+      question: "Why do senior engineers always default to PostgreSQL in System Design interviews?",
+      answer: `Defaulting to PostgreSQL shows engineering maturity because it prevents the trap of <strong>premature polyglot persistence</strong> (introducing 4 different databases on Day 1).
       <br/><br/>
-      <strong class="text-indigo-400">The 5 Justifications for PostgreSQL as Default:</strong>
+      <strong class="text-indigo-400">The 5 Reasons PostgreSQL is the Best Default:</strong>
       <ol class="list-decimal list-inside mt-1.5 space-y-1 text-slate-300">
-        <li><strong>ACID Invariant Defense:</strong> Foreign keys, unique constraints, and serializable transactions guarantee that your core entity balances and user state never corrupt.</li>
-        <li><strong>Native JSONB (Document Hybrid):</strong> PostgreSQL's <code>JSONB</code> datatype with GIN indexing handles polymorphic, schema-less document storage with performance rivaling MongoDB.</li>
-        <li><strong>Full-Text & Extensions Ecosystem:</strong> PostgreSQL includes built-in full-text search, geospatial capabilities (<code>PostGIS</code>), and AI vector search (<code>pgvector</code>) in a single operational engine.</li>
-        <li><strong>Proven Scale:</strong> With connection pooling (PgBouncer) and read replicas, single PostgreSQL instances easily handle 50,000+ QPS.</li>
-        <li><strong>Rule of Thumb:</strong> Choose PostgreSQL first, and only spin off dedicated NoSQL stores when a specific bounded context hits measurable throughput or access pattern ceilings.</li>
+        <li><strong>Rock-Solid ACID Invariants:</strong> Foreign keys, unique constraints, and transaction safety ensure core data never gets corrupted.</li>
+        <li><strong>Document Support via JSONB:</strong> PostgreSQL's <code>JSONB</code> with GIN indexing allows you to store schema-less document data with speeds rivaling MongoDB.</li>
+        <li><strong>Built-In Extensions:</strong> Full-text search, geospatial indexing (<code>PostGIS</code>), and vector embeddings (<code>pgvector</code>) are all built right into the same operational engine.</li>
+        <li><strong>Scale Headroom:</strong> With connection poolers (PgBouncer) and read replicas, a single PostgreSQL instance comfortably handles 40,000+ queries per second.</li>
+        <li><strong>The Senior Rule of Thumb:</strong> Start with PostgreSQL. Only add specialized NoSQL databases when a specific service hits proven write limits or unique access constraints.</li>
       </ol>`
     },
     {
       qNum: "Q2",
-      question: "What are the fundamental architectural tradeoffs of DynamoDB's Single-Table Design pattern?",
-      answer: `AWS DynamoDB's Single-Table Design collapses multiple business entities (Users, Orders, Items) into a single physical table using generic partition keys (<code>PK</code>) and sort keys (<code>SK</code>) with Global Secondary Indexes (GSIs).
+      question: "What are the core tradeoffs of DynamoDB's Single-Table Design pattern?",
+      answer: `AWS DynamoDB Single-Table Design combines multiple business entities (Users, Orders, Products) into one physical table using generic keys (<code>PK</code> and <code>SK</code>) and Global Secondary Indexes (GSIs).
       <br/><br/>
-      <strong class="text-indigo-400">Tradeoffs:</strong>
+      <strong class="text-indigo-400">The Tradeoffs:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
-        <li><strong>Pros (Sub-10ms Predictable Latency):</strong> By modeling access patterns so that a user and all their recent orders share a single <code>PK</code>, a single query retrieves all related data in one network roundtrip without joins.</li>
-        <li><strong>Cons (Extreme Rigidity & Query Lock-In):</strong> You must know every single query pattern upfront before designing keys. An unexpected ad-hoc business query (e.g. "find all orders over $100 placed on Tuesdays") requires a full table scan costing thousands of dollars or complex GSI additions.</li>
-        <li><strong>Operational Overhead:</strong> Steep learning curve; impossible to query via standard SQL BI tools without an ETL pipeline to a data warehouse.</li>
+        <li><strong>The Benefit (Guaranteed Speed):</strong> By structuring keys so a User and all their recent Orders share the same <code>PK</code>, a single query fetches both in one network round-trip without any slow relational joins. Latency remains under 10ms at any scale.</li>
+        <li><strong>The Trap (Extreme Query Rigidity):</strong> You must know all your query access patterns before writing any code. If the business introduces a new ad-hoc question (e.g., "Find all orders from users in Seattle placed on a Tuesday"), you cannot run a simple SQL query. You must scan the entire table (costing thousands of dollars) or design a brand new GSI.</li>
       </ul>`
     },
     {
       qNum: "Q3",
-      question: "How do you synchronize a primary SQL database with Elasticsearch without suffering from dual-write split-brain?",
-      answer: `A classic junior mistake is executing dual writes in the application layer:
-      <br/>
-      <code>1. db.save(order); 2. es.index(order);</code>
-      <br/>
-      If the app crashes or the network blips between steps 1 and 2, Elasticsearch permanently diverges from the database.
-      <br/><br/>
-      <strong class="text-indigo-400">The Senior Production Pattern: Transactional Outbox + CDC</strong>
+      question: "How do you synchronize PostgreSQL with Elasticsearch without dual-write split-brain bugs?",
+      answer: `A common candidate mistake is writing to both in application code:
+      <pre class="bg-[#050811] p-1.5 rounded text-[11px] font-code text-rose-300 mt-1 border border-slate-800">await db.save(user); // If this succeeds...
+await es.index(user); // ...but this network fails, your search index is out of sync forever!</pre>
+      <strong class="text-emerald-400">The Senior Production Pattern: Transactional Outbox + CDC</strong>
       <ol class="list-decimal list-inside mt-1.5 space-y-1 text-slate-300">
-        <li><strong>Transactional Outbox:</strong> The application writes both the business entity and an event row into an <code>outbox_events</code> table within the <em>exact same local ACID database transaction</em>. Both succeed or both rollback together.</li>
-        <li><strong>Change Data Capture (Debezium):</strong> A CDC engine monitors the database transaction log (Postgres WAL) and streams outbox events to an Apache Kafka topic with at-least-once delivery guarantees.</li>
-        <li><strong>Elasticsearch Consumer:</strong> A dedicated consumer service pulls events from Kafka and writes documents to Elasticsearch idempotently (using the database entity ID as Elasticsearch document <code>_id</code>).</li>
+        <li><strong>Outbox Table:</strong> The app writes both the user data and an outbox event into an <code>outbox_events</code> table inside the <em>same local ACID transaction</em>. Both commit together or both rollback.</li>
+        <li><strong>Change Data Capture (Debezium):</strong> A CDC worker reads PostgreSQL's transaction log (WAL) and publishes events to an Apache Kafka topic with guaranteed delivery.</li>
+        <li><strong>Search Consumer:</strong> An Elasticsearch worker reads from Kafka and updates the index idempotently using the database ID as document <code>_id</code>.</li>
       </ol>`
     },
     {
       qNum: "Q4",
-      question: "Why are traditional relational B-Trees inefficient for IoT and Metrics data compared to Time-Series engines?",
-      answer: `High-frequency IoT sensors generate millions of append-only data points per second.
+      question: "Why do standard relational B-Tree databases fail for IoT metrics and telemetry streams?",
+      answer: `High-frequency IoT sensors generate millions of append-only events per second.
       <br/><br/>
-      <strong class="text-indigo-400">B-Tree Inefficiency:</strong>
+      <strong class="text-rose-400">Why Relational B-Trees Struggle:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
-        <li>In-place B-Tree page updates cause heavy random disk I/O and page-splitting overhead.</li>
-        <li>Each row incurs fixed per-row overhead and index amplification (16KB page rewrites).</li>
-        <li>Deleting expired metric data requires massive <code>DELETE</code> transactions that lock tables and generate severe database bloat requiring heavy VACUUM.</li>
+        <li><strong>Random Disk I/O:</strong> Updating secondary indexes (device_id, metric, timestamp) rewrites 16KB disk pages in place, causing high write amplification.</li>
+        <li><strong>Deletion Nightmares:</strong> Cleaning up old data (e.g. deleting rows older than 30 days) runs giant <code>DELETE</code> queries that lock tables and leave massive table fragmentation requiring manual VACUUM.</li>
       </ul>
-      <br/>
-      <strong class="text-indigo-400">Time-Series Engine Advantages (Timescale / Influx / Gorilla):</strong>
+      <strong class="text-emerald-400">How Time-Series Engines (Timescale / Influx) Solve It:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
-        <li><strong>Time-Partitioned Chunks:</strong> Data is partitioned by time windows (e.g. 1 hour). Dropping 30-day-old metrics is an instantaneous metadata drop of an entire physical chunk ($O(1)$) with zero row deletes.</li>
-        <li><strong>Gorilla Compression:</strong> Uses delta-of-delta encoding for timestamps and XOR bitwise floating-point compression, reducing telemetry storage footprint by <strong>90–95%</strong> (often under 1.5 bytes per sample).</li>
+        <li><strong>Time Chunks:</strong> Data is split into physical time slices (e.g. 1 chunk per day). Expiring 30-day data is an instant file deletion ($O(1)$) with zero row locks.</li>
+        <li><strong>Gorilla Compression:</strong> Compresses timestamps using delta-of-delta and floats with XOR bitwise encoding, cutting disk storage by <strong>90%</strong> (often under 1.5 bytes per sample).</li>
       </ul>`
     }
   ];
@@ -157,30 +151,46 @@ export function renderChoosingRightDatabaseContent(topic) {
               4.8 A Visual Guide to Choosing the Right Database
             </h2>
           </div>
+          <p class="text-slate-400 text-[13px] font-sans">
+            How to select the right storage engine using access patterns, write volume, and data shape rather than industry buzzwords.
+          </p>
         </div>
 
-        <!-- Overview Text -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 sm:p-5 flex flex-col gap-3 font-sans text-[13px] leading-relaxed">
-          <p class="text-slate-300">
-            Never choose a database based on technology hype or resume-driven development. In system design interviews, <strong class="text-indigo-400">database selection is a rigorous derivation</strong> based on three non-negotiable vectors: <em>1. Data Structure & Schema Flexibility</em>, <em>2. Read/Write Throughput & Access Patterns</em>, and <em>3. Consistency Requirements vs. Availability Constraints</em>.
+        <!-- Everyday Mental Model Card -->
+        <div class="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/50 border border-indigo-500/30 rounded-xl p-5 flex flex-col gap-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-400 text-[20px]">lightbulb</span>
+            <span class="font-code text-[11px] font-bold text-indigo-300 uppercase tracking-wider">
+              EVERYDAY MENTAL MODEL: THE CARPENTER'S TOOLBOX
+            </span>
+          </div>
+          <p class="text-slate-300 text-[13px] leading-relaxed font-sans">
+            Databases are specialized tools, not universal magic boxes:
           </p>
-
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-            <div class="bg-[#0F1626] border border-indigo-500/30 rounded-lg p-3 flex flex-col gap-1">
-              <span class="font-code text-[11px] font-bold text-indigo-300 uppercase">1. Relational (RDBMS)</span>
-              <span class="text-[12px] text-slate-300">PostgreSQL / MySQL. Structured schemas, foreign keys, multi-table ACID transactions, and ad-hoc joins.</span>
+            <div class="bg-[#090D16] p-3 rounded-lg border border-indigo-500/20 flex flex-col gap-1">
+              <strong class="text-indigo-300 text-[12px] font-code">Swiss Army Knife (SQL)</strong>
+              <p class="text-[11.5px] text-slate-300 leading-relaxed font-sans">
+                PostgreSQL/MySQL. Reliable for 80% of jobs. Enforces structure, prevents errors, joins tables cleanly.
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-cyan-500/30 rounded-lg p-3 flex flex-col gap-1">
-              <span class="font-code text-[11px] font-bold text-cyan-300 uppercase">2. Document & KV</span>
-              <span class="text-[12px] text-slate-300">MongoDB / DynamoDB / Redis. Sub-10ms point lookups, hierarchical JSON trees, horizontal partition scaling.</span>
+            <div class="bg-[#090D16] p-3 rounded-lg border border-cyan-500/20 flex flex-col gap-1">
+              <strong class="text-cyan-300 text-[12px] font-code">Speedy Sticky Notes (KV)</strong>
+              <p class="text-[11.5px] text-slate-300 leading-relaxed font-sans">
+                Redis / DynamoDB. Super-fast single item lookups under 2ms. No fancy queries, just instant answers by key.
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-emerald-500/30 rounded-lg p-3 flex flex-col gap-1">
-              <span class="font-code text-[11px] font-bold text-emerald-300 uppercase">3. Wide-Column & TSDB</span>
-              <span class="text-[12px] text-slate-300">Cassandra / TimescaleDB. High-velocity append-only write ingest, multi-datacenter replication, Gorilla compression.</span>
+            <div class="bg-[#090D16] p-3 rounded-lg border border-emerald-500/20 flex flex-col gap-1">
+              <strong class="text-emerald-300 text-[12px] font-code">Firehose Log (LSM / TSDB)</strong>
+              <p class="text-[11.5px] text-slate-300 leading-relaxed font-sans">
+                Cassandra / Timescale. Absorbs millions of continuous writes per second without breaking a sweat.
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-amber-500/30 rounded-lg p-3 flex flex-col gap-1">
-              <span class="font-code text-[11px] font-bold text-amber-300 uppercase">4. Search & Graph</span>
-              <span class="text-[12px] text-slate-300">Elasticsearch / Neo4j. Inverted indexes for fuzzy text search, recursive pointer-hopping graph traversals.</span>
+            <div class="bg-[#090D16] p-3 rounded-lg border border-amber-500/20 flex flex-col gap-1">
+              <strong class="text-amber-300 text-[12px] font-code">Library Index (Search)</strong>
+              <p class="text-[11.5px] text-slate-300 leading-relaxed font-sans">
+                Elasticsearch. Scans millions of words for typos, partial matches, and relevance scoring in milliseconds.
+              </p>
             </div>
           </div>
         </div>
@@ -190,7 +200,7 @@ export function renderChoosingRightDatabaseContent(topic) {
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
             <h3 class="font-sans text-[15px] font-bold text-white tracking-wide">
-              The Grand Database Selection Matrix (Cheatsheet)
+              The Grand Database Selection Matrix
             </h3>
           </div>
 
@@ -227,32 +237,32 @@ export function renderChoosingRightDatabaseContent(topic) {
         <div class="bg-gradient-to-r from-[#064E3B]/40 to-[#022C22]/30 border-l-4 border-emerald-500 rounded-r-xl p-5 flex flex-col gap-2.5">
           <span class="font-code text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[15px]">verified</span>
-            SENIOR PERSPECTIVE: POLYGLOT PERSISTENCE & CHANGE DATA CAPTURE (CDC)
+            SENIOR ARCHITECTURE: POLYGLOT PERSISTENCE WITH CHANGE DATA CAPTURE (CDC)
           </span>
           <div class="text-[13px] text-slate-300 font-sans leading-relaxed space-y-2">
             <p>
-              In production enterprises (Uber, Netflix, Airbnb), no single database engine handles the entire system. Instead, architectures leverage <strong class="text-emerald-300">Polyglot Persistence</strong>:
-              use <strong>PostgreSQL</strong> as the single source of truth for transactional billing and accounts; stream events via <strong>Change Data Capture (Debezium + Kafka)</strong> to populate <strong>Elasticsearch</strong> for search, <strong>Redis</strong> for caching, and <strong>ClickHouse</strong> for analytics.
+              In large production companies (Netflix, Uber, Stripe), no single database does everything. Instead, systems use <strong class="text-emerald-300">Polyglot Persistence</strong>:
+              use <strong>PostgreSQL</strong> as the single source of truth for accounts and payments; stream changes via <strong>Change Data Capture (Debezium + Kafka)</strong> to populate <strong>Elasticsearch</strong> for search, <strong>Redis</strong> for caching, and <strong>ClickHouse</strong> for analytics.
             </p>
             <p>
-              <strong class="text-white">Crucial Rule:</strong> Never execute dual writes directly from your application code! Dual writes guarantee eventual data divergence. Always make the primary ACID database the single authoritative writer, and asynchronously synchronize all secondary search and analytical stores via transaction log replication.
+              <strong class="text-white">Crucial Rule:</strong> Never execute dual writes from your application code! Network blips between dual writes will corrupt your data. Always write to your primary ACID database first, and let log-based CDC update the secondary search and cache engines asynchronously.
             </p>
           </div>
         </div>
 
-        <!-- Orange Callout Box: WARNING - THE POLYGLOT PERSISTENCE TAX -->
+        <!-- Orange Callout Box: WARNING - THE POLYGLOT TAX -->
         <div class="bg-gradient-to-r from-[#7C2D12]/40 to-[#451A03]/30 border-l-4 border-amber-500 rounded-r-xl p-5 flex flex-col gap-2.5">
           <span class="font-code text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[15px]">warning</span>
-            THE POLYGLOT PERSISTENCE TAX: RESIST PREMATURE SPECIALIZATION
+            THE POLYGLOT TAX: RESIST PREMATURE SPECIALIZATION
           </span>
           <div class="text-[13px] text-slate-300 font-sans leading-relaxed space-y-2">
             <p>
-              Every new database engine you introduce into an infrastructure incurs an enormous <strong class="text-white">Operational Tax</strong>:
-              separate backup protocols, custom Terraform provisioning, monitoring dashboards, distinct connection pools, specialized on-call pager rotas, and distributed reconciliation debugging.
+              Every new database technology you adopt comes with an ongoing <strong class="text-white">Operational Tax</strong>:
+              separate backup routines, custom monitoring dashboards, distinct connection pools, specialized on-call pager shifts, and complex troubleshooting when data gets out of sync.
             </p>
             <p>
-              In system design interviews, <strong class="text-amber-300">start with PostgreSQL as your pragmatic baseline</strong>. Only introduce specialized stores (like Cassandra or Neo4j) after mathematically demonstrating that your write throughput (>50,000 writes/sec) or query graph shape exceeds PostgreSQL's capabilities. Cost-justifying each database signals true senior engineering maturity.
+              In interviews, <strong class="text-amber-300">always start with PostgreSQL as your pragmatic baseline</strong>. Only introduce specialized engines (like Cassandra or Neo4j) after mathematically proving that your write rate (>50k writes/sec) or data structure (recursive graph traversals) cannot be handled by PostgreSQL.
             </p>
           </div>
         </div>
@@ -292,7 +302,7 @@ export function renderChoosingRightDatabaseContent(topic) {
             KEY INTERVIEW TAKEAWAY
           </span>
           <p class="text-[13.5px] font-sans font-medium text-white leading-relaxed">
-            Derive your database choice strictly from data relationships, write throughput, and access patterns. Default to PostgreSQL for transactional integrity; scale reads with read replicas before sharding; and adopt specialized NoSQL engines only when specific bounded contexts require horizontal write scale, sub-millisecond point lookups, or full-text inverted indexes synchronized via CDC.
+            Choose databases based on your read/write patterns and consistency requirements, not technology hype. Default to PostgreSQL for transactional safety; scale reads with read replicas; and only add specialized NoSQL engines when a specific subsystem requires extreme write scaling, sub-10ms point queries, or full-text search fed safely via Change Data Capture (CDC).
           </p>
         </div>
 

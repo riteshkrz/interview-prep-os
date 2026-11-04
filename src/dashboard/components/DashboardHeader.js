@@ -7,9 +7,8 @@ export function renderDashboardHeader(activeTab = 'system-design-roadmap', isCol
 
   const tabTitles = {
     'system-design-roadmap': '6-Week System Design Roadmap',
-    'lld-studio': 'Machine Coding & LLD Studio',
-    'concepts-distinctions': '180+ Architectural Distinctions',
-    'dsa-tracker': '100 Core DSA Problems'
+    'dsa-tracker': '100 Core DSA Problems',
+    'whiteboard': 'System Design Practice Whiteboard'
   };
   const activeTitle = tabTitles[activeTab] || '6-Week System Design Roadmap';
 

@@ -1,1 +1,1 @@
-export { renderEventSourcingCqrsContent } from './EventSourcingCqrsDetail.js';
+export { renderLoggingMonitoringDetail } from './LoggingMonitoringDetail.js';

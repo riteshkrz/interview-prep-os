@@ -110,7 +110,7 @@ export function renderStorageEnginesContent(topic) {
       <ol class="list-decimal list-inside mt-1.5 space-y-1 text-slate-300">
         <li><strong>In-Memory Bloom Filters:</strong> Every SSTable file has a compact Bloom filter stored directly in RAM (10 bits per key).
         <br/>
-        When reading <code>user:42</code>, the engine queries the Bloom filter first. If the filter returns <em>false</em>, the key is <strong>100% guaranteed not to exist</strong> in that SSTable file $\to$ disk read is completely avoided! Over 99% of negative file lookups are discarded in nanoseconds without touching the SSD.</li>
+        When reading <code>user:42</code>, the engine queries the Bloom filter first. If the filter returns <em>false</em>, the key is <strong>100% guaranteed not to exist</strong> in that SSTable file &rarr; disk read is completely avoided! Over 99% of negative file lookups are discarded in nanoseconds without touching the SSD.</li>
         <li><strong>Uncompressed Block Cache:</strong> Frequently accessed data blocks (4KB–64KB) within SSTables are pinned in an in-memory LRU block cache. Point lookups on hot records resolve entirely in RAM, matching B-Tree buffer pool latency.</li>
       </ol>`
     }
@@ -132,22 +132,34 @@ export function renderStorageEnginesContent(topic) {
               4.9 Storage Engine Internals: B-Tree vs. LSM-Tree
             </h2>
           </div>
+          <p class="text-slate-400 text-[13px] font-sans">
+            How storage engines organize bits on disk: in-place page mutation versus sequential append-only merge pipelines.
+          </p>
         </div>
 
-        <!-- Overview Text -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 sm:p-5 flex flex-col gap-3 font-sans text-[13px] leading-relaxed">
-          <p class="text-slate-300">
-            At the heart of every database is a <strong class="text-indigo-400">storage engine</strong> responsible for laying bytes onto physical disk. Storage engines fall into two opposing architectural paradigms: <strong class="text-cyan-400">B-Trees</strong> (which mutate fixed-size pages in-place via random I/O) and <strong class="text-emerald-400">Log-Structured Merge-Trees (LSM-Trees)</strong> (which append writes sequentially into memory and flush to immutable sorted files). Understanding their disk I/O profile dictates database selection at scale.
+        <!-- Everyday Mental Model Card -->
+        <div class="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/50 border border-indigo-500/30 rounded-xl p-5 flex flex-col gap-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-400 text-[20px]">lightbulb</span>
+            <span class="font-code text-[11px] font-bold text-indigo-300 uppercase tracking-wider">
+              EVERYDAY MENTAL MODEL: THE THREE-RING BINDER VS. THE COURT REPORTER'S NOTEPAD
+            </span>
+          </div>
+          <p class="text-slate-300 text-[13px] leading-relaxed font-sans">
+            How do you record and organize information on physical media?
           </p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <div class="bg-[#0F1626] border border-cyan-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-cyan-300 uppercase">1. B-Tree: In-Place Update (Read-Optimized)</span>
-              <span class="text-[12px] text-slate-300">Organized into fixed 16KB pages. Updates overwrite existing disk blocks in-place. Guarantees deterministic $O(\\log N)$ point reads and superb range scans, but suffers from random write amplification.</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-cyan-500/20 flex flex-col gap-1.5">
+              <strong class="text-cyan-300 text-[12px] font-code">B-Tree: The Three-Ring Binder (Read-Optimized)</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                You have a neatly indexed 500-page binder. When someone changes address, you open the binder to page 42, erase their old address, write the new one, and put page 42 back. Reading is effortless: you jump straight to the page index. But changing 1,000 addresses on 1,000 random pages means constantly opening and closing the binder (heavy random disk I/O).
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-emerald-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-emerald-300 uppercase">2. LSM-Tree: Append-Only (Write-Optimized)</span>
-              <span class="text-[12px] text-slate-300">Writes buffer in an in-memory MemTable and append to a sequential WAL. Flushed to immutable SSTables on disk. Order-of-magnitude higher write throughput, paid for via background compaction.</span>
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-emerald-500/20 flex flex-col gap-1.5">
+              <strong class="text-emerald-300 text-[12px] font-code">LSM-Tree: Court Reporter Notepad (Write-Optimized)</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                You don't search through an old binder. You scribble down every word on a blank desk notepad as fast as people speak (Sequential memory speed). When your notepad fills up, you staple it and toss it into a filing drawer. Later, during quiet hours, an archivist merges and sorts the stapled notes into clean volumes (Background Compaction).
+              </p>
             </div>
           </div>
         </div>
@@ -221,30 +233,30 @@ export function renderStorageEnginesContent(topic) {
         <div class="bg-gradient-to-r from-[#064E3B]/40 to-[#022C22]/30 border-l-4 border-emerald-500 rounded-r-xl p-5 flex flex-col gap-2.5">
           <span class="font-code text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[15px]">verified</span>
-            SENIOR PERSPECTIVE: BLOOM FILTERS & INGESTION-HEAVY WORKLOADS
+            SENIOR PERSPECTIVE: BLOOM FILTERS & INGESTION WORKLOADS
           </span>
           <div class="text-[13px] text-slate-300 font-sans leading-relaxed space-y-2">
             <p>
-              In system design interviews, never claim that LSM-trees are strictly superior to B-Trees because of their write speed. LSM-trees trade away predictability: <strong class="text-emerald-300">B-Trees offer deterministic sub-millisecond p99 read latencies</strong> that OLTP applications rely upon. If your workload is 80% reads and 20% writes (e-commerce, SaaS CRUD), B-Trees in PostgreSQL or MySQL InnoDB are optimal.
+              In interviews, never claim LSM-trees are universally superior to B-Trees just because of write throughput. LSM-trees trade away predictability: <strong class="text-emerald-300">B-Trees deliver deterministic sub-millisecond p99 read latencies</strong> that OLTP applications rely upon. For balanced CRUD applications (80% reads, 20% writes), B-Trees in PostgreSQL or MySQL InnoDB are unmatched.
             </p>
             <p>
-              However, when your write volume reaches tens of thousands of writes per second (time-series metrics, financial tick capture, event logs), B-Trees collapse under random I/O and page-splitting locks. In those ingestion-heavy workloads, choose an LSM-Tree (RocksDB/Cassandra), and explicitly explain that <strong class="text-white">Bloom Filters and Block Caches</strong> mitigate read amplification by filtering out 99%+ of negative SSTable file scans.
+              However, when your write volume reaches tens of thousands of writes per second (telemetry, clickstreams, financial ticks), B-Trees collapse under random disk I/O. In those write-heavy systems, choose an LSM-Tree (RocksDB/Cassandra), and explain that <strong class="text-white">Bloom Filters and Block Caches</strong> mitigate read amplification by filtering out 99%+ of unnecessary SSTable disk lookups in RAM.
             </p>
           </div>
         </div>
 
-        <!-- Orange Callout Box: WARNING - COMPACTION STALLS & TOMBSTONES -->
+        <!-- Orange Callout Box: WARNING - COMPACTION DEBT & STALLS -->
         <div class="bg-gradient-to-r from-[#7C2D12]/40 to-[#451A03]/30 border-l-4 border-amber-500 rounded-r-xl p-5 flex flex-col gap-2.5">
           <span class="font-code text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[15px]">warning</span>
-            THE COMPACTION TAX: WRITE STALLS & TOMBSTONE ACCUMULATION
+            THE COMPACTION TAX: WRITE STALLS & TOMBSTONE OVERHEAD
           </span>
           <div class="text-[13px] text-slate-300 font-sans leading-relaxed space-y-2">
             <p>
-              The dirty secret of LSM-trees is <strong class="text-white">Compaction Debt</strong>. Background compaction threads are constantly reading, merging, and rewriting gigabytes of SSTables across disk levels. This competes directly with incoming client read/write traffic for disk I/O bandwidth.
+              The hidden cost of LSM-trees is <strong class="text-white">Compaction Debt</strong>. Background compaction threads are constantly reading, merging, and rewriting gigabytes of SSTables across disk tiers, competing with client traffic for disk I/O bandwidth.
             </p>
             <p>
-              If incoming write throughput exceeds the disk's ability to compact files, Level 0 files pile up. Once L0 reaches a hard limit (e.g. 20 files in RocksDB), the engine initiates an emergency <strong class="text-amber-300">Write Stall</strong>: incoming client writes are throttled from 50,000 ops/sec down to 500 ops/sec, causing catastrophic latency spikes. Furthermore, deleting rows in an LSM-tree writes <em>tombstones</em>; querying across heavily deleted ranges forces the engine to scan millions of dead tombstones until compaction finishes.
+              If client write rate outpaces disk compaction throughput, Level 0 files pile up. When L0 reaches a threshold (e.g. 20 files in RocksDB), the engine triggers an emergency <strong class="text-amber-300">Write Stall</strong>: incoming writes are throttled from 50,000 ops/sec down to 500 ops/sec, causing huge latency spikes. Additionally, deleting keys writes <em>tombstones</em>; scanning ranges with many deleted keys forces the engine to read millions of tombstones until compaction purges them.
             </p>
           </div>
         </div>

@@ -1,2 +1,1 @@
-export { renderRedisInternalsContent } from './RedisInternalsDetail.js';
-export { renderBloomFilterContent } from './BloomFilterDetail.js';
+export { renderDistributedCacheDetail } from './DistributedCacheDetail.js';

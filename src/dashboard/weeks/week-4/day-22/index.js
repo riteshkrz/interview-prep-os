@@ -1,2 +1,2 @@
-export { renderUrlShortenerInterviewDesign } from './UrlShortenerSpecDetail.js';
-export { renderUniqueIdGenerationContent } from './UniqueIdGenerationDetail.js';
+export { renderSystemDesignFrameworkContent } from './SystemDesignFrameworkDetail.js';
+export { renderUrlShortenerDetail, renderUrlShortenerInterviewDesign } from './UrlShortenerDetail.js';

@@ -8,25 +8,25 @@ export function renderConsistentHashingContent(topic) {
   const vnodeComparisons = [
     {
       feature: "Key Distribution Uniformity",
-      withoutVnodes: "Terrible (Standard deviation up to 40% variance)",
-      withVnodes: "Near-Perfect (< 3% variance across cluster)",
+      withoutVnodes: "Terrible (Standard deviation up to 40% variance between nodes)",
+      withVnodes: "Near-Perfect (< 3% variance across entire cluster)",
       statusClass: "text-emerald-400 font-bold"
     },
     {
       feature: "Node Crash Blast Radius",
-      withoutVnodes: "100% of failed node's traffic cascades onto single clockwise neighbor",
+      withoutVnodes: "100% of failed node's traffic cascades onto a single clockwise neighbor",
       withVnodes: "Failed load is evenly dispersed across ALL remaining peers",
       statusClass: "text-emerald-400 font-bold"
     },
     {
       feature: "Heterogeneous Hardware",
-      withoutVnodes: "Impossible (Every node must have identical capacity)",
-      withVnodes: "Proportional weighting (Allocate 2x vnodes to 2x RAM machine)",
+      withoutVnodes: "Impossible (Every node must have identical RAM/CPU capacity)",
+      withVnodes: "Proportional weighting (Assign 2x vnodes to 2x RAM machine)",
       statusClass: "text-emerald-400 font-bold"
     },
     {
       feature: "Routing Table Memory & Lookup",
-      withoutVnodes: "Negligible memory ($O(N)$), fast lookup",
+      withoutVnodes: "Tiny memory ($O(N)$), fast lookup",
       withVnodes: "Moderate memory ($O(N \\times V)$ tokens), $O(\\log(NV))$ binary search",
       statusClass: "text-amber-400"
     }
@@ -36,33 +36,33 @@ export function renderConsistentHashingContent(topic) {
     {
       qNum: "Q1",
       question: "What is the mathematical proof that consistent hashing remaps only K/N keys during cluster resizing?",
-      answer: `In traditional modulo hashing: <code>server_idx = hash(key) mod N</code>.
+      answer: `In traditional modulo hashing: <code>server = hash(key) mod N</code>.
       <br/><br/>
-      When $N$ changes to $N+1$ (adding a node), virtually every single key's modulo value changes:
+      When $N$ changes to $N+1$ (adding 1 server), virtually every key's modulo changes:
       $$\\text{Fraction of keys remapped} = \\frac{N}{N+1} \\approx 80\\% \\text{ to } 99\\%$$
-      In a cache cluster with 10 million items, adding 1 node forces 8 to 9 million cache misses simultaneously $\to$ instantaneous database connection collapse (thundering herd).
+      In a cache cluster with 10 million items, adding 1 node forces 8 to 9 million cache misses at once &rarr; immediate database connection collapse (thundering herd).
       <br/><br/>
       <strong class="text-indigo-400">The Consistent Hashing Guarantee:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
-        <li>The ring space $[0, 2^{32}-1]$ is fixed and infinite relative to $N$.</li>
+        <li>The ring address space $[0, 2^{32}-1]$ is fixed and infinite relative to $N$.</li>
         <li>Adding a new node $N_{new}$ claims only the arc between itself and its counter-clockwise neighbor.</li>
-        <li>Only the keys that fall precisely within that newly claimed arc are remapped to $N_{new}$.</li>
-        <li>On average, the expected fraction of keys that move is strictly $\\mathbf{K / N}$ (where $K$ is total keys, $N$ is total nodes). All remaining $(N-1)/N$ keys remain pinned to their original servers!</li>
+        <li>Only keys that fall into that specific newly claimed arc move to $N_{new}$.</li>
+        <li>On average, the expected fraction of keys that move is strictly $\\mathbf{K / N}$ (where $K$ is total keys, $N$ is total nodes). All remaining $(N-1)/N$ keys stay pinned to their original servers!</li>
       </ul>`
     },
     {
       qNum: "Q2",
       question: "How do virtual nodes (vnodes) enable clusters with heterogeneous hardware capacity to share load fairly?",
-      answer: `In production, physical servers are rarely identical: older hardware might have 32GB RAM while newly provisioned instances have 128GB RAM.
+      answer: `In production, physical servers are rarely identical: older servers might have 32GB RAM while newer instances have 128GB RAM.
       <br/><br/>
       <strong class="text-indigo-400">Weighted Virtual Node Allocation:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
-        <li>Instead of assigning a fixed number of vnodes per machine, define a weight factor $W_i$:
+        <li>Instead of assigning a fixed number of vnodes per machine, allocate tokens proportionally to server capacity:
         <br/>
         <code>vnode_count = base_vnodes * (server_capacity / baseline_capacity)</code></li>
         <li>A 32GB server is assigned <strong>100 vnodes</strong> on the ring.</li>
         <li>A 128GB server is assigned <strong>400 vnodes</strong> on the ring.</li>
-        <li>Because keys hash uniformly across the $[0, 2^{32}-1]$ address space, the 128GB server naturally owns $4\\times$ as many arcs on the ring and receives $4\\times$ as much traffic, perfectly proportional to its hardware specs without manual partitioning.</li>
+        <li>Because keys hash uniformly across the ring, the 128GB server naturally owns $4\times$ as many arcs and receives $4\times$ as much traffic, perfectly proportional to its hardware capacity without manual sharding rules!</li>
       </ul>`
     },
     {
@@ -95,7 +95,7 @@ if (entry == null) {
 }
 return entry.getValue();</pre>
         </li>
-        <li><strong>Time Complexity:</strong> $O(\\log(N \\times V))$ where $N$ is physical servers and $V$ is vnodes per server (e.g., $\\approx \\log_2(100 \\times 200) \\approx 14$ comparisons $\\to$ sub-microsecond execution).</li>
+        <li><strong>Time Complexity:</strong> $O(\\log(N \\times V))$ where $N$ is physical servers and $V$ is vnodes per server (e.g., $\\approx \\log_2(100 \\times 200) \\approx 14$ comparisons &rarr; sub-microsecond execution).</li>
       </ul>`
     }
   ];
@@ -116,26 +116,34 @@ return entry.getValue();</pre>
               4.7 Consistent Hashing in Distributed Caching and Storage
             </h2>
           </div>
+          <p class="text-slate-400 text-[13px] font-sans">
+            How to route keys across dynamic server clusters so scaling out moves only a minimal fraction of keys without mass cache invalidations.
+          </p>
         </div>
 
-        <!-- Overview Text -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 sm:p-5 flex flex-col gap-3 font-sans text-[13px] leading-relaxed">
-          <p class="text-slate-300">
-            In distributed caching (Memcached, Redis) and peer-to-peer storage (Cassandra, DynamoDB), keys must be routed across $N$ servers. Naive modulo hashing (<code>hash(key) % N</code>) breaks down when servers are added or removed, causing <strong class="text-rose-400">up to 90%+ of all keys to remap</strong>, devastating cache hit rates. <strong class="text-indigo-400">Consistent Hashing</strong> maps both servers and data keys onto a continuous circular ring, ensuring that scaling the cluster moves only a tiny fraction ($K/N$) of keys.
+        <!-- Everyday Mental Model Card -->
+        <div class="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/50 border border-indigo-500/30 rounded-xl p-5 flex flex-col gap-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-400 text-[20px]">lightbulb</span>
+            <span class="font-code text-[11px] font-bold text-indigo-300 uppercase tracking-wider">
+              EVERYDAY MENTAL MODEL: COUNTING OFF VS. THE CIRCULAR BANQUET TABLE
+            </span>
+          </div>
+          <p class="text-slate-300 text-[13px] leading-relaxed font-sans">
+            How do you assign 1,000 dinner guests across 4 banquet tables?
           </p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-            <div class="bg-[#0F1626] border border-rose-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-rose-300 uppercase">1. Modulo Hashing Flaw</span>
-              <span class="text-[12px] text-slate-300"><code>hash(key) % N</code> causes catastrophic rehash cascades when $N$ changes. Invalidate the whole cache $\to$ thundering herd on DB.</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-rose-500/20 flex flex-col gap-1.5">
+              <strong class="text-rose-300 text-[12px] font-code">Modulo Hashing: Counting Off 1, 2, 3, 4</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                Guest #1 to Table 1, #2 to Table 2, #3 to Table 3, #4 to Table 4, #5 to Table 1... If you add a 5th table, the entire count-off restarts! Over <strong>80% of all guests</strong> have to stand up, pack their plates, and move to a different table. In a cache cluster, this mass eviction instantly crushes the database!
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-cyan-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-cyan-300 uppercase">2. The 32-Bit Hash Ring</span>
-              <span class="text-[12px] text-slate-300">Keyspace $[0, 2^{32}-1]$ wraps around in a circle. Keys route clockwise to the first encountered physical node token.</span>
-            </div>
-            <div class="bg-[#0F1626] border border-emerald-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-emerald-300 uppercase">3. Virtual Nodes (Vnodes)</span>
-              <span class="text-[12px] text-slate-300">Each physical host gets 100–256 tokens scattered across the ring, preventing non-uniform hotspots and evening failure cascades.</span>
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-emerald-500/20 flex flex-col gap-1.5">
+              <strong class="text-emerald-300 text-[12px] font-code">Consistent Hashing: The Circular Ring</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                Tables are arranged in a large circle. Each guest walks clockwise until they hit the nearest table. If a 5th table is added to the circle, <em>only guests seated directly next to that new table need to move</em>. Everyone else stays comfortably seated!
+              </p>
             </div>
           </div>
         </div>
@@ -223,29 +231,29 @@ return entry.getValue();</pre>
               In storage engines like Apache Cassandra and Amazon DynamoDB, Consistent Hashing is never used merely for single-server lookup—it is the foundation of <strong class="text-emerald-300">Fault-Tolerant Multi-Replica Placement</strong>.
             </p>
             <p>
-              When placing replicas (replication factor $N = 3$), the ring coordinator does <em>not</em> simply pick the next 3 tokens clockwise. Because those tokens might belong to the same physical host or the same availability zone, the coordinator inspects the topology and walks the ring until it selects <strong>3 distinct physical hosts across 3 separate failure domains (racks or AZs)</strong>.
+              When placing replicas (replication factor $N = 3$), the ring coordinator does <em>not</em> simply pick the next 3 tokens clockwise. Because those tokens might belong to the same physical host or availability zone, the coordinator inspects rack metadata and walks the ring until it selects <strong>3 distinct physical hosts across 3 separate failure domains (racks or AZs)</strong>.
             </p>
             <p>
-              Furthermore, cluster membership is maintained without a single point of failure using a <strong class="text-white">Gossip Protocol</strong> (Scuttlebutt): nodes ping random peers every second to maintain ring state and detect dead nodes via $\phi$-accrual failure detectors.
+              Furthermore, cluster membership is maintained without a single point of failure using a <strong class="text-white">Gossip Protocol</strong>: nodes ping random peers every second to exchange ring state and detect dead nodes without centralized coordination.
             </p>
           </div>
         </div>
 
-        <!-- Orange Callout Box: WARNING - WHAT CONSISTENT HASHING DOES NOT SOLVE -->
+        <!-- Orange Callout Box: WARNING - WHAT IT DOES NOT SOLVE -->
         <div class="bg-gradient-to-r from-[#7C2D12]/40 to-[#451A03]/30 border-l-4 border-amber-500 rounded-r-xl p-5 flex flex-col gap-2.5">
           <span class="font-code text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[15px]">warning</span>
-            WHAT CONSISTENT HASHING DOES NOT SOLVE: HOT KEYS & VIRAL CELEBRITY ITEMS
+            WHAT CONSISTENT HASHING DOES NOT SOLVE: VIRAL HOT KEYS
           </span>
           <div class="text-[13px] text-slate-300 font-sans leading-relaxed space-y-2">
             <p>
               <strong class="text-white">Consistent Hashing distributes the KEYSPACE, NOT the request volume.</strong> If you have 10 million uniform keys, consistent hashing distributes them beautifully with &lt;3% variance.
             </p>
             <p>
-              However, if a world-famous celebrity tweets, or a flash sale begins on item <code>SKU-999</code>, that key will generate <strong>500,000 requests per second</strong>. Because <code>hash("SKU-999")</code> produces a single immutable integer on the ring, <strong>100% of that massive traffic will hit exactly ONE server</strong>. That server will melt while the rest of the cluster sits completely idle.
+              However, if a world-famous celebrity posts or a flash-sale item launches (<code>item:iphone16</code>), that key will generate <strong>500,000 requests per second</strong>. Because <code>hash("item:iphone16")</code> produces a single integer on the ring, <strong>100% of that massive traffic will hit exactly ONE server</strong>. That server will melt while the rest of the cluster sits completely idle.
             </p>
             <p>
-              <strong class="text-amber-300">The Senior Interview Answer:</strong> State plainly that consistent hashing cannot solve hot keys. Mitigate hot keys via <strong>Application-Level Key Salting</strong> (e.g. appending <code>_1.._10</code> to write to multiple nodes), <strong>In-Process Local Caches</strong> (Guava/Caffeine in the API gateway), or <strong>Read-Through Edge CDNs</strong>.
+              <strong class="text-amber-300">The Senior Interview Answer:</strong> State plainly that consistent hashing cannot solve hot keys. Mitigate hot keys via <strong>Application Key Salting</strong> (e.g. appending <code>_1.._10</code> to write to multiple nodes), <strong>In-Process Local Caches</strong> (Guava/Caffeine in the API gateway), or <strong>Read-Through Edge CDNs</strong>.
             </p>
           </div>
         </div>

@@ -43,15 +43,15 @@ export function renderCacheEvictionStampedeContent(topic) {
   const interviewFollowUps = [
     {
       qNum: "Q1",
-      question: "How does Go's 'singleflight' pattern eliminate cache stampedes without the overhead of distributed locking?",
+      question: "How does Go's 'singleflight' pattern eliminate cache stampedes without distributed locking?",
       answer: `When a hot key (10,000 QPS) expires in Redis, a naive application sends 10,000 simultaneous queries to the database. Distributed locking (Redis Redlock) can serialize this, but adds network roundtrips and lock lease failure risks.
       <br/><br/>
       <strong class="text-indigo-400">The In-Process SingleFlight Solution:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
         <li>In Go (<code>golang.org/x/sync/singleflight</code>) or Java (<code>Guava CacheLoader</code>), the application manages an in-memory concurrent map of active in-flight requests keyed by resource ID.</li>
-        <li><strong>Request 1 arrives:</strong> Sees no in-flight call for <code>user:42</code>. Creates a new Go channel / Future, registers it in the map, and launches the slow DB query.</li>
-        <li><strong>Requests 2..500 arrive concurrently:</strong> Check the map, see that an in-flight query for <code>user:42</code> is already active! They <em>do not touch the database or Redis</em>; they simply subscribe and block on Request 1's channel.</li>
-        <li><strong>Request 1 finishes:</strong> Writes the result to Redis, broadcasts the result over the channel to all 499 waiting goroutines, and deletes the map entry.</li>
+        <li><strong>Request 1 arrives:</strong> Sees no in-flight call for <code>product:101</code>. Creates a new channel/future, registers it in the map, and launches the slow DB query.</li>
+        <li><strong>Requests 2..10,000 arrive concurrently:</strong> Check the map, see that an in-flight query for <code>product:101</code> is already active! They <em>do not touch the database or Redis</em>; they simply subscribe and block on Request 1's channel.</li>
+        <li><strong>Request 1 finishes:</strong> Writes the result to Redis, broadcasts the result over the channel to all 9,999 waiting requests, and deletes the map entry.</li>
         <li><strong>Result:</strong> Exactly <strong>ONE</strong> database query executes across that entire application instance!</li>
       </ul>`
     },
@@ -70,7 +70,7 @@ export function renderCacheEvictionStampedeContent(topic) {
       </ul>
       <br/>
       <strong class="text-white">Why it Works:</strong>
-      When a key is far from expiration, the probability of recomputation is 0%. As the key approaches expiration, the probability rises exponentially. Because of the random factor, <strong>exactly one client request</strong> probabilistically triggers an early background refresh right before expiration, resetting the TTL without any user ever experiencing a cache miss!`,
+      When a key is far from expiration, the probability of recomputation is 0%. As the key approaches expiration, the probability rises exponentially. Because of the random factor, <strong>exactly one client request</strong> probabilistically triggers an early background refresh right before expiration, resetting the TTL without any user ever experiencing a cache miss!`
     },
     {
       qNum: "Q3",
@@ -119,26 +119,34 @@ export function renderCacheEvictionStampedeContent(topic) {
               5.2 Cache Eviction Policies & Thundering Herd Defense
             </h2>
           </div>
+          <p class="text-slate-400 text-[13px] font-sans">
+            How to manage finite memory, choose scan-resistant eviction algorithms, and defend persistent databases from cache stampedes.
+          </p>
         </div>
 
-        <!-- Overview Text -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 sm:p-5 flex flex-col gap-3 font-sans text-[13px] leading-relaxed">
-          <p class="text-slate-300">
-            In-memory cache clusters are strictly finite: RAM costs $5–10\times$ more than SSD storage. When memory reaches capacity, the engine must execute an <strong class="text-indigo-400">Eviction Policy</strong> to discard entries. However, evicting or expiring hot keys introduces the dead-liest operational vulnerability in web architecture: the <strong class="text-rose-400">Cache Stampede (Thundering Herd / Dog-Piling)</strong>, where thousands of concurrent readers miss cache simultaneously and crash the database under connection pool starvation.
+        <!-- Everyday Mental Model Card -->
+        <div class="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/50 border border-indigo-500/30 rounded-xl p-5 flex flex-col gap-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-400 text-[20px]">lightbulb</span>
+            <span class="font-code text-[11px] font-bold text-indigo-300 uppercase tracking-wider">
+              EVERYDAY MENTAL MODEL: THE RESTAURANT CHALKBOARD STAMPEDE
+            </span>
+          </div>
+          <p class="text-slate-300 text-[13px] leading-relaxed font-sans">
+            Imagine a restaurant with 10,000 customers in line and a chalkboard displaying the daily special:
           </p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-            <div class="bg-[#0F1626] border border-cyan-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-cyan-300 uppercase">1. Eviction Algorithms</span>
-              <span class="text-[12px] text-slate-300">LRU (recency), LFU (frequency), FIFO (order), and ARC (adaptive). Redis uses an approximate sampling algorithm to save pointer RAM.</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-rose-500/20 flex flex-col gap-1.5">
+              <strong class="text-rose-300 text-[12px] font-code">The Stampede (Thundering Herd)</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                At 12:00:00, the chalkboard expires and gets erased. All 10,000 hungry customers immediately sprint into the kitchen at the exact same second to shout <em>"What's on the menu?!"</em> The head chef collapses from panic, all stoves crash, and nobody gets fed!
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-rose-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-rose-300 uppercase">2. The Stampede Disaster</span>
-              <span class="text-[12px] text-slate-300">A key serving 10k QPS expires $\to$ 10,000 DB queries fire at the exact same millisecond $\to$ database collapse and cascading timeout 504s.</span>
-            </div>
-            <div class="bg-[#0F1626] border border-emerald-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-emerald-300 uppercase">3. Production Defenses</span>
-              <span class="text-[12px] text-slate-300">In-process SingleFlight mutexes, Probabilistic Early Expiration (XFetch), and TTL Jitter to eliminate synchronized expiration waves.</span>
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-emerald-500/20 flex flex-col gap-1.5">
+              <strong class="text-emerald-300 text-[12px] font-code">SingleFlight: The Line Captain</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                When the chalkboard is erased, Customer #1 walks into the kitchen to ask the chef. Customers 2 through 10,000 wait quietly in line. Customer #1 walks back, writes <em>"Chicken Parmesan"</em> on the board, and everyone reads it at once. The chef answered exactly ONE question!
+              </p>
             </div>
           </div>
         </div>
@@ -220,11 +228,11 @@ export function renderCacheEvictionStampedeContent(topic) {
         <div class="bg-gradient-to-r from-[#064E3B]/40 to-[#022C22]/30 border-l-4 border-emerald-500 rounded-r-xl p-5 flex flex-col gap-2.5">
           <span class="font-code text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[15px]">verified</span>
-            SENIOR PERSPECTIVE: REDIS APPROXIMATE LRU & TTL JITTER
+            SENIOR PERSPECTIVE: REDIS APPROXIMATE LRU & MANDATORY TTL JITTER
           </span>
           <div class="text-[13px] text-slate-300 font-sans leading-relaxed space-y-2">
             <p>
-              In production interviews, describe how Redis implements LRU: Redis does <em>not</em> maintain a true doubly linked list. Maintaining pointers for 50 million keys would consume gigabytes of memory purely on pointer metadata! Instead, Redis uses <strong class="text-emerald-300">Approximate LRU</strong>: it samples <strong>5 random keys</strong> (configurable via <code>maxmemory-samples 5</code>) and evicts the oldest key among the sample. At $N=10$, its accuracy is mathematically indistinguishable from true LRU while saving 24 bytes per key.
+              In production, describe how Redis implements LRU: Redis does <em>not</em> maintain a true doubly linked list. Maintaining pointers for 50 million keys would consume gigabytes of memory purely on pointer metadata! Instead, Redis uses <strong class="text-emerald-300">Approximate LRU</strong>: it samples <strong>5 random keys</strong> (configurable via <code>maxmemory-samples 5</code>) and evicts the oldest key among the sample. At $N=10$, its accuracy is mathematically indistinguishable from true LRU while saving 24 bytes per key.
             </p>
             <p>
               <strong class="text-white">Mandatory Production Rule: TTL Jitter.</strong> Never write cache keys with synchronized expiration timestamps! If a batch process writes 500,000 product records with <code>TTL = 3600</code>, you have scheduled a system outage for exactly 60 minutes later. Always add entropy:
@@ -238,7 +246,7 @@ export function renderCacheEvictionStampedeContent(topic) {
         <div class="bg-gradient-to-r from-[#7C2D12]/40 to-[#451A03]/30 border-l-4 border-amber-500 rounded-r-xl p-5 flex flex-col gap-2.5">
           <span class="font-code text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[15px]">warning</span>
-            THE CACHE AVALANCHE: TOTAL CLUSTER OUTAGES & HYSTRIX CIRCUIT BREAKERS
+            THE CACHE AVALANCHE: TOTAL CLUSTER OUTAGES & CIRCUIT BREAKERS
           </span>
           <div class="text-[13px] text-slate-300 font-sans leading-relaxed space-y-2">
             <p>

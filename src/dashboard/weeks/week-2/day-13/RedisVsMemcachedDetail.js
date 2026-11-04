@@ -8,7 +8,7 @@ export function renderRedisVsMemcachedContent(topic) {
   const comparisonMatrix = [
     {
       dimension: "Concurrency Model",
-      redis: "Single-threaded event loop (epoll / kqueue) + I/O threads (v6+)",
+      redis: "Single-threaded event loop (epoll / kqueue) + I/O network threads (v6+)",
       redisClass: "text-cyan-300",
       memcached: "Multi-threaded (pthread per core) with fine-grained slab locking",
       memcachedClass: "text-emerald-400 font-bold"
@@ -84,7 +84,7 @@ export function renderRedisVsMemcachedContent(topic) {
       <br/>
       <strong class="text-rose-400">The Flaw: Slab Calcification:</strong>
       <br/>
-      If your application initially caches 60-byte keys (filling up Slab Class 1) and later shifts to 500-byte keys, Memcached cannot easily reassign existing 64-byte slab pages to larger chunk classes without restarting or running complex slab reassignment routines.`,
+      If your application initially caches 60-byte keys (filling up Slab Class 1) and later shifts to 500-byte keys, Memcached cannot easily reassign existing 64-byte slab pages to larger chunk classes without restarting or running complex slab reassignment routines.`
     },
     {
       qNum: "Q3",
@@ -127,11 +127,11 @@ end</pre>`
       <strong class="text-indigo-400">2. AOF (Append-Only File):</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
         <li>Appends every mutating write command to a disk log. Usually configured with <code>appendfsync everysec</code> (flushes OS page cache to disk once per second).</li>
-        <li><strong>Pros:</strong> Minimal data loss window (at most 1 second of writes lost on crash; $RPO \\le 1\\text{s}$).</li>
+        <li><strong>Pros:</strong> Minimal data loss window (at most 1 second of writes lost on crash; $RPO \le 1\text{s}$).</li>
         <li><strong>Cons:</strong> Larger disk file sizes; slower server restarts (must replay every command); background rewrite (<code>BGREWRITEAOF</code>) required to compact log.</li>
       </ul>
       <br/>
-      <strong class="text-emerald-400">Senior Recommendation:</strong> Use <strong>Hybrid Persistence (RDB + AOF)</strong>, the default in modern Redis. RDB provides fast disaster recovery backups, while AOF captures the trailing delta.`,
+      <strong class="text-emerald-400">Senior Recommendation:</strong> Use <strong>Hybrid Persistence (RDB + AOF)</strong>, the default in modern Redis. RDB provides fast disaster recovery backups, while AOF captures the trailing delta.`
     }
   ];
 
@@ -151,22 +151,34 @@ end</pre>`
               5.3 Redis vs. Memcached: An Architectural Showdown
             </h2>
           </div>
+          <p class="text-slate-400 text-[13px] font-sans">
+            Comparing the versatile single-threaded data structure server against the high-throughput multi-threaded slab cache.
+          </p>
         </div>
 
-        <!-- Overview Text -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 sm:p-5 flex flex-col gap-3 font-sans text-[13px] leading-relaxed">
-          <p class="text-slate-300">
-            Both <strong class="text-cyan-400">Redis</strong> and <strong class="text-emerald-400">Memcached</strong> are premier in-memory key-value engines capable of sub-millisecond read/write latencies. However, their internal engineering philosophies are radically opposed: Redis is an expressive, single-threaded, persistent <strong class="text-indigo-400">Data Structure Server</strong>, whereas Memcached is a multi-threaded, volatile, highly optimized <strong class="text-white">Raw Memory Slab Cache</strong>.
+        <!-- Everyday Mental Model Card -->
+        <div class="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/50 border border-indigo-500/30 rounded-xl p-5 flex flex-col gap-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-400 text-[20px]">lightbulb</span>
+            <span class="font-code text-[11px] font-bold text-indigo-300 uppercase tracking-wider">
+              EVERYDAY MENTAL MODEL: SWISS ARMY KNIFE VS. INDUSTRIAL WOOD CHIPPER
+            </span>
+          </div>
+          <p class="text-slate-300 text-[13px] leading-relaxed font-sans">
+            How do their execution models contrast?
           </p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <div class="bg-[#0F1626] border border-cyan-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-cyan-300 uppercase">1. Redis: Expressive Data Structure Server</span>
-              <span class="text-[12px] text-slate-300">Single-threaded event loop eliminates lock overhead. Rich data types (ZSets, Hashes, Streams), atomic Lua scripts, RDB/AOF persistence, and native clustering.</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-cyan-500/20 flex flex-col gap-1.5">
+              <strong class="text-cyan-300 text-[12px] font-code">Redis: The Swiss Army Knife</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                A single master craftsman sitting at a workbench. They handle orders one at a time, but with immense dexterity: sorting leaderboards, managing queues, popping list items, running Lua scripts, and taking periodic snapshots to disk. Because there is only one craftsman, they never bump into anyone or need locking mutexes!
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-emerald-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-emerald-300 uppercase">2. Memcached: Multi-Threaded Slab Cache</span>
-              <span class="text-[12px] text-slate-300">Multi-threaded architecture scales linearly across CPU cores. Slab memory allocator prevents OS memory fragmentation. Purely volatile string/blob store.</span>
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-emerald-500/20 flex flex-col gap-1.5">
+              <strong class="text-emerald-300 text-[12px] font-code">Memcached: The Industrial Chipper</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                A massive multi-bladed shredder with 32 workers feeding it simultaneously. It doesn't do complex math or sort lists. It just takes raw byte strings, shoves them into pre-sized metal compartments (slabs), and spits them back out at blinding multi-core speeds.
+              </p>
             </div>
           </div>
         </div>
@@ -243,10 +255,10 @@ end</pre>`
           </span>
           <div class="text-[13px] text-slate-300 font-sans leading-relaxed space-y-2">
             <p>
-              In system design interviews, <strong class="text-emerald-300">default to Redis for 95% of use cases</strong>. Even if you only need key-value caching today, you will inevitably need distributed locking (Redlock), sliding-window rate limiters (Sorted Sets), pub/sub message brokering, or persistent disaster recovery tomorrow. Redis handles all of these natively without adding new infrastructure components.
+              In system design interviews, <strong class="text-emerald-300">default to Redis for 95% of use cases</strong>. Even if you only need simple key-value caching today, you will inevitably need distributed locking (Redlock), sliding-window rate limiters (Sorted Sets), pub/sub messaging, or persistent disaster recovery tomorrow. Redis handles all of these natively without adding new infrastructure components.
             </p>
             <p>
-              Only recommend <strong class="text-white">Memcached</strong> when your workload is strictly pure key-value caching of static strings/HTML snippets, and you are running on massive multi-socket, multi-core instances (e.g. 64 vCPUs, 256GB RAM) where Memcached's multi-threaded scaling and memory-slab allocation can saturate hardware that would require running dozens of isolated Redis cluster shards.
+              Only recommend <strong class="text-white">Memcached</strong> when your workload is strictly pure key-value caching of static strings or HTML snippets, and you are running on massive multi-socket, multi-core instances (e.g. 64 vCPUs, 256GB RAM) where Memcached's multi-threaded scaling and memory-slab allocation can saturate hardware that would require running dozens of isolated Redis cluster shards.
             </p>
           </div>
         </div>

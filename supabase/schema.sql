@@ -116,3 +116,59 @@ CREATE POLICY "Users can update access pass"
     USING (true)
     WITH CHECK (true);
 
+-- 8. Create table for lesson highlights
+CREATE TABLE IF NOT EXISTS public.highlights (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    content_id TEXT NOT NULL,
+    selected_text TEXT NOT NULL,
+    start_offset INTEGER NOT NULL,
+    end_offset INTEGER NOT NULL,
+    container_id TEXT,
+    prefix TEXT,
+    suffix TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE INDEX IF NOT EXISTS idx_highlights_user_content ON public.highlights(user_id, content_id);
+CREATE INDEX IF NOT EXISTS idx_highlights_created_at ON public.highlights(created_at DESC);
+
+-- Trigger to maintain updated_at column
+DROP TRIGGER IF EXISTS tr_highlights_updated_at ON public.highlights;
+CREATE TRIGGER tr_highlights_updated_at
+    BEFORE UPDATE ON public.highlights
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_prep_state_updated_at();
+
+ALTER TABLE public.highlights ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can read own highlights" ON public.highlights;
+CREATE POLICY "Users can read own highlights"
+    ON public.highlights
+    FOR SELECT
+    TO authenticated
+    USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own highlights" ON public.highlights;
+CREATE POLICY "Users can insert own highlights"
+    ON public.highlights
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update own highlights" ON public.highlights;
+CREATE POLICY "Users can update own highlights"
+    ON public.highlights
+    FOR UPDATE
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own highlights" ON public.highlights;
+CREATE POLICY "Users can delete own highlights"
+    ON public.highlights
+    FOR DELETE
+    TO authenticated
+    USING (auth.uid() = user_id);
+

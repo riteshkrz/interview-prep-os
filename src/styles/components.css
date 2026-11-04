@@ -497,3 +497,66 @@
 .dialog-backdrop.active .dialog-card {
   transform: scale(1);
 }
+
+/* ==========================================================================
+   Dashboard Lesson Text Highlighting & Floating Toolbar
+   ========================================================================== */
+
+/* Modern CSS Custom Highlight API Pseudo-element */
+::highlight(lesson-highlight) {
+  background-color: #fef08a;
+  color: #1e293b;
+}
+
+/* DOM-based <mark> Highlight */
+mark.lesson-highlight {
+  background-color: rgba(254, 240, 138, 0.88);
+  color: #0f172a;
+  border-bottom: 2px solid #eab308;
+  border-radius: 2px;
+  padding: 1px 2px;
+  margin: 0 -1px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.dark mark.lesson-highlight,
+[data-theme="dark"] mark.lesson-highlight,
+.dashboard-root mark.lesson-highlight {
+  background-color: rgba(234, 179, 8, 0.32);
+  color: #fef9c3;
+  border-bottom: 2px solid rgba(250, 204, 21, 0.75);
+}
+
+mark.lesson-highlight:hover {
+  background-color: rgba(253, 224, 71, 0.98);
+}
+
+.dark mark.lesson-highlight:hover,
+[data-theme="dark"] mark.lesson-highlight:hover,
+.dashboard-root mark.lesson-highlight:hover {
+  background-color: rgba(234, 179, 8, 0.48);
+  border-bottom-color: #fde047;
+}
+
+/* Contextual Floating Toolbar */
+.lesson-highlight-toolbar {
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  animation: highlightToolbarFadeIn 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes highlightToolbarFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

@@ -36,12 +36,12 @@ export function renderBigDataEvolutionContent(topic) {
     {
       qNum: "Q1",
       question: "What was the truly revolutionary contribution of Google's 2004 MapReduce paper?",
-      answer: `Prior to MapReduce, distributed computing required manual socket programming, explicit message passing (MPI), and custom hardware lockstep clustering. A single machine crash in a 500-node cluster doomed the entire computation.
+      answer: `Prior to MapReduce, distributed computing required manual network socket programming, explicit message passing (MPI), and custom hardware clustering. A single machine crash in a 500-node cluster doomed the entire computation.
       <br/><br/>
       <strong class="text-indigo-400">The MapReduce Breakthrough:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
         <li><strong>Moving Compute to Data:</strong> Instead of dragging petabytes of data across the network to compute nodes, the master scheduler assigns map tasks to the exact physical chunkservers holding the data locally on disk (data locality).</li>
-        <li><strong>Deterministic Functional Abstraction:</strong> Developers wrote two pure functions: <code>map(k1, v1) -&gt; list(k2, v2)</code> and <code>reduce(k2, list(v2)) -&gt; list(v3)</code>. The framework transparently handled parallelization, network shuffle, and disk spilling.</li>
+        <li><strong>Deterministic Functional Abstraction:</strong> Developers wrote two pure functions: <code>map(k1, v1) &rarr; list(k2, v2)</code> and <code>reduce(k2, list(v2)) &rarr; list(v3)</code>. The framework transparently handled parallelization, network shuffle, and disk spilling.</li>
         <li><strong>Transparent Failure Recovery:</strong> If a worker node died mid-job, the master simply reassigned its intermediate map tasks to another worker. The developer never had to write a single line of recovery code.</li>
       </ul>`
     },
@@ -64,21 +64,19 @@ export function renderBigDataEvolutionContent(topic) {
     {
       qNum: "Q3",
       question: "Lambda Architecture vs. Kappa Architecture: Why did modern enterprise data platforms migrate to Kappa?",
-      answer: `The **Lambda Architecture** (Nathan Marz) attempted to solve the latency vs. completeness problem by maintaining two parallel processing tracks:
+      answer: `The <strong>Lambda Architecture</strong> attempted to solve the latency vs. completeness problem by maintaining two parallel processing tracks:
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
         <li><strong>Batch Layer (Hadoop/Spark):</strong> Computes accurate, complete master views over petabytes every 24 hours.</li>
         <li><strong>Speed Layer (Storm/Flink):</strong> Computes low-latency real-time delta approximations over the latest streaming data.</li>
         <li><strong>Serving Layer (HBase/Cassandra):</strong> Merges batch and speed views at query time.</li>
       </ul>
-      <br/>
       <strong class="text-rose-400">The Fatal Flaw of Lambda:</strong>
-      <br/>
-      Developers had to write, debug, and maintain <strong>two completely separate codebases</strong> (one in MapReduce/Spark for batch, one in Storm/Flink for streaming) implementing the exact same business logic! Discrepancies between batch and streaming results were an operational nightmare.
+      Developers had to write, debug, and maintain <strong>two completely separate codebases</strong> (one in Spark for batch, one in Flink for streaming) implementing the exact same business logic! Discrepancies between batch and streaming results were an operational nightmare.
       <br/><br/>
       <strong class="text-emerald-400">The Kappa Architecture (Jay Kreps):</strong>
       <br/>
       <em>"Everything is a stream; batch is just a stream with a bounded end."</em>
-      Kappa uses a single append-only distributed log (Apache Kafka / Apache Pulsar) as the permanent record, and a single stream processing engine (Apache Flink / Spark Structured Streaming). If you need to recompute 3 years of historical data with new business logic, you simply spin up a new consumer and rewind the Kafka offset to the beginning! One codebase, one deployment, zero synchronization drift.`,
+      Kappa uses a single append-only distributed log (Apache Kafka / Pulsar) as the permanent record, and a single stream processing engine (Apache Flink / Spark Structured Streaming). If you need to recompute 3 years of historical data with new business logic, you simply spin up a new consumer and rewind the Kafka offset to the beginning! One codebase, one deployment, zero synchronization drift.`
     },
     {
       qNum: "Q4",
@@ -108,26 +106,34 @@ export function renderBigDataEvolutionContent(topic) {
               4.12 Big Data: The Papers and the Evolution
             </h2>
           </div>
+          <p class="text-slate-400 text-[13px] font-sans">
+            How Google's whitepaper trilogy launched modern distributed systems, and why stream-first architectures replaced multi-hour batch jobs.
+          </p>
         </div>
 
-        <!-- Overview Text -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 sm:p-5 flex flex-col gap-3 font-sans text-[13px] leading-relaxed">
-          <p class="text-slate-300">
-            Every modern distributed system—from Kubernetes and Kafka to Cassandra and Snowflake—traces its architectural DNA to <strong class="text-indigo-400">Google's foundational whitepaper trilogy (2003–2006)</strong>. By abandoning expensive proprietary mainframes and proving that commodity PC clusters could achieve massive fault tolerance in software, these papers inaugurated the Big Data era.
+        <!-- Everyday Mental Model Card -->
+        <div class="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/50 border border-indigo-500/30 rounded-xl p-5 flex flex-col gap-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-400 text-[20px]">lightbulb</span>
+            <span class="font-code text-[11px] font-bold text-indigo-300 uppercase tracking-wider">
+              EVERYDAY MENTAL MODEL: THE FREIGHT TRAIN VS. THE PIPELINE
+            </span>
+          </div>
+          <p class="text-slate-300 text-[13px] leading-relaxed font-sans">
+            How do you move and process petabytes of information across thousands of servers?
           </p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-            <div class="bg-[#0F1626] border border-indigo-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-indigo-300 uppercase">1. GFS (2003) · Storage</span>
-              <span class="text-[12px] text-slate-300">Chunk-based distributed file system. 64MB blocks replicated $3\\times$. Master coordinates metadata; data streams directly from chunkservers.</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-indigo-500/20 flex flex-col gap-1.5">
+              <strong class="text-indigo-300 text-[12px] font-code">Batch Processing (The Freight Train)</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                Hadoop MapReduce is like a massive freight train. It collects millions of pounds of cargo, travels across the country, unloads it at a warehouse, and writes everything to disk. Incredibly powerful for massive loads, but you have to wait hours for the train to finish its entire scheduled route before seeing results.
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-cyan-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-cyan-300 uppercase">2. MapReduce (2004) · Compute</span>
-              <span class="text-[12px] text-slate-300">Moving compute to data. Automatic sharding, network shuffling, and transparent task re-execution on node failure.</span>
-            </div>
-            <div class="bg-[#0F1626] border border-emerald-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-emerald-300 uppercase">3. Bigtable (2006) · Serving</span>
-              <span class="text-[12px] text-slate-300">Sparse multidimensional sorted map. Tablets mapped to SSTables on GFS. The architectural parent of Cassandra and HBase.</span>
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-cyan-500/20 flex flex-col gap-1.5">
+              <strong class="text-cyan-300 text-[12px] font-code">Stream Processing (The Water Pipeline)</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                Apache Kafka + Flink is like a municipal water pipeline. Water flows continuously through filtering and purification stations in real time. Calculations, fraud alerts, and dashboards update within milliseconds without ever waiting for a midnight batch train!
+              </p>
             </div>
           </div>
         </div>
@@ -203,10 +209,10 @@ export function renderBigDataEvolutionContent(topic) {
           </span>
           <div class="text-[13px] text-slate-300 font-sans leading-relaxed space-y-2">
             <p>
-              In modern data engineering interviews, demonstrate that you know where the industry landed after MapReduce and Hadoop: <strong class="text-emerald-300">The Modern Data Lakehouse</strong>.
+              In modern data platform design, show that you know where the industry settled after Hadoop: <strong class="text-emerald-300">The Modern Data Lakehouse</strong>.
             </p>
             <p>
-              Traditional data lakes (raw JSON or Parquet on S3) suffered from missing ACID transactions: concurrent writes corrupted datasets, and deletes (for GDPR compliance) required rewriting entire partitions. The modern standard uses open table formats like <strong class="text-white">Apache Iceberg</strong> and <strong class="text-white">Delta Lake</strong> on top of cheap object storage (S3). Iceberg provides <strong>full ACID transactions, serializable snapshot isolation, schema evolution, and time-travel queries</strong> without paying proprietary warehouse storage markups.
+              Traditional data lakes (raw JSON or Parquet on S3) suffered from missing ACID transactions: concurrent writes corrupted files, and deleting rows (for GDPR compliance) required rewriting entire partitions. The modern standard uses open table formats like <strong class="text-white">Apache Iceberg</strong> and <strong class="text-white">Delta Lake</strong> on top of cheap object storage (S3). Iceberg provides <strong>full ACID transactions, serializable snapshot isolation, schema evolution, and historical time-travel queries</strong> without paying proprietary warehouse storage markups.
             </p>
           </div>
         </div>
@@ -219,10 +225,10 @@ export function renderBigDataEvolutionContent(topic) {
           </span>
           <div class="text-[13px] text-slate-300 font-sans leading-relaxed space-y-2">
             <p>
-              When processing real-time event streams (clickstream, sensor events, mobile payments), <strong class="text-white">Processing Time</strong> is when the event arrives at your server, while <strong class="text-white">Event Time</strong> is when the event physically occurred on the user's device.
+              When processing real-time event streams (clickstreams, mobile orders), <strong class="text-white">Processing Time</strong> is when the event arrives at your server, while <strong class="text-white">Event Time</strong> is when the event physically occurred on the user's phone.
             </p>
             <p>
-              On cellular networks or during offline mobile usage, packets can arrive <strong>hours out of order</strong>. If you calculate hourly billing or fraud detection using Processing Time, your metrics will be completely skewed.
+              On spotty mobile connections, packets can arrive <strong>hours out of order</strong>. If you calculate hourly billing or analytics using Processing Time, your metrics will be completely inaccurate.
             </p>
             <p>
               <strong class="text-amber-300">Senior Solution:</strong> Always window over <strong>Event Time</strong> and implement <strong class="text-white">Watermarks</strong> in Apache Flink or Spark. A watermark is a temporal threshold stating <em>"we believe all events prior to timestamp T have arrived."</em> It allows the engine to close windows and compute final results while routing delayed packets to a late-arriving dead-letter queue.
@@ -265,7 +271,7 @@ export function renderBigDataEvolutionContent(topic) {
             KEY INTERVIEW TAKEAWAY
           </span>
           <p class="text-[13.5px] font-sans font-medium text-white leading-relaxed">
-            Big data history is a story of giving up ACID guarantees for horizontal scale, then systematically engineering those guarantees back in. In production interviews, advocate for the unified Kappa Architecture (Kafka log + Flink streaming) over complex dual-codebase Lambda architectures, window strictly over Event Time with watermarks, and leverage open ACID lakehouse formats like Apache Iceberg.
+            Big data history is a story of giving up ACID guarantees for horizontal scale, then systematically engineering those guarantees back in. In interviews, advocate for the unified Kappa Architecture (Kafka log + Flink streaming) over complex dual-codebase Lambda architectures, window strictly over Event Time with watermarks, and leverage open ACID lakehouse formats like Apache Iceberg.
           </p>
         </div>
 

@@ -16,7 +16,7 @@ export function renderDatabaseIsolationMvccContent(topic) {
       phantomClass: "text-rose-400",
       writeSkew: "Allowed",
       writeSkewClass: "text-rose-400",
-      implementation: "Raw reads without shared locks. Never use in production financial or ecommerce systems."
+      implementation: "Raw reads without shared locks. Fastest speed, zero isolation. Dangerous for production systems."
     },
     {
       level: "Read Committed",
@@ -28,7 +28,7 @@ export function renderDatabaseIsolationMvccContent(topic) {
       phantomClass: "text-rose-400",
       writeSkew: "Allowed",
       writeSkewClass: "text-rose-400",
-      implementation: "Each statement reads its own fresh snapshot. Default for PostgreSQL, Oracle, and SQL Server."
+      implementation: "Every individual SQL statement takes a fresh snapshot. Default in PostgreSQL, Oracle, and SQL Server."
     },
     {
       level: "Repeatable Read",
@@ -40,7 +40,7 @@ export function renderDatabaseIsolationMvccContent(topic) {
       phantomClass: "text-emerald-400 font-semibold",
       writeSkew: "Allowed",
       writeSkewClass: "text-rose-400 font-bold",
-      implementation: "Snapshot taken once at transaction start (Snapshot Isolation). Default for MySQL InnoDB. (*MVCC blocks phantoms)."
+      implementation: "One single snapshot created at transaction start (Snapshot Isolation). Default for MySQL InnoDB. (*MVCC blocks phantoms)."
     },
     {
       level: "Serializable",
@@ -52,49 +52,80 @@ export function renderDatabaseIsolationMvccContent(topic) {
       phantomClass: "text-emerald-400 font-bold",
       writeSkew: "Prevented",
       writeSkewClass: "text-emerald-400 font-bold",
-      implementation: "Strict serial execution order guaranteed via 2-Phase Locking (2PL) or Serializable Snapshot Isolation (SSI)."
+      implementation: "Guarantees transactions behave as if executed strictly one after another. Uses 2-Phase Locking or SSI conflict tracking."
     }
   ];
 
   const interviewFollowUps = [
     {
       qNum: "Q1",
-      question: "What is Write Skew and why does standard Snapshot Isolation (Repeatable Read) fail to prevent it?",
-      answer: `<strong>Write Skew</strong> occurs when two concurrent transactions read overlapping datasets, make decisions based on what they observed, and update <em>disjoint rows</em> such that the resulting combined state violates a global business constraint.
+      question: "What is Write Skew and why does standard Snapshot Isolation (Repeatable Read) fail to catch it?",
+      answer: `<strong>Write Skew</strong> occurs when two concurrent transactions read the same data, make separate business decisions based on that data, and write to <em>different rows</em>—resulting in a combined state that violates a critical business rule.
       <br/><br/>
-      <strong class="text-indigo-400">The Canonical Example (Two On-Call Doctors):</strong>
-      Hospital policy requires at least one doctor on call. Doctors Alice and Bob are both on call. Both simultaneously request to go off-call.
+      <strong class="text-indigo-400">The Everyday Example: Two On-Call Hospital Doctors</strong>
+      <p class="text-slate-300 mt-1">
+        Hospital policy states: <em>"At least one doctor must be actively on call at all times."</em> Doctors Alice and Bob are both on call. Simultaneously, both feel sick and tap "Request Leave" on their phones:
+      </p>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
-        <li>Txn 1 (Alice): <code>SELECT count(*) FROM doctors WHERE on_call = true;</code> (returns 2) $\to$ proceeds $\to$ <code>UPDATE doctors SET on_call = false WHERE name = 'Alice';</code></li>
-        <li>Txn 2 (Bob): <code>SELECT count(*) FROM doctors WHERE on_call = true;</code> (returns 2) $\to$ proceeds $\to$ <code>UPDATE doctors SET on_call = false WHERE name = 'Bob';</code></li>
+        <li><strong>Doctor Alice's Transaction:</strong> Reads the system: <code>SELECT count(*) FROM on_call_doctors;</code> &rarr; sees <strong>2</strong>. Because $2 \ge 2$, it is safe for her to leave. She updates her row: <code>UPDATE doctors SET on_call = false WHERE name = 'Alice';</code></li>
+        <li><strong>Doctor Bob's Transaction:</strong> Reads the system concurrently: <code>SELECT count(*) FROM on_call_doctors;</code> &rarr; also sees <strong>2</strong>! Because $2 \ge 2$, it is also safe for him to leave. He updates his row: <code>UPDATE doctors SET on_call = false WHERE name = 'Bob';</code></li>
       </ul>
-      Because Alice updated row A and Bob updated row B, there is <strong>zero lock conflict</strong>. Under Snapshot Isolation, both transactions commit successfully, leaving <strong>zero doctors on duty</strong>! Snapshot isolation only detects write-write conflicts on the <em>exact same row</em>; it cannot detect write skew across disjoint rows.`
+      <strong class="text-rose-400">The Problem:</strong> Alice modified Alice's row. Bob modified Bob's row. Under standard Snapshot Isolation, row-level write locks <em>never conflict</em>! Both transactions commit without errors. Result: <strong>0 doctors on duty</strong>, breaking the hospital rule!
+      <br/><br/>
+      <strong class="text-emerald-400">How to Fix in Production:</strong>
+      <ol class="list-decimal list-inside mt-1 space-y-1 text-slate-300">
+        <li><strong>Explicit Locking (SELECT ... FOR UPDATE):</strong> Force transactions to lock the shift or team record so one must wait for the other.</li>
+        <li><strong>True Serializable Isolation:</strong> Use Serializable Snapshot Isolation (SSI in PostgreSQL), which detects conflicting read-write cycles and aborts one transaction with a serialization failure error.</li>
+      </ol>`
     },
     {
       qNum: "Q2",
-      question: "How does Multi-Version Concurrency Control (MVCC) work mechanically under the hood in PostgreSQL vs. MySQL InnoDB?",
-      answer: `While both engines implement MVCC to ensure <em>readers never block writers and writers never block readers</em>, their physical storage architectures are polar opposites:
-      <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
-        <li><strong>MySQL InnoDB (Undo Log Chains):</strong> Updates modify the table page <em>in place</em>. The previous version of the row is written to an <strong>Undo Log segment</strong> in memory/disk. Older snapshots traverse a linked list of undo log pointers (<code>roll_pointer</code>) backward in time. When transactions commit, background purge threads truncate the undo log.</li>
-        <li><strong>PostgreSQL (Append-Only Tuples + VACUUM):</strong> PostgreSQL never updates rows in place. Every <code>UPDATE</code> inserts an entirely new row version (tuple) into the heap table with header metadata: <code>xmin</code> (creation txn ID) and <code>xmax</code> (deletion/replacement txn ID). Old dead tuples remain in the table file until cleaned up asynchronously by the <strong>VACUUM daemon</strong>.</li>
-      </ul>`
+      question: "How does Multi-Version Concurrency Control (MVCC) work under the hood in PostgreSQL vs. MySQL InnoDB?",
+      answer: `The core promise of MVCC is simple: <strong>Readers never block Writers, and Writers never block Readers.</strong>
+      <br/><br/>
+      Instead of locking a row every time someone queries it, the database engine maintains multiple timestamped versions of each row. But how PostgreSQL and MySQL implement this physically on disk is completely different:
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+        <div class="bg-[#050811] p-3 rounded border border-slate-800">
+          <strong class="text-cyan-400 block font-code text-[12px] mb-1">MySQL InnoDB (Undo Log Pointer Chains)</strong>
+          <p class="text-[12px] text-slate-300 leading-relaxed">
+            InnoDB updates rows <strong>in place</strong> on the main table page. Before overwriting the old values, it copies the previous version to an <strong>Undo Log</strong>. The active row contains a hidden <code>DB_ROLL_PTR</code> pointing backward to its historical version in the undo log. Older readers traverse this linked list backward in time. When transactions complete, background purge threads discard old undo pages.
+          </p>
+        </div>
+        <div class="bg-[#050811] p-3 rounded border border-slate-800">
+          <strong class="text-indigo-400 block font-code text-[12px] mb-1">PostgreSQL (Append-Only Tuples + VACUUM)</strong>
+          <p class="text-[12px] text-slate-300 leading-relaxed">
+            Postgres <strong>never overwrites data in place</strong>. Every <code>UPDATE</code> inserts a brand new row version (tuple) into the table heap with headers: <code>xmin</code> (transaction that created it) and <code>xmax</code> (transaction that deleted or replaced it). Old dead rows stay in the table data file until the background <strong>VACUUM worker</strong> cleans them up.
+          </p>
+        </div>
+      </div>`
     },
     {
       qNum: "Q3",
-      question: "What is PostgreSQL Transaction ID (txid) Wraparound and why is it considered an emergency existential event for DBA teams?",
-      answer: `PostgreSQL uses a 32-bit unsigned integer for transaction IDs, allowing roughly <strong>4.29 billion transactions</strong>. Because numbers wrap around modulo $2^{32}$, a transaction ID from today would appear to be in the "future" relative to a transaction from 2.1 billion commits ago, making old committed data suddenly invisible!
+      question: "What is PostgreSQL Transaction ID (txid) Wraparound and why does it terrify database administrators?",
+      answer: `PostgreSQL uses a 32-bit integer for transaction IDs (TXIDs), giving about <strong>4.29 billion possible IDs</strong>. Because numbers wrap around modulo $2^{32}$, a transaction created today could appear to be in the "past" or "future" compared to an older transaction, potentially making committed historical data completely invisible!
       <br/><br/>
-      To prevent this, PostgreSQL relies on <code>VACUUM FREEZE</code> to convert older transaction IDs into a special frozen ID (<code>FrozenTransactionId = 2</code>), indicating "committed in the deep past". If autovacuum cannot keep up (due to heavy write traffic or long-running transactions holding the horizon open) and the database approaches 2 billion unfrozen transactions, PostgreSQL will <strong>force an immediate emergency read-only shutdown</strong>, rejecting all write traffic until a manual single-user vacuum completes.`
+      <strong class="text-indigo-400">The Defense Mechanism: VACUUM FREEZE</strong>
+      <p class="text-slate-300 mt-1">
+        PostgreSQL periodically runs <code>VACUUM FREEZE</code>, which replaces old transaction IDs with a special marker (<code>FrozenTransactionId = 2</code>), meaning <em>"this row was committed in the deep past and is visible to all transactions forever."</em>
+      </p>
+      <strong class="text-amber-300">The Emergency Stop:</strong>
+      <p class="text-slate-300 mt-1">
+        If an open analytics query or uncommitted transaction runs for days, autovacuum cannot advance the freeze horizon. If the database reaches 2 billion unfrozen transactions, PostgreSQL <strong>shuts down writes immediately into read-only mode</strong> to prevent data loss, requiring emergency single-user maintenance.
+      </p>`
     },
     {
       qNum: "Q4",
-      question: "When should an enterprise system actually use SERIALIZABLE isolation in production, and what is the throughput tradeoff?",
+      question: "When should you actually use SERIALIZABLE in production, and what is the real-world performance cost?",
       answer: `Use <strong>SERIALIZABLE</strong> when:
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
-        <li>Complex multi-row invariants cannot be enforced by database foreign keys or check constraints (e.g. financial ledgers, double-entry balance transfers, medical dosing rules).</li>
-        <li>The developer team cannot guarantee that every query correctly uses explicit <code>SELECT ... FOR UPDATE</code> locks.</li>
+        <li>You manage multi-row financial balances, double-entry bookkeeping, or inventory reservations where business rules span across multiple records.</li>
+        <li>You want absolute safety without writing custom error-prone <code>SELECT ... FOR UPDATE</code> locks in application code.</li>
       </ul>
-      <strong class="text-rose-400">The Tradeoff:</strong> In traditional engines using 2-Phase Locking (2PL), Serializable uses heavy shared and exclusive range locks that collapse concurrency and cause frequent deadlocks. In modern PostgreSQL using <strong>Serializable Snapshot Isolation (SSI)</strong>, transactions don't lock; instead, the engine tracks read-write conflict dependencies (SIREAD locks in RAM) and <em>aborts one of the transactions</em> with a serialization failure (SQLSTATE 40001) if a cycle is detected. Your application must implement robust retry loops with exponential jitter.`
+      <strong class="text-rose-400">The Real-World Cost:</strong>
+      <ul class="list-disc list-inside mt-1 space-y-1 text-slate-300">
+        <li><strong>In Traditional 2-Phase Locking (2PL):</strong> Concurrency drops dramatically because long range locks block other readers and writers, causing deadlocks.</li>
+        <li><strong>In Modern PostgreSQL (SSI - Serializable Snapshot Isolation):</strong> Queries execute fast with no shared row locks, but the database tracks dependencies in RAM. If it detects a conflict cycle, it <strong>aborts the younger transaction</strong> with error code <code>40001 (serialization_failure)</code>. Your application MUST implement retry loops with random jitter.</li>
+      </ul>`
     }
   ];
 
@@ -111,33 +142,79 @@ export function renderDatabaseIsolationMvccContent(topic) {
           <div class="flex items-center gap-3">
             <div class="w-1.5 h-7 bg-[#6366F1] rounded-sm shrink-0"></div>
             <h2 class="font-sans text-[22px] sm:text-[26px] font-bold text-white tracking-tight leading-snug">
-              4.2 Database Isolation Levels and MVCC
+              4.2 Database Isolation Levels & MVCC
             </h2>
+          </div>
+          <p class="text-slate-400 text-[13px] font-sans">
+            How databases balance concurrent query speed against data corruption anomalies, and why readers never have to wait for writers.
+          </p>
+        </div>
+
+        <!-- Everyday Mental Model Card -->
+        <div class="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/50 border border-indigo-500/30 rounded-xl p-5 flex flex-col gap-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-400 text-[20px]">lightbulb</span>
+            <span class="font-code text-[11px] font-bold text-indigo-300 uppercase tracking-wider">
+              EVERYDAY MENTAL MODEL: THE LIVE ROOM LOCK VS. THE INSTANT POLAROID PHOTO
+            </span>
+          </div>
+          <p class="text-slate-300 text-[13px] leading-relaxed font-sans">
+            Imagine a busy library reading room with a master bulletin board where daily stock prices are posted:
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-slate-800 flex flex-col gap-1.5">
+              <strong class="text-rose-300 text-[12px] font-code flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                Without MVCC: Heavy Room Locking
+              </strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                Whenever anyone wants to read the board, they lock the room door. While you read, nobody can update the board. Whenever an editor wants to write new prices, everyone must leave the room. Reading stops writing, and writing stops reading. Under heavy traffic, lines stretch around the block!
+              </p>
+            </div>
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-emerald-500/20 flex flex-col gap-1.5">
+              <strong class="text-emerald-300 text-[12px] font-code flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                With MVCC: The Instant Polaroid Snapshot
+              </strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                When you walk into the library, the system hands you a personal <strong>Polaroid photo</strong> of the board taken at that exact millisecond. You can sit and study your photo for 20 minutes in peace. Meanwhile, editors continue updating the physical board in real time. <em>Readers never block writers, and writers never block readers!</em>
+              </p>
+            </div>
           </div>
         </div>
 
-        <!-- Overview Text -->
+        <!-- The 4 Concurrency Anomalies Explained Simply -->
         <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 sm:p-5 flex flex-col gap-3 font-sans text-[13px] leading-relaxed">
-          <p class="text-slate-300">
-            In relational database systems, <strong>Isolation</strong> (the 'I' in ACID) defines the degree to which concurrent transactions observe each other's uncommitted or newly committed mutations. Database engines treat isolation as a tunable continuum: higher isolation prevents costly data anomalies but increases locking contention, transaction aborts, and latency.
-          </p>
+          <div class="flex items-center justify-between border-b border-[#24314A]/80 pb-2">
+            <span class="font-bold text-slate-200 tracking-wider text-[11px] uppercase font-code">
+              THE 4 DATA PHENOMENA (ANOMALIES) EXPLAINED IN PLAIN ENGLISH
+            </span>
+          </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-            <div class="bg-[#0F1626] border border-rose-500/30 rounded-lg p-3 flex flex-col gap-1">
+            <div class="bg-[#0F1626] border border-rose-500/30 rounded-lg p-3 flex flex-col gap-1.5">
               <span class="font-code text-[11px] font-bold text-rose-300 uppercase">1. Dirty Read</span>
-              <span class="text-[12px] text-slate-300">Txn A reads a row modified by Txn B before Txn B commits. If B rolls back, A acted on invalid data.</span>
+              <p class="text-[12px] text-slate-300 leading-relaxed">
+                Reading uncommitted drafts. Transaction A changes bank balance from $100 to $500. Transaction B reads $500. Transaction A crashes and cancels (rolls back). Transaction B made decisions based on imaginary money that never existed.
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-amber-500/30 rounded-lg p-3 flex flex-col gap-1">
+            <div class="bg-[#0F1626] border border-amber-500/30 rounded-lg p-3 flex flex-col gap-1.5">
               <span class="font-code text-[11px] font-bold text-amber-300 uppercase">2. Non-Repeatable Read</span>
-              <span class="text-[12px] text-slate-300">Txn A reads a row twice; Txn B updates and commits that row in between. Txn A sees two different values.</span>
+              <p class="text-[12px] text-slate-300 leading-relaxed">
+                A row changes mid-transaction. You check flight seat 12B and it costs $100. Five seconds later you click buy, but an airline price-adjuster committed in between, so your second query sees $150.
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-cyan-500/30 rounded-lg p-3 flex flex-col gap-1">
+            <div class="bg-[#0F1626] border border-cyan-500/30 rounded-lg p-3 flex flex-col gap-1.5">
               <span class="font-code text-[11px] font-bold text-cyan-300 uppercase">3. Phantom Read</span>
-              <span class="text-[12px] text-slate-300">Txn A queries a range; Txn B inserts new rows matching the range and commits. Re-query returns "phantom" rows.</span>
+              <p class="text-[12px] text-slate-300 leading-relaxed">
+                New rows appear out of nowhere. You run <code>SELECT count(*) WHERE age &gt; 65</code> and get 10. While processing, a new senior user registers and commits. When you re-query, you get 11 rows!
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-indigo-500/30 rounded-lg p-3 flex flex-col gap-1">
-              <span class="font-code text-[11px] font-bold text-indigo-300 uppercase">4. Serialization / Skew</span>
-              <span class="text-[12px] text-slate-300">Two transactions read overlapping premises, update disjoint rows, and commit an invalid global state.</span>
+            <div class="bg-[#0F1626] border border-indigo-500/30 rounded-lg p-3 flex flex-col gap-1.5">
+              <span class="font-code text-[11px] font-bold text-indigo-300 uppercase">4. Write Skew</span>
+              <p class="text-[12px] text-slate-300 leading-relaxed">
+                Two transactions read overlapping data, mutate different rows, and commit an invalid combined state (e.g., both on-call doctors signing off simultaneously because each saw the other was on duty).
+              </p>
             </div>
           </div>
         </div>
@@ -184,7 +261,7 @@ export function renderDatabaseIsolationMvccContent(topic) {
             <span class="font-bold text-indigo-400 tracking-wider text-[11px] uppercase">
               MVCC MECHANICS: READ VIEWS & UNDO LOG VERSION CHAINS
             </span>
-            <span class="text-slate-500 text-[10.5px]">Readers Never Block Writers</span>
+            <span class="text-slate-500 text-[10.5px]">Step-by-Step Traversal</span>
           </div>
 
           <pre class="text-slate-300 leading-relaxed overflow-x-auto p-3 bg-[#050811] rounded-lg border border-slate-800">
@@ -193,27 +270,27 @@ export function renderDatabaseIsolationMvccContent(topic) {
 │                                                                                        │
 │  Row in Primary Table (Clustered Index):                                               │
 │  ┌──────────────────────────────────────────────────────────────────────────────────┐  │
-│  │ id = 42 | balance = 300 | DB_TRX_ID = 205 (Txn C) | DB_ROLL_PTR = 0x8A12F000    │  │
+│  │ id = 42 | balance = $300 | DB_TRX_ID = 205 (Txn C) | DB_ROLL_PTR = 0x8A12F000   │  │
 │  └──────────────────────────────────────────────────────────────┬───────────────────┘  │
 │                                                                 │                      │
 │     Points backward to historical version chain in Undo Log     ▼                      │
 │  ┌──────────────────────────────────────────────────────────────────────────────────┐  │
-│  │ Undo Log Record 1: balance = 200 | DB_TRX_ID = 202 (Txn B) | DB_ROLL_PTR = 0x8A01 │  │
+│  │ Undo Log Record 1: balance = $200 | DB_TRX_ID = 202 (Txn B) | DB_ROLL_PTR = 0x8A01│  │
 │  └──────────────────────────────────────────────────────────────┬───────────────────┘  │
 │                                                                 │                      │
 │     Points backward to initial baseline                         ▼                      │
 │  ┌──────────────────────────────────────────────────────────────────────────────────┐  │
-│  │ Undo Log Record 2: balance = 100 | DB_TRX_ID = 199 (Txn A) | DB_ROLL_PTR = NULL   │  │
+│  │ Undo Log Record 2: balance = $100 | DB_TRX_ID = 199 (Txn A) | DB_ROLL_PTR = NULL  │  │
 │  └──────────────────────────────────────────────────────────────────────────────────┘  │
 │                                                                                        │
 │  CONCURRENT READ VIEW EVALUATION:                                                      │
 │                                                                                        │
-│  • Txn 200 starts (Read View created: max committed txn was 199):                      │
-│    Reads Clustered Row (trx_id=205 > 199) ──► Skips (uncommitted/future!)              │
-│    Traverses roll_ptr to Undo Record 1 (trx_id=202 > 199) ──► Skips!                   │
-│    Traverses roll_ptr to Undo Record 2 (trx_id=199 <= 199) ──► MATCH! Reads $100.      │
+│  1. Txn 200 starts (Read View snapshot created: max committed transaction was 199):    │
+│  2. It reads primary row (trx_id=205 > 199) ──► Too new! Skips uncommitted change.    │
+│  3. Follows roll_ptr to Undo Record 1 (trx_id=202 > 199) ──► Still too new! Skips.    │
+│  4. Follows roll_ptr to Undo Record 2 (trx_id=199 <= 199) ──► VALID MATCH! Reads $100. │
 │                                                                                        │
-│  • Result: Txn C writes $300 while Txn 200 reads $100 simultaneously with ZERO locks!  │
+│  • Result: Txn C updates to $300 while Txn 200 reads $100 concurrently with NO LOCKS! │
 └────────────────────────────────────────────────────────────────────────────────────────┘</pre>
         </div>
 
@@ -222,19 +299,21 @@ export function renderDatabaseIsolationMvccContent(topic) {
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-[#10B981] text-[18px]">verified</span>
             <span class="font-code text-[11px] font-bold text-[#10B981] uppercase tracking-wider">
-              SENIOR PERSPECTIVE: THE WRITE SKEW TRAP & PREVENTING IT
+              SENIOR INTERVIEW STRATEGY: ENGINE DEFAULTS & THE WRITE SKEW TRAP
             </span>
           </div>
           <p class="font-sans text-[13px] text-slate-300 leading-relaxed">
-            In system design interviews, engineers often claim: <em class="text-white">"We set our database to Repeatable Read (Snapshot Isolation), so all concurrency anomalies are eliminated."</em> This is technically false. Snapshot Isolation prevents Dirty Reads, Non-Repeatable Reads, and Phantoms, but is completely vulnerable to <strong>Write Skew</strong>.
+            In system design interviews, many candidates make two major mistakes: (1) assuming all databases use the same default isolation, and (2) believing Repeatable Read solves all race conditions.
           </p>
-          <div class="bg-[#081713] border border-[#10B981]/25 rounded-lg p-3 text-[12.5px] font-sans text-emerald-200/90 leading-relaxed">
-            <strong class="text-white">How Seniors Prevent Write Skew in Production:</strong>
-            <ol class="list-decimal list-inside mt-1 space-y-1 text-slate-300">
-              <li><strong>Explicit Locking (SELECT ... FOR UPDATE):</strong> Turn the read into a write lock on the evaluated rows, serializing conflicting transactions.</li>
-              <li><strong>Materialized Conflict Locks:</strong> Create a dummy table representing the constraint (e.g. <code>hospital_shifts</code>) and lock the parent row before evaluating children.</li>
-              <li><strong>Serializable Snapshot Isolation (SSI):</strong> Use PostgreSQL's <code>SERIALIZABLE</code> isolation level, which tracks SIREAD conflict cycles in memory with negligible lock overhead and aborts with a retry error.</li>
-            </ol>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <div class="bg-[#081713] border border-[#10B981]/25 rounded-lg p-3 text-[12px] font-sans text-emerald-200/90 leading-relaxed">
+              <strong class="text-white block font-code mb-1">1. Know The Defaults Cold:</strong>
+              MySQL InnoDB defaults to <strong>Repeatable Read</strong> (uses gap locks and undo logs to prevent phantoms). PostgreSQL defaults to <strong>Read Committed</strong> (every statement sees changes committed right up to that instant). Stating these accurately signals deep production experience.
+            </div>
+            <div class="bg-[#081713] border border-[#10B981]/25 rounded-lg p-3 text-[12px] font-sans text-emerald-200/90 leading-relaxed">
+              <strong class="text-white block font-code mb-1">2. How to Counter Write Skew:</strong>
+              When asked how to prevent the on-call doctor anomaly, offer two clean paths: (a) Explicit row locks with <code>SELECT ... FOR UPDATE</code> on a parent table, or (b) Setting PostgreSQL to <code>SERIALIZABLE</code> with application retry logic.
+            </div>
           </div>
         </div>
 
@@ -243,18 +322,18 @@ export function renderDatabaseIsolationMvccContent(topic) {
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-[#F59E0B] text-[18px]">warning</span>
             <span class="font-code text-[11px] font-bold text-[#F59E0B] uppercase tracking-wider">
-              ARCHITECTURAL PITFALL: LONG-RUNNING TRANSACTIONS & UNDO / TABLE BLOAT
+              ARCHITECTURAL PITFALL: LONG-RUNNING TRANSACTIONS CAUSE RUNAWAY BLOAT
             </span>
           </div>
           <p class="font-sans text-[13px] text-slate-300 leading-relaxed">
-            Never permit analytics queries or interactive developer shells to hold open database transactions for hours. In an MVCC database, the oldest active transaction pins the <strong>horizon of visible snapshots</strong>:
+            Never allow an analytical report, bulk migration script, or developer database terminal to keep a transaction open for hours. In an MVCC database, the oldest active transaction pins the <strong>visible snapshot horizon</strong>:
           </p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[12px] font-sans pt-1">
             <div class="bg-[#190E03] border border-[#F59E0B]/20 p-2.5 rounded-lg text-slate-300">
-              <strong class="text-amber-200 block pb-0.5">MySQL InnoDB:</strong> The Undo Log cannot purge historical records. The <code>ibdata1</code> tablespace swells by tens of gigabytes, consuming disk space and degrading read latency.
+              <strong class="text-amber-200 block pb-0.5">MySQL InnoDB:</strong> The engine cannot purge historical records from the Undo Log. The tablespace file (<code>ibdata1</code>) swells by gigabytes, consuming disk space and slowing down queries across the system.
             </div>
             <div class="bg-[#190E03] border border-[#F59E0B]/20 p-2.5 rounded-lg text-slate-300">
-              <strong class="text-amber-200 block pb-0.5">PostgreSQL:</strong> <code>VACUUM</code> cannot reclaim dead row versions. Tables and indexes bloat 10x in size, and approaching 2 billion transactions triggers an emergency read-only freeze.
+              <strong class="text-amber-200 block pb-0.5">PostgreSQL:</strong> <code>VACUUM</code> is forbidden from removing dead rows that might be visible to that long transaction. Tables swell 10x in size, and approaching 2 billion unfrozen transactions triggers an emergency read-only freeze.
             </div>
           </div>
         </div>
@@ -300,7 +379,7 @@ export function renderDatabaseIsolationMvccContent(topic) {
             KEY INTERVIEW TAKEAWAY
           </span>
           <p class="text-[13.5px] font-sans font-medium text-white leading-relaxed">
-            Isolation levels represent a continuous tradeoff between concurrency throughput and anomaly prevention. Know your engine defaults (MySQL: Repeatable Read, Postgres: Read Committed). Explain MVCC using undo log roll-pointers or append-only xmin/xmax tuples. Always cite Write Skew as the exact boundary where Snapshot Isolation fails, and mention undo/vacuum bloat as the operational cost of long-running transactions.
+            Isolation is a deliberate trade-off between throughput and data correctness. Remember the engine defaults: PostgreSQL uses Read Committed; MySQL InnoDB uses Repeatable Read. When explaining MVCC, highlight the Polaroid snapshot model: readers never block writers. Always bring up Write Skew (the two on-call doctors) to demonstrate why Snapshot Isolation is not foolproof, and note the table bloat dangers of long-running transactions.
           </p>
         </div>
 

@@ -1,1 +1,1 @@
-export { renderWebhooksContent } from './WebhooksDetail.js';
+export { renderWebCrawlerDetail } from './WebCrawlerDetail.js';

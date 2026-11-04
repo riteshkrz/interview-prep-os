@@ -45,8 +45,8 @@ export function renderProblemSection() {
               <h3 class="font-sans text-[14px] text-white font-semibold mt-2 mb-1.5">Which topics am I weak at?</h3>
               <p class="font-body text-[12px] text-slate-400 leading-relaxed">Blindly grinding random topics feels productive but hides your blind spots.</p>
             </div>
-            <div class="mt-4 pt-2.5 border-t border-white/[0.08] flex items-center gap-1 text-rose-400 font-code text-[10px]">
-              <span class="material-symbols-outlined text-[13px]">close</span> Unmeasured gaps
+            <div class="mt-4 pt-2.5 border-t border-white/[0.08] flex items-center gap-1 te'xt-rose-400 font-code text-[10px]">
+              <span class="material-symbols-outlined text-[13px]">close</span> Unmeasured gps
             </div>
           </div>
 

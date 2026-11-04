@@ -11,23 +11,23 @@ export function renderEncryptionFundamentalsContent(topic) {
       category: "Symmetric (Block Cipher / AEAD)",
       keySize: "256 bits",
       securityEquiv: "256 bits (Quantum-resistant)",
-      speed: "Gigabytes/sec (Hardware AES-NI)",
-      bestUse: "Bulk data at rest, disk/S3 encryption, TLS 1.3 data channel"
+      speed: "Gigabytes/sec (Hardware AES-NI offload)",
+      bestUse: "Bulk data at rest, disk/S3 encryption, TLS 1.3 payload channel"
     },
     {
       algorithm: "ChaCha20-Poly1305",
       category: "Symmetric (Stream Cipher / AEAD)",
       keySize: "256 bits",
       securityEquiv: "256 bits",
-      speed: "High speed on mobile/ARM (No hardware acceleration needed)",
-      bestUse: "Mobile clients, IoT devices, WireGuard VPN protocols"
+      speed: "Blazing fast on mobile/ARM (Zero hardware acceleration needed)",
+      bestUse: "Mobile clients, IoT devices, WireGuard VPN protocol"
     },
     {
       algorithm: "RSA 2048 / 4096",
-      category: "Asymmetric (Factoring Primes)",
+      category: "Asymmetric (Factoring Prime Numbers)",
       keySize: "2048–4096 bits",
       securityEquiv: "112–128 bits",
-      speed: "Slow (Heavy modular exponentiation)",
+      speed: "Slow (Heavy CPU modular exponentiation math)",
       bestUse: "Legacy TLS certificates, enterprise PKI, document signing"
     },
     {
@@ -35,15 +35,15 @@ export function renderEncryptionFundamentalsContent(topic) {
       category: "Asymmetric (Elliptic Curve Discrete Log)",
       keySize: "256 bits",
       securityEquiv: "128 bits (Equivalent to RSA-3072)",
-      speed: "Fast (10x faster signature generation than RSA)",
-      bestUse: "Modern TLS 1.3 certificates, JWT signatures, Apple/Android Secure Enclave"
+      speed: "Fast (10x faster signature verification than RSA)",
+      bestUse: "Modern TLS 1.3 certificates, JWT signing, Apple Secure Enclave"
     },
     {
       algorithm: "Ed25519 / X25519",
       category: "Asymmetric (Twisted Edwards Curve)",
       keySize: "256 bits",
       securityEquiv: "128 bits",
-      speed: "Ultra-fast, constant-time (side-channel immune)",
+      speed: "Ultra-fast, constant-time (side-channel attack immune)",
       bestUse: "SSH keys, Git commit signing, Signal protocol, modern key exchange"
     }
   ];
@@ -56,7 +56,7 @@ export function renderEncryptionFundamentalsContent(topic) {
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
         <li><strong>Key Size vs. Security:</strong> A 256-bit ECC key provides the equivalent cryptographic strength of a 3072-bit RSA key. Smaller keys mean dramatically smaller network payload packets during TLS handshakes.</li>
         <li><strong>Computational Efficiency:</strong> ECC requires significantly less CPU power and memory to generate keys and compute signatures, saving millions in cloud compute costs on API gateways terminating 100k+ TLS handshakes/second.</li>
-        <li><strong>Mobile & Battery Friendly:</strong> Tiny cryptographic footprints minimize battery drain on mobile and IoT devices.</li>
+        <li><strong>Mobile &amp; Battery Friendly:</strong> Tiny cryptographic footprints minimize battery drain on mobile and IoT devices.</li>
       </ul>`
     },
     {
@@ -98,18 +98,56 @@ export function renderEncryptionFundamentalsContent(topic) {
           <div class="flex items-center gap-3">
             <div class="w-1.5 h-7 bg-[#6366F1] rounded-sm shrink-0"></div>
             <h2 class="font-sans text-[22px] sm:text-[26px] font-bold text-white tracking-tight leading-snug">
-              3.5 Symmetric vs. Asymmetric Encryption: AES vs. RSA vs. ECC
+              8.7 Symmetric vs. Asymmetric Encryption: AES vs. RSA vs. ECC
             </h2>
+          </div>
+          <p class="font-sans text-[13.5px] text-slate-300 leading-relaxed pl-4">
+            Security in distributed systems relies on two foundational cryptographic pillars: <strong class="text-indigo-400">Symmetric Encryption</strong> (blazing-fast data protection with one secret key) and <strong class="text-cyan-400">Asymmetric Encryption</strong> (public/private key pairs that solve key exchange across untrusted networks). Modern architectures combine both into high-throughput <strong class="text-white">Hybrid Cryptosystems</strong>.
+          </p>
+        </div>
+
+        <!-- Everyday Mental Model Banner -->
+        <div class="bg-gradient-to-r from-blue-950/40 via-indigo-950/20 to-slate-900 border border-blue-500/30 rounded-xl p-4 sm:p-5 flex flex-col gap-3 font-sans">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-cyan-400">psychology</span>
+            <span class="font-code text-[12px] font-bold text-cyan-300 uppercase tracking-wider">
+              Everyday Mental Model: Shared Padlock vs. Mailbox Slit vs. Envelope Safe
+            </span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-[12px]">
+            <div class="bg-[#0F1626]/80 border border-indigo-500/30 rounded-lg p-3 flex flex-col gap-1">
+              <strong class="text-indigo-300 font-code text-[11.5px] flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px]">lock</span>
+                Symmetric (AES) = Lockbox with 1 Physical Key
+              </strong>
+              <p class="text-slate-300 leading-relaxed">
+                Super fast to lock and unlock (gigabytes/second). But both parties must possess the exact same physical key. If a thief intercepts the key while you are mailing it to your partner, your security is blown.
+              </p>
+            </div>
+            <div class="bg-[#0F1626]/80 border border-cyan-500/30 rounded-lg p-3 flex flex-col gap-1">
+              <strong class="text-cyan-300 font-code text-[11.5px] flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px]">key</span>
+                Asymmetric (RSA/ECC) = Mailbox with Drop Slot
+              </strong>
+              <p class="text-slate-300 leading-relaxed">
+                Anyone on the street can drop a letter through the public slot (Public Key). But only the homeowner with the private key can unlock the door to retrieve the letters (Private Key). 1,000x slower to compute.
+              </p>
+            </div>
+            <div class="bg-[#0F1626]/80 border border-emerald-500/30 rounded-lg p-3 flex flex-col gap-1">
+              <strong class="text-emerald-300 font-code text-[11.5px] flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px]">mark_email_read</span>
+                Envelope Encryption = Safe + Locked Key Envelope
+              </strong>
+              <p class="text-slate-300 leading-relaxed">
+                Lock a 100GB database backup with a fast random symmetric key (DEK). Put that 32-byte key into an envelope and lock it using a cloud master key (AWS KMS KEK). Zero network bottlenecks!
+              </p>
+            </div>
           </div>
         </div>
 
-        <!-- Overview Text -->
+        <!-- Overview Text Grid -->
         <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 sm:p-5 flex flex-col gap-3 font-sans text-[13px] leading-relaxed">
-          <p class="text-slate-300">
-            Distributed system security relies on two complementary cryptographic primitives: <strong class="text-indigo-400">Symmetric Encryption</strong> (blazing-fast data protection with a single shared key) and <strong class="text-cyan-400">Asymmetric Encryption</strong> (key pairs that solve identity verification and key distribution over untrusted networks). Modern architectures combine both into <strong class="text-white">Hybrid Cryptosystems</strong>.
-          </p>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <div class="bg-[#0F1626] border border-indigo-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
               <div class="flex items-center justify-between">
                 <span class="font-code text-[11px] font-bold text-indigo-300 uppercase">Symmetric (AES-256 / ChaCha20)</span>
@@ -181,7 +219,7 @@ export function renderEncryptionFundamentalsContent(topic) {
         <div class="flex flex-col gap-3">
           <div class="flex items-center gap-2">
             <span class="font-code text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              CRYPTOGRAPHIC ALGORITHM BENCHMARKS & PROPERTIES
+              CRYPTOGRAPHIC ALGORITHM BENCHMARKS &amp; PROPERTIES
             </span>
           </div>
 
@@ -214,53 +252,37 @@ export function renderEncryptionFundamentalsContent(topic) {
         </div>
 
         <!-- Green Callout Box: SENIOR PERSPECTIVE -->
-        <div class="bg-[#0D241E] border border-[#10B981]/40 rounded-xl p-5 flex flex-col gap-3">
+        <div class="bg-[#0D241E] border border-[#10B981]/40 rounded-xl p-5 flex flex-col gap-3 font-sans">
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-[#10B981] text-[18px]">verified</span>
             <span class="font-code text-[11px] font-bold text-[#10B981] uppercase tracking-wider">
-              SENIOR PERSPECTIVE: ENVELOPE ENCRYPTION SAVES CLOUD SCALE
+              STAFF PERSPECTIVE: ZERO-DOWNTIME KEY ROTATION WITHOUT RE-ENCRYPTING PETABYTES
             </span>
           </div>
-          <p class="font-sans text-[13px] text-slate-300 leading-relaxed">
-            In system design interviews, amateur candidates say: <em class="text-white">"We will send each uploaded 500MB video file to AWS KMS to be encrypted before saving it to S3."</em> This immediately flags a lack of production experience. AWS KMS has a strict 4 KB payload limit and charges per request; sending streaming files over the wire to an HSM introduces catastrophic latency and multi-thousand dollar AWS bills.
+          <p class="text-[13px] text-slate-300 leading-relaxed">
+            In system design interviews, when asked <em>"How do you rotate your master encryption key when storing 500 Terabytes of encrypted customer data?"</em>, naive candidates answer: <em class="text-white">"Download all 500TB, decrypt it, re-encrypt it with the new key, and write it back."</em> This causes days of database downtime and massive cloud egress costs.
           </p>
-          <div class="bg-[#081713] border border-[#10B981]/25 rounded-lg p-3 text-[12.5px] font-sans text-emerald-200/90 leading-relaxed">
-            <strong class="text-white">The Senior Pattern:</strong> Always pitch <strong>Envelope Encryption</strong>. The master key never leaves the secure boundaries of the HSM. The application requests a temporary 256-bit Data Encryption Key (DEK), encrypts the gigabyte-scale data locally in RAM using hardware-accelerated <strong>AES-256-GCM</strong>, wipes the plaintext DEK, and stores the encrypted DEK alongside the ciphertext.
+          <div class="text-[12.5px] text-emerald-200/90 bg-[#081713] p-3 rounded-lg border border-[#10B981]/25 leading-relaxed">
+            <strong class="text-white">The Envelope Encryption Solution:</strong> Your bulk data remains encrypted with its unique Data Encryption Key (DEK). To rotate keys, KMS only decrypts the <strong>32-byte encrypted DEK header</strong> using Master Key v1 and re-encrypts it using Master Key v2. You rotate 500 Terabytes of encrypted data in seconds with zero downtime and zero bulk data reads!
           </div>
         </div>
 
-        <!-- Orange Warning Box: ARCHITECTURAL PITFALL -->
-        <div class="bg-[#2A1805] border border-[#F59E0B]/40 rounded-xl p-5 flex flex-col gap-3">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#F59E0B] text-[18px]">warning</span>
-            <span class="font-code text-[11px] font-bold text-[#F59E0B] uppercase tracking-wider">
-              ARCHITECTURAL PITFALL: THE ECB PENGUIN & NON-AEAD MODES
-            </span>
-          </div>
-          <p class="font-sans text-[13px] text-slate-300 leading-relaxed">
-            Never use AES in <strong>Electronic Codebook (ECB)</strong> mode. ECB encrypts identical 16-byte blocks into identical ciphertext blocks, preserving structural patterns (the infamous "ECB Penguin" where an image's silhouette remains fully visible after encryption). Furthermore, never use unauthenticated cipher modes like <strong>AES-CBC</strong> without an HMAC, which exposes systems to devastating <strong>Padding Oracle Attacks</strong> (e.g. POODLE).
-          </p>
-          <div class="font-sans text-[12.5px] text-amber-200/90 bg-[#190E03] p-3 rounded-lg border border-[#F59E0B]/20">
-            <strong class="text-amber-100">The Mandatory Standard:</strong> Always mandate <strong>AEAD (Authenticated Encryption with Associated Data)</strong>, specifically <strong>AES-GCM</strong> or <strong>ChaCha20-Poly1305</strong>. AEAD simultaneously guarantees confidentiality (encryption) and tamper-proof authenticity (128-bit authentication tag).
-          </div>
-        </div>
-
-        <!-- Over To You Box -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 sm:p-5 flex flex-col gap-2">
-          <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider">
+        <!-- Bar: OVER TO YOU -->
+        <div class="bg-[#1E293B]/70 border border-[#334155] rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-2.5 text-[12.5px] font-sans">
+          <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-code text-[10.5px] font-bold uppercase tracking-wider shrink-0 w-fit">
             OVER TO YOU
           </span>
-          <p class="font-sans text-[13px] text-slate-300 leading-relaxed">
-            You are designing an end-to-end encrypted (E2EE) chat application like Signal for 500 million active users. How do you handle group chats with 1,000 members where members frequently go offline, without having the sender encrypt and upload 1,000 separate message ciphertexts for every single message sent?
-          </p>
+          <span class="text-slate-300 font-medium">
+            What is Perfect Forward Secrecy (PFS) and why did TLS 1.3 completely remove RSA key exchange?
+          </span>
         </div>
 
-        <!-- Interview Follow-ups: Q1 - Q4 -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-5 flex flex-col gap-4">
+        <!-- INTERVIEW FOLLOW-UPS Box -->
+        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-5 flex flex-col gap-4 font-sans">
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-[#818CF8] text-[18px]">quiz</span>
             <span class="font-code text-[11px] font-bold text-[#818CF8] uppercase tracking-wider">
-              INTERVIEW FOLLOW-UPS
+              INTERVIEW FOLLOW-UPS &amp; STAFF PROBES
             </span>
           </div>
 
@@ -269,9 +291,9 @@ export function renderEncryptionFundamentalsContent(topic) {
               <div class="flex flex-col gap-1.5 pb-3 border-b border-[#24314A]/50 last:border-0 last:pb-0">
                 <div class="flex items-start gap-2.5">
                   <span class="font-code text-[12px] font-bold text-[#818CF8] shrink-0 pt-0.5">${item.qNum}</span>
-                  <span class="text-[13.5px] font-bold text-white font-sans">${item.question}</span>
+                  <span class="text-[13.5px] font-bold text-white">${item.question}</span>
                 </div>
-                <div class="text-[13px] text-slate-300 leading-relaxed font-sans pl-6">
+                <div class="text-[13px] text-slate-300 leading-relaxed pl-6">
                   ${item.answer}
                 </div>
               </div>
@@ -280,20 +302,20 @@ export function renderEncryptionFundamentalsContent(topic) {
         </div>
 
         <!-- Dark Blue Callout Box: KEY INTERVIEW TAKEAWAY -->
-        <div class="bg-gradient-to-r from-[#1E1B4B] to-[#312E81] border border-[#4338CA] rounded-xl p-5 flex flex-col gap-2 shadow-lg shadow-indigo-950/40">
+        <div class="bg-gradient-to-r from-[#1E1B4B] to-[#312E81] border border-[#4338CA] rounded-xl p-5 flex flex-col gap-2 shadow-lg shadow-indigo-950/40 font-sans">
           <span class="font-code text-[11px] font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[15px]">key</span>
             KEY INTERVIEW TAKEAWAY
           </span>
-          <p class="text-[13.5px] font-sans font-medium text-white leading-relaxed">
-            Symmetric encryption (AES-256-GCM) secures bulk data at rest and high-throughput network channels with hardware acceleration; asymmetric encryption (ECC / RSA) solves key exchange and digital identity. In system design, always propose a Hybrid Cryptosystem (TLS 1.3) for data in transit and KMS Envelope Encryption (KEK + DEK) for data at rest, strictly using AEAD modes.
+          <p class="text-[13.5px] font-medium text-white leading-relaxed">
+            Use symmetric AES-256-GCM for high-throughput bulk data encryption; use asymmetric ECC (ECDSA / Ed25519) for TLS handshakes, signatures, and key exchange. In production architectures, implement <strong>Envelope Encryption</strong> with AWS KMS to protect multi-terabyte datastores without bottlenecking cloud network interfaces and to enable instantaneous zero-downtime key rotation.
           </p>
         </div>
 
         <!-- Page 46 Footer -->
         <div class="pt-4 border-t border-[#24314A]/70 flex items-center justify-between text-[11px] font-code text-slate-500">
           <span>The Modern System Design Interview Guide</span>
-          <span>Page 46</span>
+          <span>Pages 44–46 · Section 8.7</span>
         </div>
 
       </div>

@@ -139,3 +139,288 @@
   font-weight: 600;
   margin-bottom: 0.375rem;
 }
+
+/* ==========================================================================
+   Virtual Memory Architecture & Diagram Canvas (Always White Background)
+   Enforces clean, high-contrast pure white canvas across both themes
+   ========================================================================== */
+.os-diagram-canvas,
+html.dark .os-diagram-canvas,
+html:not(.dark) .os-diagram-canvas {
+  width: 100%;
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Image frame container & image elements - ALWAYS pure white across all themes */
+.os-diagram-img-frame,
+.os-diagram-canvas .os-diagram-img-frame,
+html.dark .os-diagram-img-frame,
+html.dark .os-diagram-canvas .os-diagram-img-frame,
+html:not(.dark) .os-diagram-canvas .os-diagram-img-frame {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+
+.os-diagram-img-frame img,
+.os-diagram-canvas img,
+html.dark .os-diagram-img-frame img,
+html.dark .os-diagram-canvas img {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+}
+
+/* Top OS Header Banner */
+html.dark .os-diagram-banner {
+  background: linear-gradient(180deg, #131B2E 0%, #0F172A 100%);
+  border: 1px solid #2A3854;
+  color: #F8FAFC;
+}
+html:not(.dark) .os-diagram-banner {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 100%);
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Outer User Space Frame */
+html.dark .os-userspace-frame {
+  background-color: rgba(15, 23, 42, 0.6);
+  border: 1.5px solid #24314A;
+}
+html:not(.dark) .os-userspace-frame {
+  background-color: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+/* Process Box */
+html.dark .os-process-card {
+  background-color: #090E1A;
+  border: 1px solid #24314A;
+}
+html:not(.dark) .os-process-card {
+  background-color: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Dashed Address Space Container */
+html.dark .os-dashed-space {
+  border: 1.5px dashed #38BDF8;
+  background-color: rgba(56, 189, 248, 0.03);
+}
+html:not(.dark) .os-dashed-space {
+  border: 1.5px dashed #0284C7;
+  background-color: #F8FAFC;
+}
+
+/* 1. Stack (Coral / Rose) */
+html.dark .os-seg-stack {
+  background-color: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: #FCA5A5;
+}
+html:not(.dark) .os-seg-stack {
+  background-color: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  color: #991B1B;
+}
+
+/* 2. Heap (Amber / Warm Yellow) */
+html.dark .os-seg-heap {
+  background-color: rgba(245, 158, 11, 0.16);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #FDE68A;
+}
+html:not(.dark) .os-seg-heap {
+  background-color: #FEF3C7;
+  border: 1px solid #FCD34D;
+  color: #92400E;
+}
+
+/* 3. Data Segment (Soft Sky Blue) */
+html.dark .os-seg-data {
+  background-color: rgba(56, 189, 248, 0.16);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #BAE6FD;
+}
+html:not(.dark) .os-seg-data {
+  background-color: #E0F2FE;
+  border: 1px solid #7DD3FC;
+  color: #0369A1;
+}
+
+/* 4. Code Segment (Text) (Soft Mint Green) */
+html.dark .os-seg-code {
+  background-color: rgba(16, 185, 129, 0.16);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  color: #A7F3D0;
+}
+html:not(.dark) .os-seg-code {
+  background-color: #DCFCE7;
+  border: 1px solid #86EFAC;
+  color: #166534;
+}
+
+/* User Space Pill/Banner */
+html.dark .os-userspace-pill {
+  background-color: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #6EE7B7;
+}
+html:not(.dark) .os-userspace-pill {
+  background-color: #E8F5E9;
+  border: 1px solid #A5D6A7;
+  color: #1B5E20;
+}
+
+/* Kernel Space Container */
+html.dark .os-kernel-container {
+  background-color: rgba(99, 102, 241, 0.06);
+  border: 1.5px solid rgba(99, 102, 241, 0.4);
+}
+html:not(.dark) .os-kernel-container {
+  background-color: #FAF5FF;
+  border: 1.5px solid #C7D2FE;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+/* Kernel Modules */
+html.dark .os-kernel-card-proc {
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #FEF3C7;
+}
+html:not(.dark) .os-kernel-card-proc {
+  background-color: #FEF9C3;
+  border: 1px solid #FDE047;
+  color: #854D0E;
+}
+
+html.dark .os-kernel-card-fs {
+  background-color: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #E0F2FE;
+}
+html:not(.dark) .os-kernel-card-fs {
+  background-color: #E0F2FE;
+  border: 1px solid #BAE6FD;
+  color: #075985;
+}
+
+html.dark .os-kernel-card-ipc {
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #DCFCE7;
+}
+html:not(.dark) .os-kernel-card-ipc {
+  background-color: #DCFCE7;
+  border: 1px solid #BBF7D0;
+  color: #166534;
+}
+
+html.dark .os-kernel-card-net {
+  background-color: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: #FFE4E6;
+}
+html:not(.dark) .os-kernel-card-net {
+  background-color: #FFE4E6;
+  border: 1px solid #FECDD3;
+  color: #9F1239;
+}
+
+/* Hardware Layer Container */
+html.dark .os-hw-container {
+  background-color: #0B101D;
+  border: 1.5px solid #24314A;
+}
+html:not(.dark) .os-hw-container {
+  background-color: #F1F5F9;
+  border: 1.5px solid #CBD5E1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+/* Hardware Components */
+html.dark .os-hw-ram {
+  background-color: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  color: #DDD6FE;
+}
+html:not(.dark) .os-hw-ram {
+  background-color: #EDE9FE;
+  border: 1px solid #DDD6FE;
+  color: #5B21B6;
+}
+
+html.dark .os-hw-cpu {
+  background-color: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #A7F3D0;
+}
+html:not(.dark) .os-hw-cpu {
+  background-color: #DCFCE7;
+  border: 1px solid #BBF7D0;
+  color: #166534;
+}
+
+html.dark .os-hw-dev {
+  background-color: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #FDE68A;
+}
+html:not(.dark) .os-hw-dev {
+  background-color: #FEF3C7;
+  border: 1px solid #FDE68A;
+  color: #92400E;
+}
+
+/* Device Sub-pills */
+html.dark .os-dev-subpill {
+  background-color: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #E2E8F0;
+}
+html:not(.dark) .os-dev-subpill {
+  background-color: #FFFFFF;
+  border: 1px solid #FCD34D;
+  color: #1E293B;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* ==========================================================================
+   HLD Architecture Workspace Styles
+   ========================================================================== */
+.hld-pseudo-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  border-radius: 0 !important;
+  background-color: var(--color-surface, #0B1120) !important;
+  overflow-y: auto !important;
+}
+
+.hld-svg-node:focus-visible {
+  outline: none;
+}
+.hld-svg-node:hover .hld-node-rect {
+  stroke: #6366F1 !important;
+  stroke-width: 2.2px !important;
+}
+.hld-svg-node.selected .hld-node-rect {
+  stroke: #06B6D4 !important;
+  stroke-width: 3px !important;
+}
+.hld-svg-node.flow-active .hld-node-rect {
+  stroke: #38BDF8 !important;
+  stroke-width: 2.8px !important;
+}
+

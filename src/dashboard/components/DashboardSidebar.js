@@ -30,20 +30,15 @@ export function renderDashboardSidebar(activeTab = 'system-design-roadmap', isCo
               <span>6-Week SysDesign</span>
               <span class="ml-auto text-[9px] font-code px-1 py-0.2 rounded bg-[#F0F9FF] text-[#0284C7] dark:bg-cyan-500/20 dark:text-cyan-300 font-semibold border border-[#BAE6FD] dark:border-transparent">6W</span>
             </a>
-            <a href="#/dashboard" data-nav-target="lld-studio" class="sidebar-nav-item flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-all ${activeTab === 'lld-studio' ? 'bg-[#F5F3FF] border border-[#DDD6FE] text-[#4338CA] dark:bg-[#1E293B] dark:border-white/10 dark:text-[#F8FAFC] font-medium shadow-xs' : 'text-slate-600 dark:text-[#94A3B8] hover:bg-slate-100 dark:hover:bg-[#1E293B] hover:text-slate-900 dark:hover:text-[#F8FAFC]'}">
-              <span class="material-symbols-outlined text-[16px] ${activeTab === 'lld-studio' ? 'text-[#4F46E5] dark:text-[#38BDF8]' : 'text-slate-400 dark:text-[#64748B]'}">architecture</span>
-              <span>Machine Coding (LLD)</span>
-              <span class="ml-auto text-[9px] font-code px-1 py-0.2 rounded bg-[#F5F3FF] text-[#7C3AED] dark:bg-purple-500/20 dark:text-purple-300 font-semibold border border-[#DDD6FE] dark:border-transparent">LLD</span>
-            </a>
-            <a href="#/dashboard" data-nav-target="concepts-distinctions" class="sidebar-nav-item flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-all ${activeTab === 'concepts-distinctions' ? 'bg-[#F5F3FF] border border-[#DDD6FE] text-[#4338CA] dark:bg-[#1E293B] dark:border-white/10 dark:text-[#F8FAFC] font-medium shadow-xs' : 'text-slate-600 dark:text-[#94A3B8] hover:bg-slate-100 dark:hover:bg-[#1E293B] hover:text-slate-900 dark:hover:text-[#F8FAFC]'}">
-              <span class="material-symbols-outlined text-[16px] ${activeTab === 'concepts-distinctions' ? 'text-[#4F46E5] dark:text-[#38BDF8]' : 'text-slate-400 dark:text-[#64748B]'}">psychology</span>
-              <span>180+ Distinctions</span>
-              <span class="ml-auto text-[9px] font-code px-1 py-0.2 rounded bg-[#FFFBEB] text-[#D97706] dark:bg-amber-500/20 dark:text-amber-300 font-semibold border border-[#FDE68A] dark:border-transparent">CORE</span>
-            </a>
             <a href="#/dashboard" data-nav-target="dsa-tracker" class="sidebar-nav-item flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-all ${activeTab === 'dsa-tracker' ? 'bg-[#F5F3FF] border border-[#DDD6FE] text-[#4338CA] dark:bg-[#1E293B] dark:border-white/10 dark:text-[#F8FAFC] font-medium shadow-xs' : 'text-slate-600 dark:text-[#94A3B8] hover:bg-slate-100 dark:hover:bg-[#1E293B] hover:text-slate-900 dark:hover:text-[#F8FAFC]'}">
               <span class="material-symbols-outlined text-[16px] ${activeTab === 'dsa-tracker' ? 'text-[#4F46E5] dark:text-[#38BDF8]' : 'text-slate-400 dark:text-[#64748B]'}">terminal</span>
               <span>DSA Tracker</span>
               <span class="ml-auto text-[9px] font-code px-1 py-0.2 rounded bg-[#F5F3FF] text-[#7C3AED] dark:bg-indigo-500/20 dark:text-indigo-300 font-semibold border border-[#DDD6FE] dark:border-transparent">100</span>
+            </a>
+            <a href="#/dashboard" data-nav-target="whiteboard" class="sidebar-nav-item flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-all ${activeTab === 'whiteboard' ? 'bg-[#F5F3FF] border border-[#DDD6FE] text-[#4338CA] dark:bg-[#1E293B] dark:border-white/10 dark:text-[#F8FAFC] font-medium shadow-xs' : 'text-slate-600 dark:text-[#94A3B8] hover:bg-slate-100 dark:hover:bg-[#1E293B] hover:text-slate-900 dark:hover:text-[#F8FAFC]'}">
+              <span class="material-symbols-outlined text-[16px] ${activeTab === 'whiteboard' ? 'text-[#4F46E5] dark:text-[#38BDF8]' : 'text-slate-400 dark:text-[#64748B]'}">draw</span>
+              <span>Design Whiteboard</span>
+              <span class="ml-auto text-[9px] font-code px-1 py-0.2 rounded bg-[#ECFDF5] text-[#059669] dark:bg-emerald-500/20 dark:text-emerald-300 font-semibold border border-[#A7F3D0] dark:border-transparent">LIVE</span>
             </a>
             <a href="#/blog" class="sidebar-nav-item flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-all text-slate-600 dark:text-[#94A3B8] hover:bg-slate-100 dark:hover:bg-[#1E293B] hover:text-slate-900 dark:hover:text-[#F8FAFC]">
               <span class="material-symbols-outlined text-[16px] text-slate-400 dark:text-[#64748B]">article</span>
@@ -57,14 +52,6 @@ export function renderDashboardSidebar(activeTab = 'system-design-roadmap', isCo
         <div class="flex flex-col gap-1">
           <span class="px-2 font-code text-[10px] uppercase tracking-wider text-[#64748B] font-semibold">Collections</span>
           <nav class="flex flex-col gap-0.5">
-            <button id="open-cheatsheets-nav-btn" class="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[#94A3B8] hover:bg-[#141C2E] hover:text-[#F8FAFC] transition-colors w-full text-left">
-              <span class="material-symbols-outlined text-[16px] text-[#64748B]">folder_open</span>
-              <span>Pattern Library</span>
-            </button>
-            <button id="open-mock-notes-nav-btn" class="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[#94A3B8] hover:bg-[#141C2E] hover:text-[#F8FAFC] transition-colors w-full text-left">
-              <span class="material-symbols-outlined text-[16px] text-[#64748B]">description</span>
-              <span>Mock Notes</span>
-            </button>
             <a href="#pdf-store-container" id="scroll-to-cheatsheets-btn" class="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[#94A3B8] hover:bg-[#141C2E] hover:text-[#F8FAFC] transition-colors w-full text-left">
               <span class="material-symbols-outlined text-[16px] text-[#F59E0B]">auto_stories</span>
               <span>Cheat Sheets &amp; Guides</span>

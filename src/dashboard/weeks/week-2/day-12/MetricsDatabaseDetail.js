@@ -63,9 +63,9 @@ export function renderMetricsDatabaseContent(topic) {
       <strong class="text-indigo-400">2. XOR Floating-Point Value Compression:</strong>
       <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
         <li>Successive metric values change slowly (e.g. CPU at 42.1% then 42.2%).</li>
-        <li>The current 64-bit IEEE float is bitwise XORed with the previous value: $X = V_i \\oplus V_{i-1}$.</li>
+        <li>The current 64-bit IEEE float is bitwise XORed with the previous value: $X = V_i \oplus V_{i-1}$.</li>
         <li>If the value is unchanged, $X = 0$, stored as a <strong>single bit '0'</strong>.</li>
-        <li>If $X \\neq 0$, Gorilla stores only the count of leading and trailing zeros and the meaningful middle bits, compressing 64-bit floats to an average of <strong>1.37 bytes</strong>.</li>
+        <li>If $X \neq 0$, Gorilla stores only the count of leading and trailing zeros and the meaningful middle bits, compressing 64-bit floats to an average of <strong>1.37 bytes</strong>.</li>
       </ul>`
     },
     {
@@ -117,26 +117,34 @@ export function renderMetricsDatabaseContent(topic) {
               4.11 Choosing a Database for a Metrics Collecting Service
             </h2>
           </div>
+          <p class="text-slate-400 text-[13px] font-sans">
+            Why telemetry data demands append-only time-series engines, Gorilla bitwise compression, and strict label cardinality limits.
+          </p>
         </div>
 
-        <!-- Overview Text -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 sm:p-5 flex flex-col gap-3 font-sans text-[13px] leading-relaxed">
-          <p class="text-slate-300">
-            Operational metrics collection represents an extreme, highly specialized data workload: traffic is <strong class="text-emerald-400">99%+ append-only writes</strong> ordered strictly by timestamp, with zero individual row updates and deletes executed exclusively as bulk retention window drops. Purpose-built <strong class="text-indigo-400">Time-Series Databases (TSDBs)</strong> discard traditional relational constraints in exchange for blistering write throughput, time-partitioned chunking, and specialized bitwise compression.
+        <!-- Everyday Mental Model Card -->
+        <div class="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/50 border border-indigo-500/30 rounded-xl p-5 flex flex-col gap-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-400 text-[20px]">lightbulb</span>
+            <span class="font-code text-[11px] font-bold text-indigo-300 uppercase tracking-wider">
+              EVERYDAY MENTAL MODEL: THE HOSPITAL PATIENT FILE VS. THE HEART MONITOR
+            </span>
+          </div>
+          <p class="text-slate-300 text-[13px] leading-relaxed font-sans">
+            Why can't you just use standard MySQL or PostgreSQL for telemetry metrics?
           </p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-            <div class="bg-[#0F1626] border border-emerald-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-emerald-300 uppercase">1. Append-Only Ingestion</span>
-              <span class="text-[12px] text-slate-300">Massive ingestion rates (100k–1M+ writes/sec). Zero in-place row mutations. Zero random disk seeking.</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-indigo-500/20 flex flex-col gap-1.5">
+              <strong class="text-indigo-300 text-[12px] font-code">The Relational Database: Patient Medical Binder</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                A thick binder with address, insurance, prescriptions, and surgeon notes. Complex, indexed, and cross-referenced. You would never open this heavy binder 1,000 times a second just to write down a single heartbeat number!
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-cyan-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-cyan-300 uppercase">2. Time-Window Aggregates</span>
-              <span class="text-[12px] text-slate-300">Queries rarely fetch single rows; they aggregate over intervals (<code>avg</code>, <code>p99</code>, <code>sum</code> over 5m / 1h windows).</span>
-            </div>
-            <div class="bg-[#0F1626] border border-indigo-500/30 rounded-lg p-3.5 flex flex-col gap-1.5">
-              <span class="font-code text-[11px] font-bold text-indigo-300 uppercase">3. Gorilla Compression</span>
-              <span class="text-[12px] text-slate-300">Delta-of-delta timestamps (1–2 bits) + XOR floating-point encoding reduces sample size to under 1.5 bytes.</span>
+            <div class="bg-[#090D16] p-3.5 rounded-lg border border-emerald-500/20 flex flex-col gap-1.5">
+              <strong class="text-emerald-300 text-[12px] font-code">The TSDB: Continuous EKG Strip</strong>
+              <p class="text-[12px] text-slate-300 leading-relaxed font-sans">
+                A continuous roll of paper spitting out timestamps and electrical pulses. There are no row edits or complex joins—just continuous, append-only numbers. Because heart rates change slowly, Gorilla compression records identical values in a single bit ('0')!
+              </p>
             </div>
           </div>
         </div>

@@ -8,64 +8,64 @@ export function renderVirtualizationVsContainersContent(topic) {
   const comparisonRows = [
     {
       dimension: "Abstraction Layer",
-      vms: "Hardware-level abstraction (Hypervisor emulates CPU, RAM, disk, NIC)",
-      containers: "Operating system-level abstraction (Shared host kernel via namespaces/cgroups)",
+      vms: "Hardware level (Hypervisor simulates CPU, RAM, disk, and network card)",
+      containers: "Operating System level (Shares the host Linux kernel via namespaces & cgroups)",
       vmsHighlight: "text-slate-300 font-sans",
       containersHighlight: "text-emerald-300 font-semibold font-sans"
     },
     {
       dimension: "Guest OS Requirement",
-      vms: "Mandatory. Each VM boots a full, independent OS kernel with distinct drivers",
-      containers: "None. Containers bundle user space binaries, libraries, and application code only",
+      vms: "Mandatory. Each VM boots its own complete OS kernel with full system drivers",
+      containers: "None. Containers package only application code, binaries, and libraries",
       vmsHighlight: "text-amber-400 font-bold font-sans",
       containersHighlight: "text-emerald-400 font-bold font-sans"
     },
     {
-      dimension: "Security Isolation Boundary",
-      vms: "Hardware-grade (CPU ring -1 / hypervisor VT-x, VT-d hardware enforcement)",
-      containers: "Weak to moderate (Software kernel config boundary; shared kernel attack surface)",
+      dimension: "Security Boundary",
+      vms: "Hardware-grade (CPU ring -1 / hypervisor VT-x hardware isolation)",
+      containers: "Software configuration (Shared kernel — container escape can compromise host)",
       vmsHighlight: "text-emerald-400 font-semibold font-sans",
       containersHighlight: "text-amber-400 font-semibold font-sans"
     },
     {
       dimension: "Startup Latency",
-      vms: "Minutes to tens of seconds (Full BIOS/UEFI boot, kernel init, systemd daemons)",
-      containers: "Milliseconds to ~1 second (Instantaneous fork/exec of isolated native process)",
+      vms: "Minutes to 30+ seconds (Full BIOS boot, kernel initialization, background daemons)",
+      containers: "Milliseconds to ~1 second (Instantaneous fork/exec of an isolated native process)",
       vmsHighlight: "text-slate-400 font-sans",
       containersHighlight: "text-emerald-300 font-semibold font-sans"
     },
     {
       dimension: "Image Disk Footprint",
-      vms: "Gigabytes to tens of GBs (Full OS kernel, system packages, swap file, logs)",
-      containers: "Megabytes (Distroless / Alpine images can be as small as 5–20 MB)",
+      vms: "Gigabytes to tens of GBs (Full OS files, system packages, swap file, logs)",
+      containers: "Megabytes (Minimal Alpine or Distroless images are only 5–20 MB)",
       vmsHighlight: "text-slate-400 font-sans",
       containersHighlight: "text-cyan-300 font-semibold font-sans"
     },
     {
-      dimension: "Resource Overhead & Hypervisor Tax",
-      vms: "5–15% CPU & RAM overhead (Virtual MMU emulation, hypervisor scheduling, duplicate OS)",
-      containers: "Near-zero overhead (Executes directly as native Linux processes on bare metal)",
+      dimension: "Resource Overhead (Tax)",
+      vms: "5–15% CPU & RAM overhead (Virtual MMU emulation, hypervisor scheduling overhead)",
+      containers: "Near-zero overhead (Executes directly as native Linux processes on physical hardware)",
       vmsHighlight: "text-slate-400 font-sans",
       containersHighlight: "text-emerald-300 font-semibold font-sans"
     },
     {
       dimension: "Host Packing Density",
-      vms: "Low (Dozens of VMs per physical host before memory exhaustion)",
-      containers: "High (Hundreds to thousands of containers multiplexed onto a single server)",
+      vms: "Low (Dozens of VMs per physical host before memory runs out)",
+      containers: "High (Hundreds to thousands of containers can run on a single physical host)",
       vmsHighlight: "text-slate-400 font-sans",
       containersHighlight: "text-emerald-300 font-semibold font-sans"
     },
     {
-      dimension: "Multi-Tenancy on Shared Host",
-      vms: "Safe for untrusted tenants (Hard hardware boundary protects neighbors from noisy/malicious code)",
-      containers: "Unsafe for untrusted tenants (Risk of noisy-neighbor resource starvation & container escapes)",
+      dimension: "Multi-Tenancy Safety",
+      vms: "Safe for untrusted tenants (Hard hardware barrier protects neighboring tenants)",
+      containers: "Unsafe for untrusted tenants (Risk of noisy-neighbor slowdowns & kernel exploits)",
       vmsHighlight: "text-emerald-300 font-semibold font-sans",
       containersHighlight: "text-rose-400 font-semibold font-sans"
     },
     {
-      dimension: "Kernel Heterogeneity",
-      vms: "High. Run Windows, Linux, and FreeBSD side-by-side on the same physical hardware",
-      containers: "Strictly homogeneous. All containers must execute against the host's Linux kernel ABI",
+      dimension: "OS & Kernel Diversity",
+      vms: "High. Run Linux, Windows Server, and FreeBSD side-by-side on the same physical host",
+      containers: "Same OS family. All containers must match the host's Linux kernel ABI",
       vmsHighlight: "text-cyan-300 font-semibold font-sans",
       containersHighlight: "text-slate-400 font-sans"
     }
@@ -74,49 +74,49 @@ export function renderVirtualizationVsContainersContent(topic) {
   const interviewFollowUps = [
     {
       qNum: "Q1",
-      question: "Can a container escape to the host operating system, and how do production clusters prevent it?",
-      answer: `<strong>Yes, container escapes happen regularly.</strong> A container is fundamentally a regular Linux process running with namespace and cgroup restrictions. If an attacker exploits a kernel privilege escalation vulnerability (e.g., Dirty COW, CVE-2022-0847 Dirty Pipe, CVE-2024-1086), they gain root privileges across the entire host node.
+      question: "Can a container escape to the host operating system, and how do production systems prevent it?",
+      answer: `<strong>Yes, container escapes happen in production.</strong> A container is simply a normal Linux process running with namespace and cgroup boundaries. If an attacker exploits a Linux kernel vulnerability (like Dirty COW, Dirty Pipe, or use-after-free bugs), they can gain full root access to the underlying host server.
       <br/><br/>
-      Furthermore, running a container with <code>--privileged</code> or mounting the host Docker socket (<code>/var/run/docker.sock</code>) gives immediate, trivial host root access. Production defense-in-depth requires:
+      Furthermore, running a container with <code>--privileged</code> or mounting the host Docker socket (<code>/var/run/docker.sock</code>) gives immediate root access to the host. Production systems use <strong>defense-in-depth</strong>:
       <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-300">
-        <li><strong>Dropping Linux capabilities:</strong> Drop <code>CAP_SYS_ADMIN</code>, <code>CAP_NET_ADMIN</code>, <code>CAP_PTRACE</code> via Kubernetes SecurityContext.</li>
-        <li><strong>Enforcing Seccomp & LSM profiles:</strong> Apply strict Seccomp filters to block dangerous syscalls, paired with AppArmor or SELinux policies.</li>
-        <li><strong>Rootless containers & User Namespaces:</strong> Map root inside the container (UID 0) to an unprivileged high UID (e.g. UID 100001) on the host.</li>
-        <li><strong>MicroVM sandboxes:</strong> For multi-tenant untrusted code execution, never rely on raw containers; mandate hardware-isolated microVMs (AWS Firecracker, Kata Containers, gVisor).</li>
+        <li><strong>Drop Linux capabilities:</strong> Strip away dangerous capabilities like <code>CAP_SYS_ADMIN</code>, <code>CAP_NET_ADMIN</code>, and <code>CAP_PTRACE</code>.</li>
+        <li><strong>Seccomp & LSM:</strong> Use Seccomp filters to block risky system calls, combined with AppArmor or SELinux profiles.</li>
+        <li><strong>Rootless containers & User Namespaces:</strong> Map root inside the container (UID 0) to a completely unprivileged high UID (e.g., UID 100001) on the host.</li>
+        <li><strong>MicroVM sandboxes:</strong> When running untrusted user code (e.g., online code runners, cloud IDEs, serverless functions), do not use raw containers — use hardware-isolated microVMs like <strong>AWS Firecracker</strong> or sandboxed runtimes like <strong>Google gVisor</strong>.</li>
       </ul>`
     },
     {
       qNum: "Q2",
-      question: "What is container orchestration, and what exact distributed system problems does Kubernetes solve?",
-      answer: `While a container runtime (containerd, Docker) manages a single container on a single host, <strong>orchestration solves the distributed fleet problem</strong> across thousands of bare-metal or cloud nodes:
+      question: "What is container orchestration, and what distributed system problems does Kubernetes solve?",
+      answer: `While a container runtime (like Docker or containerd) runs a container on a <em>single server</em>, <strong>Kubernetes orchestrates thousands of containers across a cluster of servers</strong>:
       <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-300">
-        <li><strong>Bin-Packing & Scheduling:</strong> The Kubernetes scheduler evaluates CPU/memory requests, node affinity, taints, and tolerations to place pods efficiently across a cluster.</li>
-        <li><strong>Self-Healing & Liveness:</strong> Automatically restarts crashed containers, reschedules pods when an entire hardware worker node dies, and halts traffic to unhealthy pods via readiness probes.</li>
-        <li><strong>Service Discovery & Internal Load Balancing:</strong> Assigns stable virtual IPs (ClusterIP) and DNS names via CoreDNS and kube-proxy iptables/IPVS rules, routing around dead pods.</li>
-        <li><strong>Declarative Rolling Updates & Rollbacks:</strong> Executes zero-downtime canary or rolling deployments, monitoring error rates and halting progress automatically on failure.</li>
-        <li><strong>Secret & Config Decoupling:</strong> Mounts dynamic configurations and encrypted credentials into container filesystems without baking them into immutable container images.</li>
+        <li><strong>Intelligent Scheduling (Bin-Packing):</strong> Finds the best physical node for each container based on CPU/RAM requests, avoiding wasted hardware.</li>
+        <li><strong>Self-Healing:</strong> If a container crashes, Kubernetes restarts it automatically. If an entire physical node dies, it re-creates those pods on healthy nodes.</li>
+        <li><strong>Internal Service Discovery & Load Balancing:</strong> Assigns a stable virtual IP (ClusterIP) and DNS name to groups of pods so services can communicate reliably even as individual pod IPs change.</li>
+        <li><strong>Zero-Downtime Rolling Updates:</strong> Gradually replaces old versions with new ones, checking health probes before routing production traffic.</li>
+        <li><strong>Auto-Scaling (HPA & VPA):</strong> Adds more pod replicas when CPU, memory, or custom request metrics surge.</li>
       </ul>`
     },
     {
       qNum: "Q3",
-      question: "What is the exact internal difference between an OCI container image, an image layer, and a running container?",
-      answer: `The distinction lies in the union filesystem architecture (OverlayFS):
+      question: "What is the exact internal difference between a container image, an image layer, and a running container?",
+      answer: `The secret is the <strong>Union Filesystem (OverlayFS)</strong>:
       <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-300">
-        <li><strong>Image Layer:</strong> An immutable, content-addressable tarball created by a Dockerfile instruction (e.g. <code>RUN apt-get update</code>). Layers store only the delta (added, modified, or deleted files marked with whiteout files) relative to parent layers.</li>
-        <li><strong>Container Image:</strong> An immutable manifest referencing an ordered stack of read-only image layers plus a JSON configuration file defining environment variables, entrypoints, and working directories.</li>
-        <li><strong>Running Container:</strong> The container engine stacks the read-only image layers as <code>lowerdir</code> and adds a thin, ephemeral <strong>read-write layer</strong> on top (<code>upperdir</code>). OverlayFS merges them into a unified mount (<code>mergeddir</code>).
-        <br/>When a container writes to an existing file, OverlayFS performs a <strong>Copy-on-Write (CoW)</strong>: it copies the file from the lower read-only layer into the upper writeable layer before modifying it. When the container terminates, only the top ephemeral writeable layer is discarded; the base image layers remain cached and shared across other running containers on the host.</li>
+        <li><strong>Image Layer:</strong> An immutable, read-only tarball created by a Dockerfile command (e.g. <code>RUN apt-get install</code>). Each layer only stores the difference (delta) from the previous layer.</li>
+        <li><strong>Container Image:</strong> A JSON manifest file pointing to an ordered stack of these read-only layers, plus metadata like environment variables and default command.</li>
+        <li><strong>Running Container:</strong> The container engine stacks all the read-only layers (called <code>lowerdir</code>) and adds a single, thin <strong>read-write layer on top</strong> (called <code>upperdir</code>).
+        <br/>When the application modifies an existing file, OverlayFS copies the file from the lower read-only layer into the upper writeable layer before changing it (called <strong>Copy-on-Write</strong>). When the container is destroyed, only that top thin layer is deleted; the base image layers stay cached on disk for other containers to reuse.</li>
       </ul>`
     },
     {
       qNum: "Q4",
-      question: "If containers share the host operating system kernel, how can you run an Ubuntu or Debian container on an Arch Linux or Amazon Linux host?",
-      answer: `Because operating systems consist of two distinct architectural layers: <strong>User Space</strong> and <strong>Kernel Space</strong>:
+      question: "If containers share the host kernel, how can you run an Ubuntu container on an Amazon Linux or Red Hat host?",
+      answer: `Because operating systems have two distinct parts: <strong>User Space</strong> and <strong>Kernel Space</strong>:
       <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-300">
-        <li><strong>User Space:</strong> Includes user binaries, package managers (<code>apt</code>, <code>pacman</code>, <code>yum</code>), the C standard library (glibc, musl), shells, and environment configurations.</li>
-        <li><strong>Kernel Space:</strong> The monolithic Linux kernel managing CPU scheduling, page tables, memory management, and hardware device drivers via the stable Linux System Call ABI (Application Binary Interface).</li>
+        <li><strong>User Space:</strong> Includes command-line utilities, package managers (<code>apt</code>, <code>yum</code>, <code>pacman</code>), libraries (glibc), and application code.</li>
+        <li><strong>Kernel Space:</strong> The core Linux kernel that directly controls CPU scheduling, memory page tables, and hardware drivers via the standard <strong>Linux System Call Interface (syscall ABI)</strong>.</li>
       </ul>
-      A container bundles <em>only user space</em>. An Ubuntu container simply ships Ubuntu's <code>/bin/bash</code>, <code>apt</code>, and Ubuntu-compiled shared libraries. When an Ubuntu binary executes on an Arch Linux host, its glibc issues standard Linux syscalls (e.g. <code>sys_openat</code>, <code>sys_read</code>, <code>sys_clone</code>) directly to the host's Arch kernel. As long as the underlying CPU architecture matches (e.g. x86_64) and the host kernel satisfies the minimum syscall requirements of the container's glibc, any Linux distribution container runs seamlessly on any Linux host.`
+      A container packages <em>only the user space</em>. An Ubuntu container simply contains Ubuntu's version of <code>bash</code>, <code>apt</code>, and libraries. When an application inside that container makes a system call (like reading a file or opening a network socket), that request goes directly to the host machine's Linux kernel. As long as the CPU architecture matches (e.g., x86_64) and the host kernel supports those standard system calls, any Linux distribution can run on any Linux host.`
     }
   ];
 
@@ -141,78 +141,99 @@ export function renderVirtualizationVsContainersContent(topic) {
           </p>
         </div>
 
-        <!-- DEFINITIONS Box -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-5 flex flex-col gap-2.5">
+        <!-- DEFINITIONS & MENTAL MODEL Box -->
+        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-5 flex flex-col gap-3">
           <span class="font-code text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-            FORMAL DEFINITIONS & CORE PHILOSOPHY
+            THE SIMPLE MENTAL MODEL: HOUSES VS. APARTMENTS
           </span>
-          <div class="flex flex-col gap-2.5 text-[13px] text-slate-300 leading-relaxed font-sans">
-            <p>
-              <strong class="text-white">Virtualization:</strong> <em>"Virtualization is a technology that allows you to create multiple simulated environments or dedicated resources from a single, physical hardware system"</em> [1]. A hypervisor intercepts machine instructions and simulates virtual hardware devices, enabling multiple full operating systems to execute concurrently.
-            </p>
-            <p>
-              <strong class="text-white">Containerization:</strong> <em>"Containerization is the packaging together of software code with all its necessary components like libraries, frameworks, and other dependencies so that they are isolated in their own container"</em> [2]. Containers do not emulate hardware; they execute directly as native processes multiplexed on the host OS kernel using kernel isolation primitives.
-            </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px] text-slate-300 leading-relaxed font-sans">
+            <div class="bg-[#0A0E1A] p-4 rounded-lg border border-[#24314A]">
+              <strong class="text-cyan-300 flex items-center gap-1.5 mb-1.5">
+                <span class="material-symbols-outlined text-[17px]">home</span>
+                Virtual Machine = Standalone House
+              </strong>
+              <p>
+                A VM is like building a whole standalone house on a plot of land. It has its own private foundation, plumbing, and roof (a complete guest OS with its own kernel, device drivers, and background services). <strong>Complete isolation and privacy</strong>, but it takes minutes to build and consumes gigabytes of space.
+              </p>
+            </div>
+            <div class="bg-[#0A0E1A] p-4 rounded-lg border border-[#24314A]">
+              <strong class="text-emerald-300 flex items-center gap-1.5 mb-1.5">
+                <span class="material-symbols-outlined text-[17px]">apartment</span>
+                Container = High-Rise Apartment
+              </strong>
+              <p>
+                A container is like an apartment inside a shared residential tower. You have your own private locked door and furniture (application code, dependencies, environment), but every unit <strong>shares the same structural foundation and water pipes (the host OS kernel)</strong>. Extremely lightweight and boots in milliseconds, but a break in the main foundation affects everyone.
+              </p>
+            </div>
           </div>
         </div>
 
-        <!-- ARCHITECTURAL DIFFERENCE DIAGRAM (ASCII Art + Stack Comparison) -->
-        <div class="bg-[#0A0E1A] border border-[#24314A] rounded-xl p-5 sm:p-6 flex flex-col gap-4 font-mono text-[12px]">
-          <div class="flex items-center justify-between pb-2 border-b border-[#24314A]/60">
-            <span class="text-[11px] font-code font-bold tracking-wider text-cyan-400 uppercase flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-              ARCHITECTURAL DIFFERENCE: HYPERVISOR VS. CONTAINER RUNTIME
-            </span>
-            <span class="text-[11px] font-code text-slate-500">Hardware Emulation vs. Kernel Sharing</span>
-          </div>
+        <!-- WHY THIS MATTERS IN SYSTEM DESIGN INTERVIEWS -->
+        <div class="bg-indigo-950/30 border border-indigo-500/40 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+          <span class="px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-code text-[10.5px] font-bold uppercase tracking-wider shrink-0 w-fit">
+            INTERVIEW SIGNAL
+          </span>
+          <p class="text-[12.5px] text-indigo-200/90 leading-relaxed font-sans">
+            <strong>Why interviewers care:</strong> They want to see if you understand compute trade-offs. Default to <strong>containers</strong> for microservices (fast deployments, high density). Use <strong>MicroVMs (Firecracker)</strong> when running untrusted customer code in multi-tenant environments. Use <strong>full VMs</strong> only when you need custom kernel modules, strict regulatory hardware isolation, or legacy non-Linux systems.
+          </p>
+        </div>
 
-          <!-- ASCII Architectural Stack Diagram -->
-          <div class="p-4 bg-[#070B14] rounded-lg border border-slate-800 text-slate-300 overflow-x-auto text-[11.5px] leading-relaxed">
-            <pre class="font-code text-slate-300">
-+-------------------------------------------------------------------------------------------------------------+
-|                                        VIRTUAL MACHINES VS. CONTAINERS                                      |
-+-------------------------------------------------------------------------------------------------------------+
-
-             VIRTUAL MACHINES (VMS)                                      CONTAINERS
-     [ Hardware-Level Isolation via Hypervisor ]             [ Operating System-Level Kernel Sharing ]
-
-    +-------------------+  +-------------------+        +-------------------+  +-------------------+
-    |    App 1 (JVM)    |  |   App 2 (Node)    |        |    App 1 (JVM)    |  |   App 2 (Node)    |
-    +-------------------+  +-------------------+        +-------------------+  +-------------------+
-    |     Bins/Libs     |  |     Bins/Libs     |        |     Bins/Libs     |  |     Bins/Libs     |
-    +-------------------+  +-------------------+        +-------------------+  +-------------------+
-    |   Guest OS Kernel |  |   Guest OS Kernel |                  ▲                      ▲
-    |   (Windows / RHEL)|  |   (Ubuntu / Debian|                  │                      │
-    +-------------------+  +-------------------+                  │                      │
-              ▲                      ▲                            │                      │
-              └──────────────┬───────┘                            ▼                      ▼
-                             ▼                          +--------------------------------------------------+
-    +-------------------------------------------------+ |          CONTAINER RUNTIME (containerd / runc)   |
-    |          HYPERVISOR (KVM / ESXi / Xen)          | |  Namespaces (PID, Net, Mount) + cgroups (Limits) |
-    +-------------------------------------------------+ +--------------------------------------------------+
-                             ▼                                                    ▼
-    +-------------------------------------------------+ +--------------------------------------------------+
-    |           HOST OPERATING SYSTEM / KERNEL        | |           HOST OPERATING SYSTEM / KERNEL         |
-    +-------------------------------------------------+ +--------------------------------------------------+
-                             ▼                                                    ▼
-    +-------------------------------------------------+ +--------------------------------------------------+
-    |         PHYSICAL HARDWARE (CPU, RAM, NIC, NVMe) | |         PHYSICAL HARDWARE (CPU, RAM, NIC, NVMe)  |
-    +-------------------------------------------------+ +--------------------------------------------------+
-
-    ▲ Each VM has its own private kernel              ▲ Containers share the underlying host kernel
-    ▲ Heavyweight: GBs disk, minutes to boot          ▲ Lightweight: MBs disk, sub-second boot
-    ▲ Strong hardware boundary: safe for untrusted code▲ Soft boundary: kernel bug can compromise host</pre>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 text-[12px]">
-            <div class="bg-[#0F1626] border border-cyan-500/30 rounded-lg p-3 text-cyan-200">
-              <strong class="text-white block mb-1">Hypervisor Emulation (VMs):</strong>
-              Virtualizes the hardware architecture. The hypervisor intercepts privileged CPU instructions, emulates virtual hardware devices, and maintains separate virtual memory page tables. Each guest OS kernel manages its own scheduler and memory.
+        <!-- ARCHITECTURAL DIFFERENCE DIAGRAM: HYPERVISOR VS. CONTAINER RUNTIME -->
+        <div class="os-diagram-canvas rounded-2xl p-5 sm:p-7 flex flex-col gap-6 shadow-xl border border-slate-200 bg-white">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-slate-200 gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
+              <span class="text-[12.5px] sm:text-[13px] font-code font-bold tracking-wider text-cyan-800 uppercase">
+                ARCHITECTURAL DIFFERENCE: HYPERVISOR VS. CONTAINER RUNTIME
+              </span>
             </div>
-            <div class="bg-[#0F1626] border border-emerald-500/30 rounded-lg p-3 text-emerald-200">
-              <strong class="text-white block mb-1">Kernel Namespace Isolation (Containers):</strong>
-              A container is not a machine; it is a standard Linux process governed by two kernel primitives: <strong>Namespaces</strong> determine what a process can <em>see</em>, and <strong>cgroups</strong> determine what a process can <em>consume</em>.
+            <div class="flex items-center gap-2 text-[11px] font-code text-slate-600">
+              <span class="px-2.5 py-0.5 rounded-md bg-slate-100 border border-slate-300 text-slate-700 font-medium">Hardware-Level Isolation</span>
+              <span class="px-2.5 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 font-medium">OS Kernel Sharing</span>
+            </div>
+          </div>
+
+          <!-- The Architectural Diagram Image As-Is -->
+          <div class="flex flex-col gap-3">
+            <div class="os-diagram-img-frame relative overflow-hidden rounded-xl border border-slate-200 bg-white p-2 sm:p-4 shadow-sm flex items-center justify-center">
+              <img 
+                src="/images/vm-vs-containers.jpg" 
+                alt="Virtual Machines vs. Containers (Hardware-Level Isolation vs. Operating System-Level Kernel Sharing)" 
+                class="w-full h-auto max-w-5xl rounded-lg object-contain bg-white cursor-zoom-in transition-transform duration-200 hover:scale-[1.008]"
+                loading="eager"
+                title="Click to view image full resolution"
+                onclick="window.open('/images/vm-vs-containers.jpg', '_blank')"
+              />
+            </div>
+            <div class="flex items-center justify-between text-[11px] font-sans text-slate-500 px-1">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px] text-cyan-600">zoom_in</span>
+                Click diagram to view in high resolution in new tab
+              </span>
+              <span class="font-code text-[10.5px] text-slate-500">Virtual Machines (VM 1 JVM, VM 2 Node) vs. Containers (containerd / runc)</span>
+            </div>
+          </div>
+
+          <!-- Key Architectural Comparisons -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 text-[12px]">
+            <div class="bg-cyan-50 border border-cyan-200 rounded-xl p-4 shadow-sm">
+              <div class="flex items-center gap-2 mb-1.5 font-bold text-[13px] text-cyan-900">
+                <span class="material-symbols-outlined text-[18px]">dns</span>
+                <span>Hypervisor Emulation (Virtual Machines)</span>
+              </div>
+              <p class="leading-relaxed text-[12px] text-slate-700">
+                Virtualizes raw hardware using a <strong>Type 1 (bare-metal, e.g. ESXi, KVM)</strong> or <strong>Type 2 (hosted, e.g. VirtualBox)</strong> hypervisor. The hypervisor intercepts CPU instructions, manages virtual memory tables, and emulates virtual disks and network cards. Every VM runs a complete guest OS kernel, providing ironclad hardware security at the cost of high RAM overhead and minute-long boots.
+              </p>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 shadow-sm">
+              <div class="flex items-center gap-2 mb-1.5 font-bold text-[13px] text-emerald-900">
+                <span class="material-symbols-outlined text-[18px]">view_in_ar</span>
+                <span>Kernel Namespaces &amp; cgroups (Containers)</span>
+              </div>
+              <p class="leading-relaxed text-[12px] text-slate-700">
+                Containers are not simulated computers — they are regular Linux processes running directly on the <strong>shared host OS kernel</strong>. <strong>Namespaces</strong> act as blindfolds (controlling what the process can <em>see</em>), and <strong>cgroups</strong> act as ration cards (limiting how much CPU and RAM it can <em>consume</em>). This enables sub-second startups and tiny image footprints.
+              </p>
             </div>
           </div>
         </div>
@@ -221,51 +242,60 @@ export function renderVirtualizationVsContainersContent(topic) {
         <div class="bg-[#141C2E] border-l-4 border-cyan-500 rounded-r-xl p-5 flex flex-col gap-3">
           <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
             <span class="material-symbols-outlined text-[16px]">tune</span>
-            HOW CONTAINERISATION WORKS: LINUX KERNEL PRIMITIVES
+            HOW CONTAINERS ACTUALLY WORK: THREE LINUX KERNEL BUILDING BLOCKS
           </span>
           <p class="text-[13px] text-slate-300 leading-relaxed font-sans">
-            A container is not an emulation layer. It is a normal Linux process wrapped by three fundamental operating system subsystems:
+            A container is not a magical virtual box. It is a standard Linux process isolated by three core kernel primitives:
           </p>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1 text-[12.5px] font-sans">
             <div class="bg-[#0A0E1A] p-4 rounded-xl border border-[#24314A] flex flex-col gap-2">
-              <span class="font-code text-[12px] font-bold text-cyan-300">1. Linux Namespaces</span>
-              <p class="text-slate-300 leading-relaxed">
-                Virtualizes system resources so processes believe they own a dedicated OS. Governs 6 core isolation boundaries:
+              <span class="font-code text-[12px] font-bold text-cyan-300 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px]">visibility_off</span>
+                1. Namespaces (What You Can See)
+              </span>
+              <p class="text-slate-300 leading-relaxed text-[12px]">
+                Gives the process its own private view of system resources so it thinks it is the only program on the computer:
               </p>
               <ul class="text-[11.5px] text-slate-400 space-y-1 font-code">
-                <li>• <strong>pid:</strong> Virtualizes process IDs (container sees itself as PID 1).</li>
-                <li>• <strong>net:</strong> Private virtual Ethernet pairs, routing tables, and IP.</li>
-                <li>• <strong>mnt:</strong> Isolated root filesystem mount point.</li>
-                <li>• <strong>ipc:</strong> System V IPC and POSIX message queue isolation.</li>
-                <li>• <strong>uts:</strong> Hostname and NIS domain name isolation.</li>
-                <li>• <strong>user:</strong> Maps container root UID 0 to high unprivileged host UID.</li>
+                <li>• <strong>PID:</strong> Sees itself as Process ID 1; cannot see host processes.</li>
+                <li>• <strong>NET:</strong> Own private IP address, routing table, and port range.</li>
+                <li>• <strong>MNT:</strong> Dedicated root file system mount point.</li>
+                <li>• <strong>IPC:</strong> Private inter-process message queues and shared memory.</li>
+                <li>• <strong>UTS:</strong> Independent hostname (e.g. <code>my-service-pod-3</code>).</li>
+                <li>• <strong>USER:</strong> Maps container root (UID 0) to a safe, unprivileged host user.</li>
               </ul>
             </div>
 
             <div class="bg-[#0A0E1A] p-4 rounded-xl border border-[#24314A] flex flex-col gap-2">
-              <span class="font-code text-[12px] font-bold text-emerald-300">2. Control Groups (cgroups v2)</span>
-              <p class="text-slate-300 leading-relaxed">
-                Enforces strict hardware resource quotas to prevent noisy-neighbor server degradation:
+              <span class="font-code text-[12px] font-bold text-emerald-300 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px]">speed</span>
+                2. cgroups v2 (What You Can Use)
+              </span>
+              <p class="text-slate-300 leading-relaxed text-[12px]">
+                Enforces hard resource limits so a single broken container cannot crash the entire physical machine:
               </p>
               <ul class="text-[11.5px] text-slate-400 space-y-1 font-code">
-                <li>• <strong>CPU shares & CFS quota:</strong> Limits CPU percentage via <code>cpu.cfs_quota_us</code>.</li>
-                <li>• <strong>Memory ceiling:</strong> Enforces hard RAM limits; triggers OOM-killer on breach.</li>
-                <li>• <strong>Block I/O throttle:</strong> Restricts read/write IOPS and MB/s via <code>io.max</code>.</li>
-                <li>• <strong>Process count:</strong> Limits maximum forks via <code>pids.max</code> to prevent fork bombs.</li>
+                <li>• <strong>CPU Quota:</strong> Caps CPU time via <code>cpu.cfs_quota_us</code>. Throttles CPU on breach.</li>
+                <li>• <strong>Memory Ceiling:</strong> Sets max RAM. If exceeded, Linux OOM-killer immediately kills the container.</li>
+                <li>• <strong>Block I/O:</strong> Restricts read/write disk speed so log writes do not choke disk throughput.</li>
+                <li>• <strong>PIDs Limit:</strong> Caps maximum running processes to completely prevent fork bombs.</li>
               </ul>
             </div>
 
             <div class="bg-[#0A0E1A] p-4 rounded-xl border border-[#24314A] flex flex-col gap-2">
-              <span class="font-code text-[12px] font-bold text-indigo-300">3. Union Filesystem (OverlayFS)</span>
-              <p class="text-slate-300 leading-relaxed">
-                Implements copy-on-write (CoW) storage layers to enable instant startup and low disk footprint:
+              <span class="font-code text-[12px] font-bold text-indigo-300 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px]">layers</span>
+                3. OverlayFS (How Files Are Stored)
+              </span>
+              <p class="text-slate-300 leading-relaxed text-[12px]">
+                Stacks read-only layers like sheets of clear glass, with a single writable layer on top:
               </p>
               <ul class="text-[11.5px] text-slate-400 space-y-1 font-code">
-                <li>• <strong>LowerDir:</strong> Stack of read-only immutable image layers.</li>
-                <li>• <strong>UpperDir:</strong> Thin, ephemeral read-write container layer.</li>
-                <li>• <strong>MergedDir:</strong> Unified filesystem presentation to the application.</li>
-                <li>• Modifying an image file triggers Copy-on-Write to UpperDir.</li>
+                <li>• <strong>LowerDir:</strong> The read-only base image layers (Ubuntu, Node.js, packages). Shared across containers.</li>
+                <li>• <strong>UpperDir:</strong> A thin, ephemeral writable layer unique to this running container.</li>
+                <li>• <strong>MergedDir:</strong> The unified view the application actually interacts with.</li>
+                <li>• <strong>Copy-on-Write:</strong> Modifying a file copies it up to UpperDir before editing, preserving the base image.</li>
               </ul>
             </div>
           </div>
@@ -303,24 +333,24 @@ export function renderVirtualizationVsContainersContent(topic) {
         <div class="bg-gradient-to-r from-blue-950/40 to-cyan-950/30 border border-blue-500/40 rounded-xl p-5 sm:p-6 flex flex-col gap-3">
           <span class="font-code text-[11px] font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-2">
             <span class="material-symbols-outlined text-[16px]">memory</span>
-            THE MIDDLE GROUND: MICROVMS & SANDBOXED RUNTIMES
+            THE MODERN COMPROMISE: MICROVMS & SANDBOXED RUNTIMES
           </span>
           <p class="text-[13px] text-slate-200 leading-relaxed font-sans">
-            Engineers once faced a binary compromise: accept the <strong>minute-long boot times of heavy VMs</strong>, or accept the <strong>shared-kernel security risks of containers</strong>. Cloud hyperscalers invented <strong>MicroVMs</strong> to capture the best of both paradigms:
+            Engineers once faced a painful trade-off: accept the <strong>minute-long boot times of heavy VMs</strong>, or accept the <strong>shared-kernel security risks of containers</strong>. Modern cloud architecture solved this with <strong>MicroVMs</strong>:
           </p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 text-[12.5px] font-sans">
             <div class="bg-[#0A0E1A]/80 border border-cyan-500/30 rounded-lg p-4">
-              <span class="font-code text-[12px] font-bold text-cyan-300 block mb-1">AWS Firecracker (KVM-Based MicroVM)</span>
+              <span class="font-code text-[12px] font-bold text-cyan-300 block mb-1">AWS Firecracker (KVM MicroVM)</span>
               <p class="text-slate-300 leading-relaxed">
-                A minimalist hypervisor written in Rust utilizing Linux KVM. It strips out all legacy emulated devices (floppy drives, IDE controllers, PCI buses). A stripped-down Linux kernel boots in <strong>~5 milliseconds with only ~5 MB of memory overhead</strong>. AWS Lambda and Fargate execute tens of millions of untrusted customer workloads on Firecracker daily with true hardware virtualization boundaries.
+                A minimalist hypervisor written in Rust on top of Linux KVM. It strips out all legacy emulated hardware (floppy drives, IDE controllers). A minimal Linux kernel boots in <strong>~5 milliseconds with only ~5 MB of memory overhead</strong>. Powers AWS Lambda and Fargate to run millions of untrusted customer workloads daily with true hardware isolation.
               </p>
             </div>
             <div class="bg-[#0A0E1A]/80 border border-indigo-500/30 rounded-lg p-4">
               <span class="font-code text-[12px] font-bold text-indigo-300 block mb-1">Google gVisor & Kata Containers</span>
               <p class="text-slate-300 leading-relaxed">
-                <strong>gVisor:</strong> An application kernel written in memory-safe Go that runs in user space, intercepting and re-implementing Linux syscalls to completely insulate the host kernel. Used in Google Cloud Run and GKE Sandbox.
+                <strong>gVisor:</strong> A user-space kernel written in memory-safe Go. It intercepts application system calls before they ever reach the host Linux kernel (used in Google Cloud Run and GKE Sandbox).
                 <br/><br/>
-                <strong>Kata Containers:</strong> Conforms to the standard OCI runtime specification but runs each container inside an isolated, lightweight hardware VM.
+                <strong>Kata Containers:</strong> Looks and feels like a regular Docker container, but runs each pod inside a dedicated, ultra-lightweight hardware VM.
               </p>
             </div>
           </div>
@@ -351,19 +381,19 @@ export function renderVirtualizationVsContainersContent(topic) {
             <ul class="flex flex-col gap-2.5 text-[12.5px] text-emerald-200/90 font-sans">
               <li class="flex items-start gap-2">
                 <span class="text-emerald-400 mt-1 font-bold">•</span>
-                <span><strong>Microservices & high deployment velocity:</strong> Fast CI/CD artifact generation, sub-second deployment rollouts, and reproducible developer staging environments.</span>
+                <span><strong>Internal Microservices & Fast CI/CD:</strong> Quick build cycles, sub-second deployment rollouts, and identical environments from local laptop to staging.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="text-emerald-400 mt-1 font-bold">•</span>
-                <span><strong>Single-tenant / trusted enterprise workloads:</strong> High hardware density and bin-packing on private cloud clusters where all code is internal and trusted.</span>
+                <span><strong>Single-Tenant / Trusted Code:</strong> High hardware density where all microservices belong to your company and you do not execute arbitrary code from strangers.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="text-emerald-400 mt-1 font-bold">•</span>
-                <span><strong>Auto-scaling burst traffic:</strong> Horizontally scaling API web tiers from 10 instances to 1,000 instances in seconds to absorb flash sales or sudden traffic spikes.</span>
+                <span><strong>Sudden Traffic Bursts:</strong> Rapidly auto-scaling web API instances from 5 to 500 pods in seconds to handle flash sales or viral spikes.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="text-emerald-400 mt-1 font-bold">•</span>
-                <span><strong>Short-lived batch workers & CLI tasks:</strong> Spawning ephemeral worker tasks (e.g. video transcode chunks, cron jobs) that exit immediately upon completion.</span>
+                <span><strong>Short-Lived Ephemeral Tasks:</strong> Spawning background worker jobs (e.g. resizing an image, sending email batches) that exit immediately upon completion.</span>
               </li>
             </ul>
           </div>
@@ -377,19 +407,19 @@ export function renderVirtualizationVsContainersContent(topic) {
             <ul class="flex flex-col gap-2.5 text-[12.5px] text-rose-200/90 font-sans">
               <li class="flex items-start gap-2">
                 <span class="text-rose-400 mt-1 font-bold">•</span>
-                <span><strong>Multi-tenant untrusted code execution:</strong> Running customer-submitted arbitrary code or public SaaS tenant workloads where container escapes would be catastrophic.</span>
+                <span><strong>Multi-Tenant Untrusted Code:</strong> Running user-submitted code (like LeetCode code execution, CI/CD runners, or multi-tenant SaaS) where a kernel escape would be catastrophic.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="text-rose-400 mt-1 font-bold">•</span>
-                <span><strong>Operating system & kernel diversity:</strong> Running heterogeneous OS environments (Windows Server, Linux, FreeBSD) concurrently on the same physical bare-metal hardware.</span>
+                <span><strong>Operating System Diversity:</strong> Running different OS kernels (Windows Server, Linux, BSD) simultaneously on the same physical hardware.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="text-rose-400 mt-1 font-bold">•</span>
-                <span><strong>Strict regulatory compliance:</strong> Industry certifications (PCI-DSS Level 1, HIPAA, FedRAMP High) mandating dedicated hypervisor-enforced hardware isolation boundaries.</span>
+                <span><strong>Strict Regulatory Compliance:</strong> Audits (PCI-DSS Level 1, HIPAA, FedRAMP High) mandating dedicated hypervisor-enforced hardware isolation.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="text-rose-400 mt-1 font-bold">•</span>
-                <span><strong>Monolithic legacy configurations:</strong> Statefully running legacy enterprise software requiring specialized kernel modules, specific kernel versions, or direct virtual hardware hooks.</span>
+                <span><strong>Custom Kernel Drivers:</strong> Legacy enterprise applications requiring specialized kernel modules, specific kernel versions, or low-level hardware hooks.</span>
               </li>
             </ul>
           </div>
@@ -399,10 +429,10 @@ export function renderVirtualizationVsContainersContent(topic) {
         <div class="bg-amber-950/20 border-l-4 border-amber-500 rounded-r-xl p-5 flex flex-col gap-2">
           <span class="font-code text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
             <span class="material-symbols-outlined text-[16px]">warning</span>
-            THE CONTAINER ESCAPE VULNERABILITY: CONFIGURATION VS. HARDWARE BOUNDARY
+            THE CRITICAL INTERVIEW TRAP: CONTAINERS ARE NOT SECURITY WALLS
           </span>
           <p class="text-[13px] text-amber-200/90 leading-relaxed font-sans">
-            A container is a <strong>software configuration boundary, not a hardware security boundary</strong>. Because all containers share the single monolithic host kernel, any unpatched kernel vulnerability (such as a privilege escalation bug in the kernel memory subsystem or filesystem driver) gives an attacker full root access to the physical host machine and every neighboring tenant container. In an interview, never propose multi-tenant SaaS architecture running untrusted user scripts on raw containers; always isolate tenant code using MicroVMs (AWS Firecracker) or sandboxed kernels (gVisor).
+            A container is a <strong>software configuration boundary, not a hardware security barrier</strong>. Because every container on a host shares one single Linux kernel, any unpatched kernel bug allows an attacker to break out and control the entire host server. <em>Interview tip:</em> Never propose running untrusted third-party code in standard Docker containers. Always specify <strong>MicroVMs (AWS Firecracker)</strong> or <strong>sandboxed kernels (gVisor)</strong>.
           </p>
         </div>
 
@@ -410,10 +440,10 @@ export function renderVirtualizationVsContainersContent(topic) {
         <div class="bg-emerald-950/20 border-l-4 border-emerald-500 rounded-r-xl p-5 flex flex-col gap-2">
           <span class="font-code text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
             <span class="material-symbols-outlined text-[16px]">psychology</span>
-            SENIOR PERSPECTIVE: MULTI-TENANCY, MICROVMS & THE KUBERNETES FLEET ILLUSION
+            SENIOR PERSPECTIVE: MULTI-TENANCY & THE KUBERNETES FLEET REALITY
           </span>
           <p class="text-[13px] text-emerald-200/90 leading-relaxed font-sans">
-            Senior engineers understand that <strong>Kubernetes solves fleet orchestration, not security isolation</strong>. Kubernetes namespaces are purely administrative metadata; they do not prevent noisy-neighbor CPU starvation, network saturation, or kernel panics. In enterprise multi-tenancy, mature engineering teams practice <strong>Soft Multi-Tenancy</strong> (separate namespaces for internal trusted teams on the same cluster) but enforce <strong>Hard Multi-Tenancy</strong> (separate physical nodes via node affinity/taints, separate VPC clusters, or Firecracker microVM runtimes) for external or untrusted tenants.
+            Senior engineers recognize that <strong>Kubernetes solves fleet management, not security isolation</strong>. Kubernetes namespaces are purely logical labels for grouping resources — they do not prevent noisy neighbors from exhausting network bandwidth or triggering kernel panics. In production, use <strong>Soft Multi-Tenancy</strong> (separate namespaces) only for internal trusted teams on the same cluster, and enforce <strong>Hard Multi-Tenancy</strong> (separate physical nodes via taints/tolerations or separate clusters entirely) for different external clients.
           </p>
         </div>
 
@@ -423,7 +453,7 @@ export function renderVirtualizationVsContainersContent(topic) {
             OVER TO YOU
           </span>
           <span class="text-slate-300 font-medium">
-            What prevents a container from starving its neighbors of memory on the same host? How would you find out how much RAM a container is actually using under cgroups v2?
+            If a container begins leaking memory on a shared server, what prevents it from crashing the other services? Which cgroups v2 file would you inspect to verify its memory limit?
           </span>
         </div>
 
@@ -458,7 +488,7 @@ export function renderVirtualizationVsContainersContent(topic) {
             KEY INTERVIEW TAKEAWAY
           </span>
           <p class="text-[14px] font-sans font-medium text-white leading-relaxed">
-            Containers abstract the operating system; virtual machines abstract physical hardware. Containers buy developer velocity, sub-second auto-scaling, and maximum compute density; virtual machines buy hardware-grade multi-tenant fault isolation. MicroVMs (AWS Firecracker) exist because hyperscale multi-tenant serverless architectures refuse to compromise on either.
+            Containers abstract the operating system; virtual machines abstract physical hardware. Containers give you rapid deployments, sub-second auto-scaling, and maximum resource density; virtual machines give you hardware-grade security and isolation. When designing modern hyperscale serverless systems (like AWS Lambda), MicroVMs (Firecracker) bridge the gap by delivering hardware isolation with 5ms boot times.
           </p>
         </div>
 

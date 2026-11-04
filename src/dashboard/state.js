@@ -303,284 +303,255 @@ export const FULL_45_DAY_CURRICULUM = {
   22: {
     day: 22,
     week: 4,
-    phase: "Phase 3: Graphs, Trees & Scalable Infrastructure",
-    topic: "BST Bounded Invariants & Push Notifications",
-    objective: "Extract kth smallest items using inorder traversal and design high-volume notification pipelines with priority queues.",
-    headlineTarget: "1 DSA + 1 System Design Spec",
-    estTime: "80 mins",
+    phase: "Week 4: System Design Masterclass — Core Building Blocks",
+    topic: "System Design Framework & URL Shortener (Bitly)",
+    objective: "Master the 7-step system design interview framework and design a high-throughput URL shortener with Base62 encoding, Redis caching, and HTTP 302 redirects.",
+    headlineTarget: "Framework + 1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-22-1", text: "Solve Kth Smallest Element in a BST (BST (Inorder))", category: "DSA", done: false },
-      { id: "task-22-2", text: "Architect Notification System (e.g., Firebase Cloud Messaging / Apple Push) (Priority Queues & Gateway Decoupling)", category: "SYS DESIGN", done: false }
+      { id: "task-22-1", text: "Master Part I: 7-Step System Design Interview Framework & Timing Template", category: "SYS DESIGN", done: false },
+      { id: "task-22-2", text: "Design Question 1: URL Shortener like Bitly (Base62 IDs, Redis Cache-Aside & 302 Redirects)", category: "SYS DESIGN", done: false }
     ]
   },
   23: {
     day: 23,
     week: 4,
-    phase: "Phase 3: Graphs, Trees & Scalable Infrastructure",
-    topic: "Tree Reconstruction & Maximum Path Sums",
-    objective: "Rebuild binary trees from preorder/inorder traversals and find global maximum path sums using post-order DFS.",
-    headlineTarget: "3 DSA Problems",
-    estTime: "70 mins",
+    phase: "Week 4: System Design Masterclass — Core Building Blocks",
+    topic: "Distributed Rate Limiter",
+    objective: "Design a distributed rate limiter with Token Bucket, atomic Redis Lua scripts, multiple policy tiers, and graceful degraded-mode failover.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-23-1", text: "Solve Construct Binary Tree from Preorder and Inorder Traversal (Tree Reconstruction)", category: "DSA", done: false },
-      { id: "task-23-2", text: "Solve Binary Tree Maximum Path Sum (Trees (DFS Post-order))", category: "DSA", done: false },
-      { id: "task-23-3", text: "Solve Kth Largest Element in an Array (Min-Heap / Quickselect)", category: "DSA", done: false }
+      { id: "task-23-1", text: "Design Question 2: Distributed Rate Limiter (Token Bucket vs Leaky Bucket, Redis Atomic Lua & Fail-Safe Modes)", category: "SYS DESIGN", done: false }
     ]
   },
   24: {
     day: 24,
     week: 4,
-    phase: "Phase 3: Graphs, Trees & Scalable Infrastructure",
-    topic: "Tree Serialization & Web Scale Indexing",
-    objective: "Serialize and deserialize trees via string encoders and architect distributed web crawlers with polite URL frontiers.",
-    headlineTarget: "1 DSA + 1 System Design Spec",
-    estTime: "80 mins",
+    phase: "Week 4: System Design Masterclass — Core Building Blocks",
+    topic: "Notification System",
+    objective: "Architect a multi-channel notification platform with persistent priority queues, transactional outbox, worker pools, and provider failover.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-24-1", text: "Solve Serialize and Deserialize Binary Tree (Tree Traversal / Design)", category: "DSA", done: false },
-      { id: "task-24-2", text: "Architect Web Crawler & Search Indexer (e.g., Googlebot) (URL Frontier, Deduplication & Inverted Indexing)", category: "SYS DESIGN", done: false }
+      { id: "task-24-1", text: "Design Question 3: Notification System (Durable Priority Queues, Outbox Pattern, Deduplication & Provider Webhooks)", category: "SYS DESIGN", done: false }
     ]
   },
   25: {
     day: 25,
     week: 4,
-    phase: "Phase 3: Graphs, Trees & Scalable Infrastructure",
-    topic: "Trie Data Structures & Geospatial Dispatch Engines",
-    objective: "Implement N-ary Trie prefix trees and architect ride-hailing dispatch engines with H3 hexagonal spatial indexing.",
-    headlineTarget: "1 DSA + 1 System Design Spec",
-    estTime: "80 mins",
+    phase: "Week 4: System Design Masterclass — Core Building Blocks",
+    topic: "Distributed Cache",
+    objective: "Design a horizontally scalable distributed cache with consistent hashing, LRU/LFU eviction, stampede defense, and hot-key mitigation.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-25-1", text: "Solve Implement Trie (Prefix Tree) (Trie Design)", category: "DSA", done: false },
-      { id: "task-25-2", text: "Architect Ride-Sharing / Dispatch Service (e.g., Uber / Lyft) (Geospatial Indexing & Real-Time Driver Matching)", category: "SYS DESIGN", done: false }
+      { id: "task-25-1", text: "Design Question 4: Distributed Cache (Consistent Hashing Ring, LRU Eviction, Cache Stampede Mitigation & Hot Keys)", category: "SYS DESIGN", done: false }
     ]
   },
   26: {
     day: 26,
     week: 4,
-    phase: "Phase 3: Graphs, Trees & Scalable Infrastructure",
-    topic: "Wildcard Trie Backtracking & Spatial Geohashing",
-    objective: "Search dictionary words with wildcard characters and design proximity location servers using geohash quadtrees.",
-    headlineTarget: "1 DSA + 1 System Design Spec",
-    estTime: "80 mins",
+    phase: "Week 4: System Design Masterclass — Core Building Blocks",
+    topic: "API Gateway",
+    objective: "Propose an edge API gateway handling north-south traffic, TLS termination, JWT authentication, per-route rate limits, and circuit breakers.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-26-1", text: "Solve Design Add and Search Words Data Structure (Trie / Backtracking)", category: "DSA", done: false },
-      { id: "task-26-2", text: "Architect Proximity Server (e.g., Yelp / Google Maps Places) (Read-Heavy Spatial Queries & Radius Indexing)", category: "SYS DESIGN", done: false }
+      { id: "task-26-1", text: "Design Question 5: API Gateway (Edge Routing, TLS Termination, Token Auth, Circuit Breaking & Tracing)", category: "SYS DESIGN", done: false }
     ]
   },
   27: {
     day: 27,
     week: 4,
-    phase: "Phase 3: Graphs, Trees & Scalable Infrastructure",
-    topic: "2D Board Tries & Priority Task Scheduling",
-    objective: "Find multi-word targets on boards using Trie DFS and schedule tasks with cooling intervals using max-heaps.",
-    headlineTarget: "3 DSA Problems",
-    estTime: "70 mins",
+    phase: "Week 4: System Design Masterclass — Consumer-Scale Applications",
+    topic: "Instagram (Photo-Sharing Platform)",
+    objective: "Design a photo-sharing service with direct S3 uploads, asynchronous media processing, hybrid fan-out feeds, and CDN media distribution.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-27-1", text: "Solve Word Search II (Trie / Matrix Backtracking)", category: "DSA", done: false },
-      { id: "task-27-2", text: "Solve Task Scheduler (Max-Heap / Greedy)", category: "DSA", done: false },
-      { id: "task-27-3", text: "Solve Design Twitter (Heap / System Design)", category: "DSA", done: false }
+      { id: "task-27-1", text: "Design Question 6: Instagram (Direct Presigned Uploads, Hybrid Fan-Out Feed, Cursor Pagination & CDN)", category: "SYS DESIGN", done: false }
     ]
   },
   28: {
     day: 28,
     week: 4,
-    phase: "Phase 3: Graphs, Trees & Scalable Infrastructure",
-    topic: "Streaming Medians & Power Set Backtracking",
-    objective: "Maintain continuous medians with dual heaps and generate complete power sets using state backtracking.",
-    headlineTarget: "3 DSA Problems",
-    estTime: "70 mins",
+    phase: "Week 4: System Design Masterclass — Consumer-Scale Applications",
+    topic: "WhatsApp (Real-Time Messaging)",
+    objective: "Design a real-time messaging system with persistent WebSocket gateways, offline durable queues, per-conversation ordering, and end-to-end encryption.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-28-1", text: "Solve Find Median from Data Stream (Two Heaps)", category: "DSA", done: false },
-      { id: "task-28-2", text: "Solve Subsets (Backtracking)", category: "DSA", done: false },
-      { id: "task-28-3", text: "Solve Combination Sum (Backtracking)", category: "DSA", done: false }
+      { id: "task-28-1", text: "Design Question 7: WhatsApp (WebSocket Gateways, Offline Message Buffering, Ordering & End-to-End Encryption)", category: "SYS DESIGN", done: false }
     ]
   },
   29: {
     day: 29,
     week: 5,
-    phase: "Phase 4: Dynamic Programming & High-Concurrency Systems",
-    topic: "Array Permutations, Matrix Word Searches & Partitions",
-    objective: "Generate all distinct integer orderings, search matrix words with backtracking, and partition palindromes.",
-    headlineTarget: "3 DSA Problems",
-    estTime: "70 mins",
+    phase: "Week 5: System Design Masterclass — Media & Data-Intensive Platforms",
+    topic: "YouTube (Video Streaming Platform)",
+    objective: "Design a global video streaming platform with resumable chunked uploads, distributed transcoding DAGs, HLS/DASH adaptive bitrate, and CDN edge delivery.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-29-1", text: "Solve Permutations (Backtracking)", category: "DSA", done: false },
-      { id: "task-29-2", text: "Solve Word Search (Matrix Backtracking)", category: "DSA", done: false },
-      { id: "task-29-3", text: "Solve Palindrome Partitioning (Backtracking)", category: "DSA", done: false }
+      { id: "task-29-1", text: "Design Question 8: YouTube (Resumable Multipart Uploads, HLS/DASH Transcoding Pipeline & CDN Delivery)", category: "SYS DESIGN", done: false }
     ]
   },
   30: {
     day: 30,
     week: 5,
-    phase: "Phase 4: Dynamic Programming & High-Concurrency Systems",
-    topic: "High-Concurrency Milestone: Flash Sales & Ledger Systems",
-    objective: "Architect distributed flash sale engines with Redis locks and double-entry payment ledger systems with Saga idempotency.",
-    headlineTarget: "2 System Design Specs (Milestone)",
-    estTime: "90 mins",
+    phase: "Week 5: System Design Masterclass — Media & Data-Intensive Platforms",
+    topic: "Uber (Ride-Hailing & Real-Time Dispatch)",
+    objective: "Architect a real-time dispatch service with geospatial indexing (H3/Geohash), high-frequency driver location ingestion, and atomic conditional driver matching.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-30-1", text: "Architect E-Commerce Flash Sale System (e.g., Amazon Prime Day / Ticketmaster) (High-Concurrency Inventory Locks & Thundering Herd)", category: "SYS DESIGN", done: false },
-      { id: "task-30-2", text: "Architect Payment Processing & Ledger System (e.g., Stripe / PayPal) (Distributed Transactions, Idempotency & Double-Entry)", category: "SYS DESIGN", done: false }
+      { id: "task-30-1", text: "Design Question 9: Uber (Geospatial Indexing H3/Geohash, Location Ingestion & Atomic Driver Assignment)", category: "SYS DESIGN", done: false }
     ]
   },
   31: {
     day: 31,
     week: 5,
-    phase: "Phase 4: Dynamic Programming & High-Concurrency Systems",
-    topic: "N-Queens Constraints & Anycast Edge Caching",
-    objective: "Place non-attacking queens with diagonal bitmasks and architect Content Delivery Networks with Anycast and origin shields.",
-    headlineTarget: "1 DSA + 1 System Design Spec",
-    estTime: "80 mins",
+    phase: "Week 5: System Design Masterclass — Media & Data-Intensive Platforms",
+    topic: "Food Delivery Platform (DoorDash / UberEats)",
+    objective: "Design a multi-sided food delivery platform coordinating customer ordering, restaurant acceptance, courier dispatch, and distributed Saga transactions.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-31-1", text: "Solve N-Queens (Backtracking)", category: "DSA", done: false },
-      { id: "task-31-2", text: "Architect Content Delivery Network (CDN) (Anycast BGP Routing & Origin Shielding)", category: "SYS DESIGN", done: false }
+      { id: "task-31-1", text: "Design Question 10: Food Delivery Platform (Catalog Caching, Multi-Entity Saga, Courier Dispatch & Compensations)", category: "SYS DESIGN", done: false }
     ]
   },
   32: {
     day: 32,
     week: 5,
-    phase: "Phase 4: Dynamic Programming & High-Concurrency Systems",
-    topic: "Connected Components & Adaptive Video Streaming",
-    objective: "Count connected island components in binary grids and architect video streaming pipelines with chunking and adaptive bitrate.",
-    headlineTarget: "1 DSA + 1 System Design Spec",
-    estTime: "80 mins",
+    phase: "Week 5: System Design Masterclass — Media & Data-Intensive Platforms",
+    topic: "Web Crawler (Googlebot Scale)",
+    objective: "Design a distributed web crawler with URL frontier scheduling, politeness delays, robots.txt caching, content deduplication, and Bloom filters.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-32-1", text: "Solve Number of Islands (Graph (Matrix BFS/DFS))", category: "DSA", done: false },
-      { id: "task-32-2", text: "Architect Video Streaming Platform (e.g., YouTube / Netflix) (Adaptive Bitrate Streaming (DASH/HLS) & Video Ingestion)", category: "SYS DESIGN", done: false }
+      { id: "task-32-1", text: "Design Question 11: Web Crawler (URL Frontier, Politeness Delays, Bloom Filter Dedup & Object Storage)", category: "SYS DESIGN", done: false }
     ]
   },
   33: {
     day: 33,
     week: 5,
-    phase: "Phase 4: Dynamic Programming & High-Concurrency Systems",
-    topic: "Graph Deep Copies & Real-Time Collaborative Docs",
-    objective: "Construct deep copies of undirected graphs and architect collaborative document editors with CRDTs and vector clocks.",
-    headlineTarget: "1 DSA + 1 System Design Spec",
-    estTime: "80 mins",
+    phase: "Week 5: System Design Masterclass — Media & Data-Intensive Platforms",
+    topic: "Search Autocomplete (Typeahead System)",
+    objective: "Design a low-latency query autocomplete engine using Trie / FST compact structures, Top-K precomputations, prefix caching, and versioned index rollouts.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-33-1", text: "Solve Clone Graph (Graph (BFS/DFS))", category: "DSA", done: false },
-      { id: "task-33-2", text: "Architect Collaborative Document Editor (e.g., Google Docs / Notion) (Conflict Resolution (OT vs. CRDTs))", category: "SYS DESIGN", done: false }
+      { id: "task-33-1", text: "Design Question 12: Search Autocomplete (Trie/FST Index, Top-K Precomputation, Prefix Caching & Versioned Swaps)", category: "SYS DESIGN", done: false }
     ]
   },
   34: {
     day: 34,
     week: 5,
-    phase: "Phase 4: Dynamic Programming & High-Concurrency Systems",
-    topic: "Reverse Ocean Flow & Ranked Social Feeds",
-    objective: "Perform multi-source searches from ocean borders and architect social news feeds with fan-out-on-write and ranking.",
-    headlineTarget: "1 DSA + 1 System Design Spec",
-    estTime: "80 mins",
+    phase: "Week 5: System Design Masterclass — Media & Data-Intensive Platforms",
+    topic: "Logging and Monitoring System (Datadog / Prometheus)",
+    objective: "Design an observability platform ingesting hundreds of thousands of events/sec with Kafka buffering, hot search indexes, cold S3 archives, and alerting.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-34-1", text: "Solve Pacific Atlantic Water Flow (Graph (Multi-source BFS/DFS))", category: "DSA", done: false },
-      { id: "task-34-2", text: "Architect Social Media News Feed (e.g., Twitter / Instagram / Facebook) (Fan-Out Engine & Hybrid Timeline Aggregation)", category: "SYS DESIGN", done: false }
+      { id: "task-34-1", text: "Design Question 13: Logging & Monitoring System (Kafka Ingestion, Hot/Cold Tiering, Metric Rollups & Alerting)", category: "SYS DESIGN", done: false }
     ]
   },
   35: {
     day: 35,
     week: 5,
-    phase: "Phase 4: Dynamic Programming & High-Concurrency Systems",
-    topic: "Multi-Source Queue Rot & Time-Series Observability",
-    objective: "Simulate minute-by-minute contagion in grids with BFS and architect TSDB metrics systems with Gorilla compression.",
-    headlineTarget: "1 DSA + 1 System Design Spec",
-    estTime: "80 mins",
+    phase: "Week 5: System Design Masterclass — Media & Data-Intensive Platforms",
+    topic: "Real-Time Analytics Pipeline",
+    objective: "Architect a stream processing pipeline with partitioned Kafka topics, event-time windowing, watermarks for late arrivals, and raw event replay.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-35-1", text: "Solve Rotting Oranges (Graph (Multi-source BFS))", category: "DSA", done: false },
-      { id: "task-35-2", text: "Architect Metrics & Logging Monitoring System (e.g., Datadog / Prometheus) (Time-Series Database (TSDB) & Inverted Metric Index)", category: "SYS DESIGN", done: false }
+      { id: "task-35-1", text: "Design Question 14: Real-Time Analytics Pipeline (Kafka Streaming, Event-Time Windows, Watermarks & Historical Replay)", category: "SYS DESIGN", done: false }
     ]
   },
   36: {
     day: 36,
     week: 6,
-    phase: "Phase 5: Advanced Graphs, Dynamic Programming & Scale",
-    topic: "Graph Cycle Detection & Distributed Job Orchestration",
-    objective: "Detect circular prerequisite dependencies with cycle DFS and architect distributed task schedulers with delayed queues.",
-    headlineTarget: "1 DSA + 1 System Design Spec",
-    estTime: "80 mins",
+    phase: "Week 6: System Design Masterclass — Business-Critical & Distributed Systems",
+    topic: "Distributed Task Scheduler",
+    objective: "Design a high-scale task scheduler supporting one-off and recurring jobs with timing wheels, worker heartbeat leases, exponential backoff, and idempotent runs.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-36-1", text: "Solve Course Schedule (Graph (Cycle Detection))", category: "DSA", done: false },
-      { id: "task-36-2", text: "Architect Distributed Task Scheduler / Job Queue (e.g., Celery / AWS Step Functions) (Two-Tier Scheduling & Worker Heartbeat Leases)", category: "SYS DESIGN", done: false }
+      { id: "task-36-1", text: "Design Question 15: Distributed Task Scheduler (Timing Wheels, Lease Fencing, Durable Queues & Idempotent Retries)", category: "SYS DESIGN", done: false }
     ]
   },
   37: {
     day: 37,
     week: 6,
-    phase: "Phase 5: Advanced Graphs, Dynamic Programming & Scale",
-    topic: "Topological Ordering, Disjoint Sets & Shortest Path",
-    objective: "Order prerequisite tasks with Kahn's algorithm, find redundant cyclic edges with Union-Find, and calculate network delays.",
-    headlineTarget: "3 DSA Problems",
-    estTime: "70 mins",
+    phase: "Week 6: System Design Masterclass — Business-Critical & Distributed Systems",
+    topic: "E-Commerce Platform (Flash Sales & Orders)",
+    objective: "Architect an end-to-end e-commerce system with atomic inventory holds, distributed checkout Sagas, payment orchestration, and flash sale resilience.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-37-1", text: "Solve Course Schedule II (Topological Sort)", category: "DSA", done: false },
-      { id: "task-37-2", text: "Solve Redundant Connection (Disjoint Set Union (DSU))", category: "DSA", done: false },
-      { id: "task-37-3", text: "Solve Network Delay Time (Graph (Dijkstra))", category: "DSA", done: false }
+      { id: "task-37-1", text: "Design Question 16: E-Commerce Platform (Atomic Inventory Holds, Saga Orchestration, Cart Decoupling & Flash Sales)", category: "SYS DESIGN", done: false }
     ]
   },
   38: {
     day: 38,
     week: 6,
-    phase: "Phase 5: Advanced Graphs, Dynamic Programming & Scale",
-    topic: "Bounded Flight Routes & Bidirectional Word Transformations",
-    objective: "Find cheapest routes with Bellman-Ford / BFS, mutate words with bidirectional BFS, and solve stair climbing.",
-    headlineTarget: "3 DSA Problems",
-    estTime: "70 mins",
+    phase: "Week 6: System Design Masterclass — Business-Critical & Distributed Systems",
+    topic: "Ticket Booking System (Ticketmaster / BookMyShow)",
+    objective: "Design an event ticketing system with numbered seating, time-bound 5-minute holds, optimistic concurrency control, and zero double-booking guarantees.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-38-1", text: "Solve Cheapest Flights Within K Stops (Graph (Bellman-Ford / BFS))", category: "DSA", done: false },
-      { id: "task-38-2", text: "Solve Word Ladder (Graph (Bidirectional BFS))", category: "DSA", done: false },
-      { id: "task-38-3", text: "Solve Climbing Stairs (1-D DP (Fibonacci))", category: "DSA", done: false }
+      { id: "task-38-1", text: "Design Question 17: Ticket Booking System (Numbered Seat Holds, Conditional Status Transitions & Concurrency Guards)", category: "SYS DESIGN", done: false }
     ]
   },
   39: {
     day: 39,
     week: 6,
-    phase: "Phase 5: Advanced Graphs, Dynamic Programming & Scale",
-    topic: "1-D Dynamic Programming & Circular Housing",
-    objective: "Formulate dynamic optimal sub-structure for linear and circular houses without triggering alarms.",
-    headlineTarget: "3 DSA Problems",
-    estTime: "70 mins",
+    phase: "Week 6: System Design Masterclass — Business-Critical & Distributed Systems",
+    topic: "Payment System (Stripe Architecture)",
+    objective: "Architect a resilient payment platform with strict client idempotency, finite-state payment machines, double-entry ledger entries, and daily reconciliation.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-39-1", text: "Solve House Robber (1-D DP)", category: "DSA", done: false },
-      { id: "task-39-2", text: "Solve House Robber II (1-D DP (Circular))", category: "DSA", done: false },
-      { id: "task-39-3", text: "Solve Longest Palindromic Substring (1-D DP / Expand Center)", category: "DSA", done: false }
+      { id: "task-39-1", text: "Design Question 18: Payment System (Idempotency Keys, State Machine Transitions, Webhook Handlers & Ledger Reconciliation)", category: "SYS DESIGN", done: false }
     ]
   },
   40: {
     day: 40,
     week: 6,
-    phase: "Phase 5: Advanced Graphs, Dynamic Programming & Scale",
-    topic: "Unbounded Knapsacks & Kadane Maximum Subarrays",
-    objective: "Solve minimum coin combinations with unbounded knapsacks and find contiguous maximum subarrays with Kadane's algorithm.",
-    headlineTarget: "3 DSA Problems",
-    estTime: "70 mins",
+    phase: "Week 6: System Design Masterclass — Business-Critical & Distributed Systems",
+    topic: "Cloud File Storage Service (Dropbox)",
+    objective: "Design a cloud sync and file storage platform with chunked deduplicated uploads, version tracking, durable sync cursors, and conflict branching.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-40-1", text: "Solve Coin Change (1-D DP (Unbounded Knapsack))", category: "DSA", done: false },
-      { id: "task-40-2", text: "Solve Maximum Subarray (Kadane's Algorithm / 1-D DP)", category: "DSA", done: false },
-      { id: "task-40-3", text: "Solve Maximum Product Subarray (1-D DP (State Tracking))", category: "DSA", done: false }
+      { id: "task-40-1", text: "Design Question 19: Cloud File Storage like Dropbox (Chunked Uploads, Content Dedup, Sync Cursors & Conflict Copies)", category: "SYS DESIGN", done: false }
     ]
   },
   41: {
     day: 41,
     week: 6,
-    phase: "Phase 5: Advanced Graphs, Dynamic Programming & Scale",
-    topic: "Word Break Segmentation & Longest Increasing Subsequences",
-    objective: "Determine space-separated dictionary word validity with DP and find increasing subsequences via patience sorting.",
-    headlineTarget: "3 DSA Problems",
-    estTime: "70 mins",
+    phase: "Week 6: System Design Masterclass — Business-Critical & Distributed Systems",
+    topic: "Ad Impression Tracking System",
+    objective: "Design a high-throughput ad-tech pipeline ingesting 100k+ events/sec with sliding deduplication, cached enrichment, and batch-stream reconciliation.",
+    headlineTarget: "1 Masterclass Spec",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-41-1", text: "Solve Word Break (1-D DP)", category: "DSA", done: false },
-      { id: "task-41-2", text: "Solve Longest Increasing Subsequence (1-D DP / Binary Search)", category: "DSA", done: false },
-      { id: "task-41-3", text: "Solve Unique Paths (2-D DP (Grid))", category: "DSA", done: false }
+      { id: "task-41-1", text: "Design Question 20: Ad Impression Tracking System (100k+ QPS Ingestion, Sliding Dedup Window, Kafka Stream & Batch Diffing)", category: "SYS DESIGN", done: false }
     ]
   },
   42: {
     day: 42,
     week: 6,
-    phase: "Phase 5: Advanced Graphs, Dynamic Programming & Scale",
-    topic: "2-D Dynamic Programming & Common Subsequences",
-    objective: "Compute length of longest shared subsequences across two strings and assign signs to reach target evaluations.",
-    headlineTarget: "3 DSA Problems",
-    estTime: "70 mins",
+    phase: "Week 6: System Design Masterclass — Business-Critical & Distributed Systems",
+    topic: "Final Interview Readiness Checklist & 6 Core Principles",
+    objective: "Master the 10-point system design readiness checklist and the 6 foundational principles of real-world distributed architectures.",
+    headlineTarget: "10-Point Readiness & 6 Principles",
+    estTime: "60 mins",
     tasks: [
-      { id: "task-42-1", text: "Solve Longest Common Subsequence (2-D DP (String Matching))", category: "DSA", done: false },
-      { id: "task-42-2", text: "Solve Target Sum (2-D DP (0/1 Knapsack))", category: "DSA", done: false },
-      { id: "task-42-3", text: "Solve Interleaving String (2-D DP (String Matching))", category: "DSA", done: false }
+      { id: "task-42-1", text: "Master 10-Point System Design Interview Readiness Checklist", category: "SYS DESIGN", done: false },
+      { id: "task-42-2", text: "Review 6 Core Principles: Queues, Caches, Concurrency, Exactly-Once, Trade-offs & Minimal Architecture", category: "SYS DESIGN", done: false }
     ]
   },
   43: {
@@ -682,7 +653,8 @@ export const CLEAN_STATE = {
   checklist: initCleanDailyTasks(),
   dsaProblems: DSA_PROBLEMS.map(p => ({ ...p, status: 'Queued', confidence: 0, timeSpent: '—' })),
   systemSpecs: SYSTEM_DESIGN_SPECS.map(s => ({ ...s, status: 'Queued', stars: 0, timeSpent: '—' })),
-  sysDesignRoadmap: {}
+  sysDesignRoadmap: {},
+  highlights: {}
 };
 
 // Demo state showing an active mid-sprint student
@@ -695,7 +667,8 @@ export const DEMO_STATE = {
   dailyTasks: initDemoDailyTasks(),
   checklist: initDemoDailyTasks(),
   dsaProblems: DSA_PROBLEMS,
-  systemSpecs: SYSTEM_DESIGN_SPECS
+  systemSpecs: SYSTEM_DESIGN_SPECS,
+  highlights: {}
 };
 
 // Default export uses clean state for authentic user onboarding
@@ -1085,6 +1058,9 @@ export function loadState() {
         if (!parsed.sysDesignRoadmap || typeof parsed.sysDesignRoadmap !== 'object') {
           parsed.sysDesignRoadmap = {};
         }
+        if (!parsed.highlights || typeof parsed.highlights !== 'object') {
+          parsed.highlights = {};
+        }
         return parsed;
       }
     }
@@ -1156,6 +1132,9 @@ export function applyRemoteState(remoteData) {
   }
   if (remoteData.sysDesignRoadmap && typeof remoteData.sysDesignRoadmap === 'object') {
     state.sysDesignRoadmap = { ...state.sysDesignRoadmap, ...remoteData.sysDesignRoadmap };
+  }
+  if (remoteData.highlights && typeof remoteData.highlights === 'object') {
+    state.highlights = { ...state.highlights, ...remoteData.highlights };
   }
   state.curriculum = FULL_45_DAY_CURRICULUM;
 

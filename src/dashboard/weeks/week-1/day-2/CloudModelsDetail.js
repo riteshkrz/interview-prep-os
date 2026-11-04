@@ -22,7 +22,7 @@ export function renderCloudModelsContent(topic) {
       paas: "You",
       faas: "You",
       saas: "Provider",
-      description: "Relational/NoSQL schemas, data indexing, state persistence, backup policies"
+      description: "Database schemas, SQL queries, data indexing, state persistence, backup schedules"
     },
     {
       layer: "Runtime & Middleware",
@@ -31,7 +31,7 @@ export function renderCloudModelsContent(topic) {
       paas: "Provider",
       faas: "Provider",
       saas: "Provider",
-      description: "Language runtimes (JVM, Node.js, Go, Python), web servers, message brokers"
+      description: "Language engines (JVM, Node.js, Python, Go), web servers (Nginx), message queues"
     },
     {
       layer: "Operating System & Kernel",
@@ -40,7 +40,7 @@ export function renderCloudModelsContent(topic) {
       paas: "Provider",
       faas: "Provider",
       saas: "Provider",
-      description: "Linux distributions, kernel sysctl tuning, security patching, systemd daemons"
+      description: "Linux distributions (Ubuntu, Amazon Linux), security patches, kernel parameter tuning"
     },
     {
       layer: "Virtualization & Compute Fabric",
@@ -49,7 +49,7 @@ export function renderCloudModelsContent(topic) {
       paas: "Provider",
       faas: "Provider",
       saas: "Provider",
-      description: "Hypervisors (KVM, ESXi), MicroVMs (Firecracker), physical server scheduling"
+      description: "Hypervisors (KVM, ESXi), MicroVMs (Firecracker), physical node orchestration"
     },
     {
       layer: "Physical Servers & Racks",
@@ -58,7 +58,7 @@ export function renderCloudModelsContent(topic) {
       paas: "Provider",
       faas: "Provider",
       saas: "Provider",
-      description: "Bare-metal rack servers, CPU blades, ECC RAM modules, hardware diagnostics"
+      description: "Bare-metal rack servers, CPU blades, ECC RAM modules, hardware replacements"
     },
     {
       layer: "Storage & Block Devices",
@@ -67,7 +67,7 @@ export function renderCloudModelsContent(topic) {
       paas: "Provider",
       faas: "Provider",
       saas: "Provider",
-      description: "SAN arrays, NVMe drive enclosures, disk RAID arrays, volume striping"
+      description: "SAN arrays, NVMe drive enclosures, disk RAID arrays, drive replacement"
     },
     {
       layer: "Physical Datacenter & Networking",
@@ -76,7 +76,7 @@ export function renderCloudModelsContent(topic) {
       paas: "Provider",
       faas: "Provider",
       saas: "Provider",
-      description: "Fiber lines, spine switches, power distribution units (PDU), HVAC cooling"
+      description: "Fiber lines, core switches, power backup (UPS/generators), HVAC cooling, physical guards"
     }
   ];
 
@@ -84,33 +84,33 @@ export function renderCloudModelsContent(topic) {
     {
       tier: "IaaS (Infrastructure as a Service)",
       vendorExamples: "AWS EC2, Google Compute Engine, Azure VMs, AWS EBS, VPC",
-      controlLevel: "Maximum Control (Full OS root, kernel tuning, custom networking)",
-      operationalToil: "High (Requires dedicated SREs for OS patching, upgrades, and monitoring)",
-      economicSweetSpot: "Scale > $25K/month, custom hardware requirements, predictable high load",
+      controlLevel: "Maximum Control (Root OS access, custom kernel tuning, raw network config)",
+      operationalToil: "High (Requires dedicated engineers for OS patching, upgrades, and monitoring)",
+      economicSweetSpot: "Large scale (> $25K/month), custom hardware requirements, predictable 24/7 load",
       badgeColor: "text-cyan-400 bg-cyan-500/15 border-cyan-500/30"
     },
     {
       tier: "PaaS (Platform as a Service)",
-      vendorExamples: "Heroku, Google App Engine, AWS Elastic Beanstalk, Amazon RDS, Cloud SQL",
-      controlLevel: "Moderate Control (Code & schema only; standard runtime containers)",
-      operationalToil: "Near-Zero (Provider automates patching, high availability & auto-healing)",
-      economicSweetSpot: "Early startups, MVP development, 0-to-1 speed, small engineering teams",
+      vendorExamples: "Heroku, Render, AWS Elastic Beanstalk, Amazon RDS, Google Cloud SQL",
+      controlLevel: "Moderate Control (Manage your code & database schema; runtime is automated)",
+      operationalToil: "Near-Zero (Provider handles OS security patches, high availability & auto-healing)",
+      economicSweetSpot: "Early startups, MVPs, 0-to-1 build speed, small engineering teams without DevOps",
       badgeColor: "text-indigo-400 bg-indigo-500/15 border-indigo-500/30"
     },
     {
       tier: "FaaS (Function as a Service / Serverless)",
       vendorExamples: "AWS Lambda, Google Cloud Run, Cloudflare Workers, Azure Functions",
-      controlLevel: "Constrained Control (Pure function logic, event trigger bindings)",
-      operationalToil: "Zero (Scale-to-zero, automatic concurrency scaling per millisecond)",
+      controlLevel: "Code-Only Control (Write pure function handlers; cloud manages concurrency)",
+      operationalToil: "Zero (Scale-to-zero, instant concurrency scaling per millisecond)",
       economicSweetSpot: "Spiky/unpredictable traffic, asynchronous event processing, webhook handlers",
       badgeColor: "text-amber-400 bg-amber-500/15 border-amber-500/30"
     },
     {
       tier: "SaaS (Software as a Service)",
       vendorExamples: "Gmail, Datadog, Slack, GitHub, Salesforce, Stripe, Snowflake",
-      controlLevel: "Application User / Config (RBAC policies, API webhook integrations)",
-      operationalToil: "Zero (Vendor operates 100% of underlying infrastructure and software)",
-      economicSweetSpot: "Undifferentiated business capabilities (auth, email, monitoring, billing)",
+      controlLevel: "Config Only (User accounts, API keys, dashboard settings, webhook URLs)",
+      operationalToil: "Zero (Vendor manages 100% of underlying infrastructure, scaling, and backups)",
+      economicSweetSpot: "Undifferentiated business capabilities (auth, email, payments, monitoring)",
       badgeColor: "text-emerald-400 bg-emerald-500/15 border-emerald-500/30"
     }
   ];
@@ -119,44 +119,41 @@ export function renderCloudModelsContent(topic) {
     {
       qNum: "Q1",
       question: "Where do modern serverless runtimes (AWS Lambda, Cloudflare Workers, Google Cloud Run) sit on the cloud spectrum?",
-      answer: `Serverless compute is classified as <strong>FaaS (Function-as-a-Service)</strong>, an ultra-specialized evolution of the PaaS paradigm:
+      answer: `Serverless compute is classified as <strong>FaaS (Function-as-a-Service)</strong>, an evolution of PaaS designed for event-driven computing:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
-        <li><strong>Execution Model:</strong> While traditional PaaS (Heroku, App Engine) keeps persistent application servers running continuously (paying for idle CPU cycles), FaaS introduces <strong>event-driven ephemeral execution with true scale-to-zero</strong>. Billing is metered strictly per millisecond of actual CPU execution.</li>
-        <li><strong>Infrastructure Abstraction:</strong> The cloud provider manages the entire server lifecycle: provisioning microVM sandboxes (AWS Firecracker), downloading container images, routing incoming events, and tearing down idle instances. The developer provides only stateless function code and trigger bindings (HTTP gateway, S3 upload, SQS message).</li>
-        <li><strong>Container-Based Serverless (Google Cloud Run / AWS Fargate):</strong> Bridges the gap between PaaS and FaaS by allowing developers to package arbitrary Docker containers while retaining scale-to-zero and fully managed infrastructure.</li>
+        <li><strong>Scale to Zero:</strong> Traditional PaaS (Heroku, App Engine) keeps servers running continuously, meaning you pay even when zero requests arrive. FaaS scales down to <strong>absolute zero</strong> when idle and charges strictly per millisecond of CPU execution.</li>
+        <li><strong>MicroVM Execution:</strong> When a request arrives, AWS Lambda uses lightweight microVMs (AWS Firecracker) that spin up in ~5 milliseconds to execute the function handler in an isolated sandbox.</li>
+        <li><strong>Container-Based Serverless:</strong> Modern tools like Google Cloud Run and AWS Fargate allow you to package full Docker containers while still getting scale-to-zero and automatic horizontal scaling without managing virtual servers.</li>
       </ul>`
     },
     {
       qNum: "Q2",
-      question: "How do you mathematically and strategically decide between deploying to an IaaS VM vs. a PaaS (Heroku/Render) vs. managed Kubernetes (EKS/GKE)?",
-      answer: `Senior engineers evaluate this decision through the lens of <strong>Total Cost of Ownership (TCO)</strong> and <strong>Operational Headcount Economics</strong>:
+      question: "How do you strategically decide between deploying to an IaaS VM vs. a PaaS vs. managed Kubernetes (EKS/GKE)?",
+      answer: `Senior engineers evaluate this through the lens of <strong>Total Cost of Ownership (TCO)</strong> — factoring in developer salaries alongside cloud hosting fees:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
-        <li><strong>Stage 1 (0 to 1 / Early Startup): Choose PaaS.</strong> When a company has 3 developers and $0 revenue, spending $300/month on Heroku or Render is infinitely cheaper than hiring a DevOps engineer ($180K–$250K/year). The primary business currency is time-to-market and iteration speed.</li>
-        <li><strong>Stage 2 (Growth / $15K–$25K monthly spend): The Economic Inflection Point.</strong> PaaS compute margins carry a ~2.5× to 3× markup over raw cloud instances. When cloud spend reaches $20K/month, that premium equals ~$12K/month ($144K/year) — roughly the cost of a dedicated platform engineer. However, migrating to raw IaaS VMs is an anti-pattern because managing bare OS instances introduces heavy patching toil.</li>
-        <li><strong>Stage 3 (Scale & Portability): Choose Managed Kubernetes (EKS/GKE).</strong> Managed Kubernetes provides the optimal balance: the cloud provider manages the Kubernetes control plane, master nodes, and etcd cluster (PaaS layer for orchestration), while your workloads run on standard OCI containers on elastic EC2/Compute instances (IaaS compute economics). This prevents proprietary lock-in while avoiding bare VM management.</li>
+        <li><strong>Phase 1 (0 to 1 / Early Product): Choose PaaS.</strong> When your team has 3 engineers, spending $300/month on Render or Heroku is infinitely smarter than paying $180,000/year for a dedicated DevOps engineer. Speed to market is everything.</li>
+        <li><strong>Phase 2 (Growth / $15K–$25K monthly spend): The Turning Point.</strong> PaaS compute carries a ~2.5x to 3x markup over raw cloud instances. When cloud spend hits $25K/month, that premium is ~$15K/month ($180,000/year) — the cost of a full-time platform engineer.</li>
+        <li><strong>Phase 3 (Scale & Multi-Cloud): Choose Managed Kubernetes (EKS/GKE).</strong> The optimal sweet spot: the cloud provider manages the Kubernetes master nodes and etcd cluster (PaaS layer for orchestration), while your containers run on standard elastic EC2/Compute instances (IaaS compute pricing). You get container portability without bare VM maintenance toil.</li>
       </ul>`
     },
     {
       qNum: "Q3",
-      question: "What is the true architectural difference between proprietary API lock-in and runtime lock-in, and how do you mitigate it in a system design interview?",
-      answer: `Interviewers look for candidates who differentiate between benign portability trade-offs and dangerous structural traps:
+      question: "What is the difference between API lock-in and Runtime lock-in, and how do you handle it in system design?",
+      answer: `Interviewers look for candidates who understand benign portability vs. dangerous architectural traps:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
-        <li><strong>Runtime Lock-in (Low Risk):</strong> Packaging your services as standard Docker/OCI containers running on Linux. Whether deployed on AWS ECS, Google Cloud Run, Azure AKS, or on-premises bare metal, the container executes identically. Moving between cloud providers is straightforward.</li>
-        <li><strong>Proprietary API Lock-in (High Structural Risk):</strong> Writing code deeply coupled to vendor-proprietary services with proprietary query languages and non-portable SDKs (e.g., AWS DynamoDB single-table design, Google Cloud Spanner, AWS Step Functions, BigQuery). Migrating away requires a complete rewrite of application persistence logic and data pipelines.</li>
-        <li><strong>Interview Mitigation Strategy:</strong>
-          <br/>1. <em>Use open-source protocol standards:</em> Prefer PostgreSQL/MySQL on managed RDS/Cloud SQL rather than proprietary database engines; prefer Apache Kafka over AWS Kinesis.
-          <br/>2. <em>Hexagonal / Clean Architecture:</em> Isolate cloud-specific SDKs behind domain repository interfaces and adapters (Ports and Adapters pattern), ensuring the core domain model has zero cloud dependencies.
-          <br/>3. <em>Deliberate Trade-off Justification:</em> Acknowledge lock-in explicitly: <em>"We will use AWS DynamoDB because its single-digit millisecond latency at 100K QPS with zero maintenance outweighs the migration risk for our core checkout path."</em></li>
+        <li><strong>Runtime Lock-in (Low Risk):</strong> Packaging your services into standard Docker containers. Whether you run them on AWS ECS, Google Cloud Run, Azure AKS, or on-prem hardware, the container executes identically. Switching cloud providers takes days.</li>
+        <li><strong>Proprietary API Lock-in (High Risk):</strong> Tightly coupling your application code to proprietary vendor APIs (e.g. AWS DynamoDB single-table SDKs, AWS Step Functions, Google Cloud Spanner). Migrating away requires a full rewrite of your database and business logic.</li>
+        <li><strong>Interview Strategy:</strong> Use open-standard abstractions where possible (PostgreSQL on RDS rather than proprietary schemas; Kafka rather than proprietary message queues). When you do choose a proprietary service (like DynamoDB for low-latency lookups), explicitly state: <em>"We wrap our DynamoDB access in a Repository interface so our domain logic remains decoupled."</em></li>
       </ul>`
     },
     {
       qNum: "Q4",
-      question: "What is the Cloud Shared Responsibility Model for security and regulatory compliance, and who is liable during a catastrophic cloud breach?",
-      answer: `The <strong>Shared Responsibility Model</strong> strictly delineates security <em>OF</em> the cloud from security <em>IN</em> the cloud:
+      question: "What is the Cloud Shared Responsibility Model, and who is responsible when a cloud security breach occurs?",
+      answer: `The <strong>Shared Responsibility Model</strong> cleanly divides security responsibilities:
       <ul class="list-disc pl-5 mt-2 space-y-1.5 text-slate-300">
-        <li><strong>Security OF the Cloud (Provider's Liability):</strong> The cloud provider (AWS, GCP, Azure) is strictly responsible for physical datacenter security, biometric facility access, hardware decommissioning, hypervisor integrity, network infrastructure, and physical host firmware.</li>
-        <li><strong>Security IN the Cloud (Customer's Liability):</strong> The customer is 100% responsible for customer data encryption (at rest and in transit), Identity & Access Management (IAM) role least privilege, security group firewall ingress/egress rules, OS security patching (on IaaS VMs), database credentials, and application vulnerability patches.</li>
-        <li><strong>The Compliance Trap:</strong> In 99% of historical enterprise cloud data breaches (e.g. leaked S3 buckets, Capital One SSRF), the breach was caused by <strong>customer misconfiguration</strong> (overly permissive IAM policies, public bucket ACLs, unpatched EC2 instances), not a vulnerability in the cloud provider's physical infrastructure.</li>
+        <li><strong>Security OF the Cloud (Provider's Responsibility):</strong> Physical datacenter security, power, biometric entry, hypervisor isolation, and hardware decommissioning. AWS or Google guarantees the physical server cannot be physically stolen or tampered with.</li>
+        <li><strong>Security IN the Cloud (Your Responsibility):</strong> Data encryption (at rest and in transit), firewall rules (Security Groups), IAM role permissions, operating system security patches (on IaaS VMs), and application code security.</li>
+        <li><strong>The Key Takeaway:</strong> In over 95% of real-world enterprise cloud leaks (like exposed Amazon S3 buckets or SSRF attacks), the root cause was <strong>customer misconfiguration</strong> (e.g., wildcards in IAM policies or public permissions), NOT a breach of the cloud provider's physical infrastructure.</li>
       </ul>`
     }
   ];
@@ -182,59 +179,108 @@ export function renderCloudModelsContent(topic) {
           </p>
         </div>
 
-        <!-- On-premises Baseline Section -->
-        <div class="flex flex-col gap-2.5 bg-[#141C2E] border border-[#24314A] rounded-xl p-5">
-          <h3 class="font-sans text-[15px] font-bold text-white flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-[#6366F1]"></span>
-            On-Premises Baseline: Total Vertical Ownership
-          </h3>
-          <p class="text-[13px] text-slate-300 leading-relaxed font-sans pl-3.5">
-            For traditional on-premises enterprise applications, you are responsible for the <strong>entire physical and virtual stack</strong>: real estate leases, HVAC cooling, power distribution units (PDUs), physical server rack blades, SAN storage arrays, hypervisors, operating system security patches, language runtimes, database clustering, backups, and application code. Cloud computing is fundamentally the systematic offloading of undifferentiated operational toil to specialized hyperscale providers.
+        <!-- THE PIZZA ANALOGY MENTAL MODEL -->
+        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-5 flex flex-col gap-3">
+          <span class="font-code text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            THE SIMPLE MENTAL MODEL: PIZZA AS A SERVICE
+          </span>
+          <p class="text-[13px] text-slate-300 leading-relaxed font-sans">
+            The simplest way to understand the cloud tiers is by looking at who does the cooking vs. who provides the kitchen:
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-[12.5px] font-sans">
+            <div class="bg-[#0A0E1A] p-3.5 rounded-lg border border-slate-700/60 flex flex-col gap-1.5">
+              <span class="font-code text-[12px] font-bold text-slate-200">1. On-Premises (Homemade)</span>
+              <p class="text-slate-400 text-[12px]">
+                You make the dough, buy toppings, heat your own home oven, set the dining table, and wash all dishes. You control everything, but do all the work.
+              </p>
+            </div>
+            <div class="bg-[#0A0E1A] p-3.5 rounded-lg border border-cyan-500/30 flex flex-col gap-1.5">
+              <span class="font-code text-[12px] font-bold text-cyan-300">2. IaaS (Store-Bought Frozen)</span>
+              <p class="text-slate-400 text-[12px]">
+                The store sells you frozen pizza dough & cheese (raw VMs and storage). You still use your own oven, bake it, and set the table yourself.
+              </p>
+            </div>
+            <div class="bg-[#0A0E1A] p-3.5 rounded-lg border border-indigo-500/30 flex flex-col gap-1.5">
+              <span class="font-code text-[12px] font-bold text-indigo-300">3. PaaS (Pizza Delivery)</span>
+              <p class="text-slate-400 text-[12px]">
+                They prepare the pizza and bake it in their commercial oven, then deliver it hot to your door. You only supply the table and drinks.
+              </p>
+            </div>
+            <div class="bg-[#0A0E1A] p-3.5 rounded-lg border border-emerald-500/30 flex flex-col gap-1.5">
+              <span class="font-code text-[12px] font-bold text-emerald-300">4. SaaS (Dine-In Pizzeria)</span>
+              <p class="text-slate-400 text-[12px]">
+                You walk into the restaurant. They cook, serve at the table, and clean up. You just sit down, eat, and pay the check.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- WHY THIS MATTERS IN SYSTEM DESIGN INTERVIEWS -->
+        <div class="bg-indigo-950/30 border border-indigo-500/40 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+          <span class="px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-code text-[10.5px] font-bold uppercase tracking-wider shrink-0 w-fit">
+            INTERVIEW SIGNAL
+          </span>
+          <p class="text-[12.5px] text-indigo-200/90 leading-relaxed font-sans">
+            <strong>Why interviewers care:</strong> Candidates often propose self-hosting databases, Redis, or Kafka on raw EC2 instances to "save money". Seniors know that managing your own clusters requires round-the-clock on-call rotations and automated failovers that cost hundreds of thousands of dollars in engineering salaries. In an interview, <strong>default to managed services (RDS, DynamoDB, SQS)</strong> unless there is a specific scale or cost reason not to.
           </p>
         </div>
 
-        <!-- ASCII Architecture Stack Pyramid Diagram -->
-        <div class="bg-[#0A0E1A] border border-[#24314A] rounded-xl p-5 sm:p-6 flex flex-col gap-4 font-mono text-[12px]">
-          <div class="flex items-center justify-between pb-2 border-b border-[#24314A]/60">
-            <span class="text-[11px] font-code font-bold tracking-wider text-cyan-400 uppercase flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-              THE 8-LAYER CLOUD RESPONSIBILITY PYRAMID
-            </span>
-            <span class="text-[11px] font-code text-slate-500">Separation of Operational Ownership</span>
-          </div>
-
-          <!-- ASCII Stack Diagram Container -->
-          <div class="p-4 bg-[#070B14] rounded-lg border border-slate-800 text-slate-300 overflow-x-auto text-[11.5px] leading-relaxed">
-            <pre class="font-code text-slate-300">
-+-------------------------------------------------------------------------------------------------------------+
-|                                    SHARED RESPONSIBILITY ACROSS CLOUD TIERS                                 |
-+-------------------------------------------------------------------------------------------------------------+
- STACK LAYER              ON-PREMISE            IaaS                 PaaS                 SaaS
-=============================================================================================================
- [8] Applications        [ YOU MANAGE ]       [ YOU MANAGE ]       [ YOU MANAGE ]       [ PROVIDER MANAGES ]
- [7] Data & Schemas      [ YOU MANAGE ]       [ YOU MANAGE ]       [ YOU MANAGE ]       [ PROVIDER MANAGES ]
--------------------------------------------------------------------------------------------------------------
- [6] Runtime / MW        [ YOU MANAGE ]       [ YOU MANAGE ]       [ PROVIDER MANAGES ] [ PROVIDER MANAGES ]
- [5] Operating System    [ YOU MANAGE ]       [ YOU MANAGE ]       [ PROVIDER MANAGES ] [ PROVIDER MANAGES ]
--------------------------------------------------------------------------------------------------------------
- [4] Virtualization      [ YOU MANAGE ]       [ PROVIDER MANAGES ] [ PROVIDER MANAGES ] [ PROVIDER MANAGES ]
- [3] Physical Servers    [ YOU MANAGE ]       [ PROVIDER MANAGES ] [ PROVIDER MANAGES ] [ PROVIDER MANAGES ]
- [2] Storage Arrays      [ YOU MANAGE ]       [ PROVIDER MANAGES ] [ PROVIDER MANAGES ] [ PROVIDER MANAGES ]
- [1] Datacenter / Net    [ YOU MANAGE ]       [ PROVIDER MANAGES ] [ PROVIDER MANAGES ] [ PROVIDER MANAGES ]
-=============================================================================================================
- OPERATIONAL BURDEN:     100% On You          High (OS + App)      Low (App Only)       Zero (Turnkey Product)
- VENDOR EXAMPLES:        Private Datacenter   AWS EC2, GCE, VPC    Heroku, App Engine   Gmail, Slack, Datadog
- CONTROL FLEXIBILITY:    Maximum Custom       Full Kernel Control  Standard Containers  Configuration Only</pre>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 text-[12px]">
-            <div class="bg-[#0F1626] border border-cyan-500/30 rounded-lg p-3 text-cyan-200">
-              <strong class="text-white block mb-1">IaaS Line of Demarcation:</strong>
-              The hypervisor is the contract boundary. The cloud provider guarantees uptime of the virtual machine and underlying hardware; you are responsible for everything inside the guest OS, including kernel parameters, security patches, firewall ports, and system packages.
+        <!-- THE 8-LAYER CLOUD RESPONSIBILITY PYRAMID DIAGRAM -->
+        <div class="os-diagram-canvas rounded-2xl p-5 sm:p-7 flex flex-col gap-6 shadow-xl border border-slate-200 bg-white">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-slate-200 gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
+              <span class="text-[12.5px] sm:text-[13px] font-code font-bold tracking-wider text-cyan-800 uppercase">
+                THE 8-LAYER CLOUD RESPONSIBILITY PYRAMID
+              </span>
             </div>
-            <div class="bg-[#0F1626] border border-emerald-500/30 rounded-lg p-3 text-emerald-200">
-              <strong class="text-white block mb-1">PaaS / Serverless Line of Demarcation:</strong>
-              The application runtime is the contract boundary. The cloud provider guarantees automated OS patching, zero-downtime database failovers, and auto-scaling; you bring only containerized business logic, database schemas, and configuration secrets.
+            <div class="flex items-center gap-2 text-[11px] font-code text-slate-600">
+              <span class="px-2.5 py-0.5 rounded-md bg-slate-100 border border-slate-300 text-slate-700 font-medium">Separation of Operational Ownership</span>
+              <span class="px-2.5 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 font-medium">On-Premise vs. IaaS vs. PaaS vs. SaaS</span>
+            </div>
+          </div>
+
+          <!-- The Architectural Diagram Image As-Is -->
+          <div class="flex flex-col gap-3">
+            <div class="os-diagram-img-frame relative overflow-hidden rounded-xl border border-slate-200 bg-white p-2 sm:p-4 shadow-sm flex items-center justify-center">
+              <img 
+                src="/images/cloud-responsibility-pyramid.jpg" 
+                alt="The 8-Layer Cloud Responsibility Pyramid - Separation of Operational Ownership across On-Premise, IaaS, PaaS, and SaaS" 
+                class="w-full h-auto max-w-5xl rounded-lg object-contain bg-white cursor-zoom-in transition-transform duration-200 hover:scale-[1.008]"
+                loading="eager"
+                title="Click to view image full resolution"
+                onclick="window.open('/images/cloud-responsibility-pyramid.jpg', '_blank')"
+              />
+            </div>
+            <div class="flex items-center justify-between text-[11px] font-sans text-slate-500 px-1">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px] text-cyan-600">zoom_in</span>
+                Click diagram to view in high resolution in new tab
+              </span>
+              <span class="font-code text-[10.5px] text-slate-500">8 Stack Layers · On-Premise · IaaS · PaaS · SaaS Demarcation</span>
+            </div>
+          </div>
+
+          <!-- Key Lines of Demarcation -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 text-[12px]">
+            <div class="bg-cyan-50 border border-cyan-200 rounded-xl p-4 shadow-sm">
+              <div class="flex items-center gap-2 mb-1.5 font-bold text-[13px] text-cyan-900">
+                <span class="material-symbols-outlined text-[18px]">verified_user</span>
+                <span>IaaS Boundary: Hardware vs. Operating System</span>
+              </div>
+              <p class="leading-relaxed text-[12px] text-slate-700">
+                The <strong>hypervisor is the dividing line</strong>. The cloud provider guarantees that the physical server, power, and virtual hardware stay online. You are responsible for everything inside the operating system: installing kernel security updates, opening firewall ports, setting up swap space, and configuring runtimes.
+              </p>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 shadow-sm">
+              <div class="flex items-center gap-2 mb-1.5 font-bold text-[13px] text-emerald-900">
+                <span class="material-symbols-outlined text-[18px]">layers</span>
+                <span>PaaS Boundary: Infrastructure vs. Application Code</span>
+              </div>
+              <p class="leading-relaxed text-[12px] text-slate-700">
+                The <strong>application runtime is the dividing line</strong>. The provider handles OS patching, server hardware failures, database replication, and auto-scaling. You bring only your application code, database schema, and environment variables.
+              </p>
             </div>
           </div>
         </div>
@@ -256,7 +302,7 @@ export function renderCloudModelsContent(topic) {
                 <span class="text-[13px] font-sans font-bold text-white">Infrastructure</span>
               </div>
               <p class="text-[12.5px] text-slate-300 leading-relaxed font-sans">
-                Provides fundamental compute instances, raw block storage volumes (EBS), and software-defined networks (VPC). You manage the OS, middleware, and application; the provider owns the physical infrastructure.
+                Rents raw compute instances, block storage drives, and software-defined networks. You configure the OS, runtimes, and application stack; the provider maintains the physical servers.
               </p>
               <div class="pt-2 border-t border-[#24314A]/60 font-code text-[11px] text-cyan-300">
                 AWS EC2 · GCP Compute · Azure VMs
@@ -272,10 +318,10 @@ export function renderCloudModelsContent(topic) {
                 <span class="text-[13px] font-sans font-bold text-white">Platform</span>
               </div>
               <p class="text-[12.5px] text-slate-300 leading-relaxed font-sans">
-                Provides a managed application runtime and database environment. The provider automates OS patching, load balancing, and clustering; developers deploy code directly via git pushes or container manifests.
+                Provides a fully managed runtime environment. The provider automates operating system patching, SSL certificates, load balancing, and failover; you simply deploy your code.
               </p>
               <div class="pt-2 border-t border-[#24314A]/60 font-code text-[11px] text-indigo-300">
-                Heroku · Elastic Beanstalk · RDS
+                Heroku · Render · Amazon RDS
               </div>
             </div>
 
@@ -288,7 +334,7 @@ export function renderCloudModelsContent(topic) {
                 <span class="text-[13px] font-sans font-bold text-white">Functions / Serverless</span>
               </div>
               <p class="text-[12.5px] text-slate-300 leading-relaxed font-sans">
-                Event-driven ephemeral compute. MicroVM runtimes instantiate in milliseconds on incoming triggers (HTTP, SQS, S3 events), scale to zero when idle, and meter strictly by millisecond execution.
+                Event-driven ephemeral compute. MicroVM runtimes spin up in milliseconds in response to triggers (HTTP request, S3 file upload, SQS message), scale to zero when idle, and bill per millisecond.
               </p>
               <div class="pt-2 border-t border-[#24314A]/60 font-code text-[11px] text-amber-300">
                 AWS Lambda · Cloud Run · Workers
@@ -304,7 +350,7 @@ export function renderCloudModelsContent(topic) {
                 <span class="text-[13px] font-sans font-bold text-white">Software</span>
               </div>
               <p class="text-[12.5px] text-slate-300 leading-relaxed font-sans">
-                Turnkey end-user software applications delivered over web and API interfaces. The vendor operates and scales 100% of the software, infrastructure, database, and disaster recovery processes.
+                Ready-to-use software applications accessed through web browsers or APIs. The vendor manages 100% of the underlying infrastructure, code updates, security, and disaster recovery.
               </p>
               <div class="pt-2 border-t border-[#24314A]/60 font-code text-[11px] text-emerald-300">
                 Gmail · Datadog · Slack · Stripe
@@ -401,31 +447,31 @@ export function renderCloudModelsContent(topic) {
           <div class="flex items-center gap-3">
             <div class="w-1.5 h-6 bg-[#6366F1] rounded-sm shrink-0"></div>
             <h3 class="font-sans text-[17px] sm:text-[19px] font-bold text-white tracking-tight">
-              Cloud Economics: The Headcount Cost of Raw IaaS
+              Cloud Economics: The Headcount Cost of Raw Infrastructure
             </h3>
           </div>
           <p class="text-[13px] text-slate-300 leading-relaxed font-sans">
-            Junior engineers often look solely at raw EC2 instance pricing and conclude: <em>"PaaS is 2.5× more expensive than EC2, so we should build our own infrastructure on raw VMs."</em> This commits the <strong>IaaS Iceberg Fallacy</strong>:
+            Junior engineers often look only at raw hosting bills and say: <em>"A managed database costs 2.5x more than running Postgres on an EC2 instance, so let's run our own."</em> This ignores the <strong>IaaS Iceberg Fallacy</strong>:
           </p>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
             <div class="bg-[#141C2E] border border-amber-500/30 rounded-xl p-5 flex flex-col gap-2.5">
               <span class="font-code text-[12px] font-bold text-amber-300 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[16px]">trending_down</span>
-                The Visible 25%: Cloud Invoice
+                The Visible 25%: The Monthly Cloud Bill
               </span>
               <p class="text-[12.5px] text-slate-300 leading-relaxed font-sans">
-                On an invoice, 10 EC2 instances cost ~$1,500/month, while the equivalent PaaS compute cluster might cost ~$3,500/month. The apparent difference is $2,000/month.
+                On an invoice, 10 raw virtual machines might cost ~$1,500/month, whereas the managed PaaS equivalent costs ~$3,500/month. The apparent extra cost is $2,000/month.
               </p>
             </div>
 
             <div class="bg-[#141C2E] border border-rose-500/30 rounded-xl p-5 flex flex-col gap-2.5">
               <span class="font-code text-[12px] font-bold text-rose-300 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[16px]">warning</span>
-                The Hidden 75%: SRE Headcount & Operational Toil
+                The Hidden 75%: Engineering Salaries & On-Call Toil
               </span>
               <p class="text-[12.5px] text-slate-300 leading-relaxed font-sans">
-                Running raw IaaS requires hiring at least two Site Reliability Engineers ($400,000+/year total compensation) to manage 24/7 on-call rotations, OS kernel security CVE patching, disk full remediation, and backup verification.
+                Managing raw VMs requires hiring at least two Site Reliability Engineers ($350,000+/year total compensation) to handle 24/7 on-call alerts, OS security CVE patches, disk full panics, and database replica resyncing.
               </p>
             </div>
           </div>
@@ -435,10 +481,10 @@ export function renderCloudModelsContent(topic) {
         <div class="bg-emerald-950/20 border-l-4 border-emerald-500 rounded-r-xl p-5 flex flex-col gap-2.5">
           <span class="font-code text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
             <span class="material-symbols-outlined text-[16px]">psychology</span>
-            SENIOR PERSPECTIVE: WHEN PAAS BECOMES A LIABILITY & THE SRE INFLECTION POINT
+            SENIOR PERSPECTIVE: WHEN PAAS BECOMES A LIABILITY & THE MIGRATION THRESHOLD
           </span>
           <p class="text-[13px] text-emerald-200/90 leading-relaxed font-sans">
-            PaaS products (Heroku, Render, Firebase, App Engine) are unbeatable for 0-to-1 speed. The architectural tipping point occurs when: (1) <strong>Monthly cloud spend exceeds $20K–$30K/month</strong>, where the 2.5× PaaS premium exceeds the cost of a full-time platform engineer; (2) <strong>Low-latency hardware optimization is required</strong> (e.g. kernel bypass, custom NIC queues, custom Linux sysctl TCP buffer sizes); or (3) <strong>Strict data compliance</strong> requires VPC peering and dedicated bare-metal hardware. Mature teams start on PaaS for speed, and deliberately migrate to managed Kubernetes (EKS/GKE) as traffic scales.
+            PaaS platforms (Heroku, Render, Firebase) are unmatched for rapid product launches. But they reach an architectural tipping point when: (1) <strong>Monthly hosting spend exceeds $20K–$30K</strong>, where the markup justifies hiring a full-time platform engineer; (2) <strong>Low-level network or kernel tuning is needed</strong> (e.g., custom Linux socket buffer sizes for million-connection WebSockets); or (3) <strong>Strict compliance requires isolated private networks (VPCs)</strong>. Mature startups start on PaaS for speed, and migrate to managed Kubernetes (EKS/GKE) as scale demands.
           </p>
         </div>
 
@@ -446,10 +492,10 @@ export function renderCloudModelsContent(topic) {
         <div class="bg-amber-950/20 border-l-4 border-amber-500 rounded-r-xl p-5 flex flex-col gap-2.5">
           <span class="font-code text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
             <span class="material-symbols-outlined text-[16px]">lock</span>
-            THE VENDOR LOCK-IN TRAP: PROPRIETARY APIS VS. RUNTIME ABSTRACTION
+            THE VENDOR LOCK-IN TRAP: PROPRIETARY APIS VS. CONTAINER RUNTIMES
           </span>
           <p class="text-[13px] text-amber-200/90 leading-relaxed font-sans">
-            Differentiate strictly between <strong>runtime lock-in</strong> (running Docker containers on AWS ECS, GKE, or Azure AKS) and <strong>proprietary API lock-in</strong> (writing code tightly coupled to DynamoDB single-table APIs, AWS Step Functions, or Google Cloud Spanner). Container runtimes are portable across clouds in days. Proprietary APIs create structural lock-in requiring months of engineering rewrites to exit. In a system design interview, always wrap proprietary cloud dependencies behind repository interfaces to demonstrate architectural foresight.
+            Always distinguish between <strong>runtime lock-in</strong> (running Docker containers on AWS ECS, GKE, or Azure) and <strong>proprietary API lock-in</strong> (writing code tightly coupled to AWS DynamoDB single-table APIs or Google Spanner). Docker containers can move to another cloud provider in days. Proprietary database APIs create structural lock-in requiring months of software rewrites to escape. In system design interviews, wrap cloud-specific SDKs behind repository interfaces.
           </p>
         </div>
 
@@ -530,7 +576,7 @@ export function renderCloudModelsContent(topic) {
             KEY INTERVIEW TAKEAWAY
           </span>
           <p class="text-[14px] font-sans font-medium text-white leading-relaxed">
-            Anchor your cloud architecture on three orthogonal axes: control level, operational headcount, and lock-in vs. time-to-market. A senior engineer never proclaims "PaaS is too expensive" without factoring in the six-figure headcount cost of dedicated SREs required to operate raw IaaS. Default to PaaS for speed, leverage managed container orchestration (EKS/GKE) at scale, and protect domain core logic with interface boundaries.
+            Evaluate cloud architectures across three key dimensions: control, engineering toil, and lock-in vs. speed. A seasoned engineer never claims "managed services are too expensive" without factoring in the massive six-figure salary costs of dedicated DevOps teams needed to run raw infrastructure. Default to PaaS and managed services for speed, move to managed Kubernetes (EKS/GKE) at scale, and isolate proprietary cloud SDKs behind clean interfaces.
           </p>
         </div>
 

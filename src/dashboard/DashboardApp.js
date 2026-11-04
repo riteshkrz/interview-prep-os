@@ -17,7 +17,6 @@ import { SYSTEM_DESIGN_TOPICS_BY_DAY } from './system-design/systemDesignTopicsD
 import {
   renderQuickSearchModal,
   renderLogEntryModal,
-  renderMockDesignModal,
   renderCheatsheetModal
 } from './components/DashboardModals.js';
 import { renderCloudSyncModal, attachCloudSyncModalListeners } from './components/CloudSyncModal.js';
@@ -32,14 +31,19 @@ import {
   recordPurchase,
   getPurchasedPdfs
 } from './pdf-store/PdfStore.js';
-import { renderLldStudioView, getActiveLldProblemId, setActiveLldProblemId } from './lld-studio/LldStudioView.js';
-import { LLD_PROBLEMS } from './lld-studio/lldTopicsData.js';
-import { renderDistinctionsWorkspaceView } from './concepts/DistinctionsWorkspaceView.js';
-import { INTERVIEW_DISTINCTIONS } from './concepts/interviewDistinctionsData.js';
+import { initHighlightManager, applyHighlightsToContainer } from './components/HighlightManager.js';
+import { initHldWorkspace } from './components/hld-workspace/HldWorkspace.js';
+import { renderWhiteboardWorkspaceView } from './whiteboard/WhiteboardView.js';
+import { initWhiteboard } from './whiteboard/WhiteboardEngine.js';
+import { renderPracticeWhiteboardModal, initPracticeWhiteboardModal } from './whiteboard/PracticeWhiteboardModal.js';
 
 // Workspace Navigation & Layout State (Default: 6-Week System Design Roadmap)
 let currentTab = 'system-design-roadmap';
 let activePdfCategoryFilter = 'all';
+
+export function setDashboardTab(tab) {
+  currentTab = tab;
+}
 
 const STORAGE_SIDEBAR_COLLAPSED_KEY = 'prep_os_sidebar_collapsed';
 function getInitialSidebarCollapsed() {
@@ -58,21 +62,12 @@ let dsaPatternFilter = 'all';
 let dsaDiffFilter = 'all';
 let dsaSearch = '';
 
-// Filters for Machine Coding / LLD Studio Workspace
-let lldCategoryFilter = 'all';
-let lldSearch = '';
-
-// Filters for 180+ Architectural Distinctions Workspace
-let distCategoryFilter = 'all';
-let distSearch = '';
-
 // Filters for 6-Week System Design Roadmap Workspace
 let sysRoadmapWeek = 'today';
 let sysRoadmapStatus = 'all';
 let sysRoadmapSearch = '';
 let sysRoadmapReadiness = 'all';
 
-let mockTimerInterval = null;
 let unsubscribeSync = null;
 let unsubscribeRemote = null;
 
@@ -81,10 +76,8 @@ export function renderDashboardApp() {
 
   if (currentTab === 'dsa-tracker') {
     mainWorkspaceContent = renderDsaTrackerView(dsaStatusFilter, dsaPatternFilter, dsaDiffFilter, dsaSearch);
-  } else if (currentTab === 'lld-studio') {
-    mainWorkspaceContent = renderLldStudioView(lldCategoryFilter, lldSearch);
-  } else if (currentTab === 'concepts-distinctions') {
-    mainWorkspaceContent = renderDistinctionsWorkspaceView(distCategoryFilter, distSearch);
+  } else if (currentTab === 'whiteboard') {
+    mainWorkspaceContent = renderWhiteboardWorkspaceView();
   } else {
     currentTab = 'system-design-roadmap';
     mainWorkspaceContent = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch, sysRoadmapReadiness);
@@ -101,22 +94,42 @@ export function renderDashboardApp() {
         ${renderDashboardHeader(currentTab, isSidebarCollapsed)}
 
         <!-- Main Workspace Content -->
-        <main class="w-full pt-14 px-4 lg:px-6 max-w-[1280px] mx-auto min-h-screen flex flex-col justify-between">
-          <div id="main-workspace-mount" class="py-3 flex-1">
+        <main class="w-full pt-14 px-3 sm:px-4 lg:px-6 ${currentTab === 'whiteboard' ? 'max-w-[1600px]' : 'max-w-[1280px]'} mx-auto min-h-screen flex flex-col justify-between">
+          <div id="main-workspace-mount" class="py-2 flex-1">
             ${mainWorkspaceContent}
           </div>
 
-          <!-- Bottom PDF Cheat Sheets & Study Guides Section on Every Dashboard Page -->
-          <div id="dashboard-pdf-store-mount" class="mt-8 mb-12 w-full">
-            ${renderPdfStore({
-              currentTab,
-              week: sysRoadmapWeek,
-              activeDay: getActiveRoadmapDay ? getActiveRoadmapDay() : null,
-              filter: activePdfCategoryFilter
-            })}
-          </div>
+          <!-- Bottom PDF Cheat Sheets & Study Guides Section (Hidden on dedicated Whiteboard) -->
+          ${currentTab !== 'whiteboard' ? `
+            <div id="dashboard-pdf-store-mount" class="mt-8 mb-12 w-full">
+              ${renderPdfStore({
+                currentTab,
+                week: sysRoadmapWeek,
+                activeDay: getActiveRoadmapDay ? getActiveRoadmapDay() : null,
+                filter: activePdfCategoryFilter
+              })}
+            </div>
+          ` : '<div id="dashboard-pdf-store-mount" class="hidden"></div>'}
         </main>
       </div>
+
+      <!-- Floating Whiteboard Practice Button -->
+      ${currentTab !== 'whiteboard' ? `
+        <div id="floating-whiteboard-btn-container" class="fixed bottom-6 right-6 z-40 flex items-center">
+          <button 
+            type="button" 
+            id="floating-practice-whiteboard-btn" 
+            class="group flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-sans font-bold text-[13px] shadow-2xl hover:shadow-indigo-500/40 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer border border-white/20 backdrop-blur-md"
+            title="Open Practice Whiteboard to sketch architecture"
+            aria-label="Open Practice Whiteboard"
+          >
+            <span class="material-symbols-outlined text-[20px] group-hover:rotate-12 transition-transform">draw</span>
+            <span class="hidden sm:inline tracking-wide">Practice Whiteboard</span>
+            <span class="sm:hidden tracking-wide font-semibold">Whiteboard</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-emerald-300/40 animate-pulse"></span>
+          </button>
+        </div>
+      ` : ''}
 
       <!-- Modals Container Mount -->
       <div id="modal-mount"></div>
@@ -175,6 +188,9 @@ export function attachDashboardListeners() {
 
   // Run singleton service initialization once
   initDashboardServices();
+
+  // Initialize lesson text highlighting engine
+  initHighlightManager();
 
   // 1. Sidebar Collapse/Expand Controls (Desktop & Mobile)
   const setSidebarState = (collapsed) => {
@@ -318,6 +334,14 @@ export function attachDashboardListeners() {
       return;
     }
 
+    // Floating Practice Whiteboard Button & In-Page Drill Triggers
+    const practiceWbTrigger = e.target.closest('#floating-practice-whiteboard-btn, .trigger-practice-whiteboard-btn');
+    if (practiceWbTrigger) {
+      e.preventDefault();
+      openPracticeWhiteboard();
+      return;
+    }
+
     // Pattern Library / Cheatsheets Modal
     if (e.target.closest('#open-cheatsheets-nav-btn, #quick-action-cheatsheet-btn, #settings-tune-btn')) {
       e.preventDefault();
@@ -347,68 +371,6 @@ export function attachDashboardListeners() {
         if (tabMath) tabMath.className = tabKey === 'math' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'hidden';
         if (tabTree) tabTree.className = tabKey === 'tree' ? 'flex flex-col gap-3' : 'hidden';
       }
-      return;
-    }
-
-    // LLD Studio: Select Problem Card
-    const lldSelect = e.target.closest('[data-select-lld]');
-    if (lldSelect) {
-      e.preventDefault();
-      const probId = lldSelect.getAttribute('data-select-lld');
-      setActiveLldProblemId(probId);
-      refreshWorkspaceView();
-      return;
-    }
-
-    // LLD Studio: Category Filter
-    const lldCat = e.target.closest('.lld-category-btn');
-    if (lldCat) {
-      e.preventDefault();
-      lldCategoryFilter = lldCat.getAttribute('data-lld-cat') || 'all';
-      refreshWorkspaceView();
-      return;
-    }
-
-    // LLD Studio: Copy Code Snippet
-    const copyLldBtn = e.target.closest('.copy-lld-code-btn');
-    if (copyLldBtn) {
-      e.preventDefault();
-      const code = decodeURIComponent(copyLldBtn.getAttribute('data-code') || '');
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(code).then(() => {
-          showDashboardNotification('✓ Code copied to clipboard', 'content_copy');
-        });
-      }
-      return;
-    }
-
-    // Distinctions: Category Filter
-    const distCat = e.target.closest('.dist-category-btn');
-    if (distCat) {
-      e.preventDefault();
-      distCategoryFilter = distCat.getAttribute('data-dist-cat') || 'all';
-      refreshWorkspaceView();
-      return;
-    }
-
-    // Distinctions: Copy 20s Pitch
-    const copyDistBtn = e.target.closest('.copy-dist-btn');
-    if (copyDistBtn) {
-      e.preventDefault();
-      const text = decodeURIComponent(copyDistBtn.getAttribute('data-copy') || '');
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => {
-          showDashboardNotification('✓ Pitch copied to clipboard', 'record_voice_over');
-        });
-      }
-      return;
-    }
-
-    // Mock Design Notes Modal
-    if (e.target.closest('#open-mock-notes-nav-btn, #quick-action-mock-btn')) {
-      e.preventDefault();
-      if (window.innerWidth < 768) setSidebarState(true);
-      openMockModal();
       return;
     }
 
@@ -593,6 +555,10 @@ export function attachDashboardListeners() {
           const topics = SYSTEM_DESIGN_TOPICS_BY_DAY[day] || [];
           if (topics[topicIdx]) {
             contentEl.innerHTML = renderTopicDetail(topics[topicIdx]);
+            contentEl.setAttribute('data-content-id', topics[topicIdx].id);
+            applyHighlightsToContainer(contentEl, topics[topicIdx].id);
+            const hldContainer = contentEl.querySelector('#hld-workspace-container');
+            if (hldContainer) initHldWorkspace(hldContainer);
           }
         }
       }
@@ -882,36 +848,19 @@ function attachWorkspaceListeners() {
     };
   }
 
-  // Live Search Input for Machine Coding & LLD Studio
-  const lldSearchInput = document.getElementById('lld-search-input');
-  if (lldSearchInput) {
-    lldSearchInput.oninput = (e) => {
-      lldSearch = e.target.value;
-      const cursorPos = e.target.selectionStart;
-      refreshWorkspaceView();
-      const nextInput = document.getElementById('lld-search-input');
-      if (nextInput) {
-        nextInput.focus();
-        nextInput.setSelectionRange(cursorPos, cursorPos);
-      }
-    };
+  // Initialize HLD Architecture Workspace if present
+  const hldContainer = document.getElementById('hld-workspace-container');
+  if (hldContainer) {
+    initHldWorkspace(hldContainer);
   }
 
-  // Live Search Input for 180+ Architectural Distinctions
-  const distSearchInput = document.getElementById('dist-search-input');
-  if (distSearchInput) {
-    distSearchInput.oninput = (e) => {
-      distSearch = e.target.value;
-      const cursorPos = e.target.selectionStart;
-      refreshWorkspaceView();
-      const nextInput = document.getElementById('dist-search-input');
-      if (nextInput) {
-        nextInput.focus();
-        nextInput.setSelectionRange(cursorPos, cursorPos);
-      }
-    };
+  // Initialize System Design Whiteboard if present
+  const wbContainer = document.getElementById('sysdesign-whiteboard-root');
+  if (wbContainer) {
+    initWhiteboard(wbContainer);
   }
 }
+
 
 function openModal(modalHtml, closeBtnId) {
   const mount = document.getElementById('modal-mount');
@@ -940,6 +889,42 @@ function openModal(modalHtml, closeBtnId) {
   }
 
   document.addEventListener('keydown', handleEsc);
+}
+
+export function openPracticeWhiteboard() {
+  let currentTitle = 'System Design Practice Whiteboard';
+  let currentSubtitle = 'Quick sketch architectures, data flows, and component boundaries';
+
+  const activeQuestionEl = document.querySelector('.masterclass-question-view h2 span');
+  if (activeQuestionEl) {
+    currentTitle = activeQuestionEl.textContent.trim();
+    currentSubtitle = 'Practice sketching this architecture from memory';
+  }
+
+  const modalHtml = renderPracticeWhiteboardModal({
+    title: currentTitle,
+    subtitle: currentSubtitle
+  });
+
+  let cleanup = null;
+  const closeBtnId = 'close-practice-whiteboard-btn';
+
+  openModal(modalHtml, closeBtnId);
+
+  const mount = document.getElementById('modal-mount');
+  const closeModal = () => {
+    if (typeof cleanup === 'function') cleanup();
+    if (mount) mount.innerHTML = '';
+  };
+
+  const openFullWorkspace = () => {
+    closeModal();
+    currentTab = 'whiteboard';
+    refreshFullDashboard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  cleanup = initPracticeWhiteboardModal(closeModal, openFullWorkspace);
 }
 
 function attachPdfModalListeners(product) {
@@ -1051,11 +1036,9 @@ function openQuickSearch() {
 
     const matchedDSA = state.dsaProblems.filter(p => p.title.toLowerCase().includes(q) || (p.pattern && p.pattern.toLowerCase().includes(q))).slice(0, 4);
     const matchedSpecs = state.systemSpecs.filter(s => s.title.toLowerCase().includes(q) || (s.pattern && s.pattern.toLowerCase().includes(q)) || (s.domain && s.domain.toLowerCase().includes(q))).slice(0, 3);
-    const matchedLLD = LLD_PROBLEMS.filter(p => p.title.toLowerCase().includes(q) || p.subtitle.toLowerCase().includes(q) || p.patterns.some(pat => pat.toLowerCase().includes(q))).slice(0, 3);
-    const matchedDist = INTERVIEW_DISTINCTIONS.filter(d => d.title.toLowerCase().includes(q) || d.category.toLowerCase().includes(q) || d.tags.some(t => t.toLowerCase().includes(q))).slice(0, 3);
     const matchedDays = Object.values(state.curriculum || {}).filter(c => (c.topic && c.topic.toLowerCase().includes(q)) || (c.objective && c.objective.toLowerCase().includes(q))).slice(0, 3);
 
-    if (matchedDSA.length === 0 && matchedSpecs.length === 0 && matchedLLD.length === 0 && matchedDist.length === 0 && matchedDays.length === 0) {
+    if (matchedDSA.length === 0 && matchedSpecs.length === 0 && matchedDays.length === 0) {
       resultsContainer.innerHTML = `<div class="p-4 text-center text-slate-400 text-[13px]">No matches found for "${escapeHtml(q)}"</div>`;
       return;
     }
@@ -1071,36 +1054,6 @@ function openQuickSearch() {
               <span class="text-[13px] font-medium text-slate-200">${escapeHtml(s.title)}</span>
             </div>
             <span class="font-code text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">HLD</span>
-          </div>
-        `;
-      });
-    }
-
-    if (matchedLLD.length > 0) {
-      html += `<div class="px-2 py-1 font-code text-[10px] text-purple-400 uppercase tracking-wider mt-1">Machine Coding (LLD)</div>`;
-      matchedLLD.forEach(l => {
-        html += `
-          <div class="search-result-item flex items-center justify-between p-2 rounded-lg hover:bg-[#182238] cursor-pointer transition-colors" data-lld-id="${l.id}">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-purple-400 text-[16px]">architecture</span>
-              <span class="text-[13px] font-medium text-slate-200">${escapeHtml(l.title)}</span>
-            </div>
-            <span class="font-code text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">LLD</span>
-          </div>
-        `;
-      });
-    }
-
-    if (matchedDist.length > 0) {
-      html += `<div class="px-2 py-1 font-code text-[10px] text-amber-400 uppercase tracking-wider mt-1">180+ Architectural Distinctions</div>`;
-      matchedDist.forEach(d => {
-        html += `
-          <div class="search-result-item flex items-center justify-between p-2 rounded-lg hover:bg-[#182238] cursor-pointer transition-colors" data-dist-id="${d.id}" data-dist-title="${escapeHtml(d.title)}">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-amber-400 text-[16px]">psychology</span>
-              <span class="text-[13px] font-medium text-slate-200">${escapeHtml(d.title)}</span>
-            </div>
-            <span class="font-code text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">CORE</span>
           </div>
         `;
       });
@@ -1146,26 +1099,6 @@ function openQuickSearch() {
         if (spec) {
           openDetailModal(spec);
         }
-      });
-    });
-
-    resultsContainer.querySelectorAll('[data-lld-id]').forEach(el => {
-      el.addEventListener('click', () => {
-        const id = el.getAttribute('data-lld-id');
-        setActiveLldProblemId(id);
-        document.getElementById('modal-mount').innerHTML = '';
-        currentTab = 'lld-studio';
-        refreshFullDashboard();
-      });
-    });
-
-    resultsContainer.querySelectorAll('[data-dist-id]').forEach(el => {
-      el.addEventListener('click', () => {
-        const title = el.getAttribute('data-dist-title') || '';
-        document.getElementById('modal-mount').innerHTML = '';
-        currentTab = 'concepts-distinctions';
-        distSearch = title;
-        refreshFullDashboard();
       });
     });
 
@@ -1288,61 +1221,6 @@ async function handleHeaderSignOut() {
   }
 }
 
-function openMockModal() {
-  openModal(renderMockDesignModal(), 'close-mock-modal-btn');
-
-  let timeLeft = 45 * 60;
-  let isRunning = false;
-  const display = document.getElementById('mock-timer-display');
-  const toggleBtn = document.getElementById('mock-timer-toggle-btn');
-  const resetTimerBtn = document.getElementById('mock-timer-reset-btn');
-
-  const updateDisplay = () => {
-    if (!display) return;
-    const m = Math.floor(timeLeft / 60);
-    const s = timeLeft % 60;
-    display.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
-
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', () => {
-      if (isRunning) {
-        clearInterval(mockTimerInterval);
-        isRunning = false;
-        toggleBtn.textContent = 'Resume Clock';
-        toggleBtn.classList.remove('bg-secondary');
-      } else {
-        isRunning = true;
-        toggleBtn.textContent = 'Pause Clock';
-        toggleBtn.classList.add('bg-secondary');
-        mockTimerInterval = setInterval(() => {
-          if (timeLeft > 0) {
-            timeLeft--;
-            updateDisplay();
-          } else {
-            clearInterval(mockTimerInterval);
-            isRunning = false;
-            alert('45-minute System Design simulation complete!');
-          }
-        }, 1000);
-      }
-    });
-  }
-
-  if (resetTimerBtn) {
-    resetTimerBtn.addEventListener('click', () => {
-      clearInterval(mockTimerInterval);
-      isRunning = false;
-      timeLeft = 45 * 60;
-      updateDisplay();
-      if (toggleBtn) {
-        toggleBtn.textContent = 'Start Clock';
-        toggleBtn.classList.remove('bg-secondary');
-      }
-    });
-  }
-}
-
 function refreshWorkspaceView() {
   const mount = document.getElementById('main-workspace-mount');
   if (!mount) {
@@ -1353,10 +1231,6 @@ function refreshWorkspaceView() {
   let html = '';
   if (currentTab === 'dsa-tracker') {
     html = renderDsaTrackerView(dsaStatusFilter, dsaPatternFilter, dsaDiffFilter, dsaSearch);
-  } else if (currentTab === 'lld-studio') {
-    html = renderLldStudioView(lldCategoryFilter, lldSearch);
-  } else if (currentTab === 'concepts-distinctions') {
-    html = renderDistinctionsWorkspaceView(distCategoryFilter, distSearch);
   } else {
     currentTab = 'system-design-roadmap';
     html = renderSystemDesignRoadmapView(sysRoadmapWeek, sysRoadmapStatus, sysRoadmapSearch, sysRoadmapReadiness);

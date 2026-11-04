@@ -1,2 +1,1 @@
-export { renderOutagePostmortemContent } from './OutagePostmortemDetail.js';
-export { renderCapacityAutoscalingContent } from './CapacityAutoscalingDetail.js';
+export { renderDistributedTaskSchedulerDetail } from './DistributedTaskSchedulerDetail.js';

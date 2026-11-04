@@ -89,35 +89,28 @@ import {
   renderMultiRegionDisasterRecoveryContent,
   renderChaosEngineeringContent,
   renderWeek3RevisionContent,
-  renderOutagePostmortemContent,
-  renderCapacityAutoscalingContent,
-  renderUniqueIdGenerationContent,
-  renderRedisInternalsContent,
-  renderBloomFilterContent,
-  renderConflictResolutionContent,
-  renderMultipartUploadContent,
-  renderDesignS3Content,
-  renderMetricsMonitoringContent,
-  renderWebhooksContent,
-  renderEventSourcingCqrsContent,
-  renderDistributedTracingContent,
-  renderLoggingPipelineContent,
-  renderServiceDecompositionContent,
-  renderIdempotencyContent,
-  renderDurableExecutionContent,
-  renderProximitySearchContent,
-  renderGoogleMapsContent,
-  renderDistributedEmailContent,
-  renderPaymentSystemsContent,
-  renderStockExchangeContent,
-  renderFlashSaleContent,
-  renderAiCodingEngineContent,
-  renderAppendixCheatSheetContent,
-  renderWeek4RevisionContent,
-  renderAppendixPatternIndexContent,
-  renderWeek5RevisionContent,
-  renderStaffRubricContent,
-  renderRapidFireQuestionBankContent
+  renderSystemDesignFrameworkContent,
+  renderUrlShortenerDetail,
+  renderDistributedRateLimiterDetail,
+  renderNotificationSystemDetail,
+  renderDistributedCacheDetail,
+  renderApiGatewayDetail,
+  renderInstagramDetail,
+  renderWhatsAppDetail,
+  renderYouTubeDetail,
+  renderUberDetail,
+  renderFoodDeliveryDetail,
+  renderWebCrawlerDetail,
+  renderSearchAutocompleteDetail,
+  renderLoggingMonitoringDetail,
+  renderRealTimeAnalyticsDetail,
+  renderDistributedTaskSchedulerDetail,
+  renderEcommercePlatformDetail,
+  renderTicketBookingDetail,
+  renderPaymentSystemDetail,
+  renderCloudFileStorageDetail,
+  renderAdImpressionTrackingDetail,
+  renderFinalInterviewChecklistDetail
 } from '../weeks/index.js';
 
 export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
@@ -554,434 +547,436 @@ export const SYSTEM_DESIGN_6_WEEK_ROADMAP = [
   },
 
   // =========================================================================
-  // WEEK 4: THE LAST 18 DAYS · APPLIED DESIGNS PART I (Days 22 to 28)
-  // Ingress, Caching, Ephemeral Storage & Search
+  // WEEK 4: MASTERCLASS PART I & MODULE 1 (Days 22 to 28)
+  // Core System Design & Consumer Messaging
   // =========================================================================
   {
     day: 22,
     week: 4,
-    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
-    topic: "Spec 1: URL Shortener (TinyURL / Bitly)",
-    domain: "High-Frequency Key Generation",
+    weekTitle: "Masterclass: Core System Design",
+    topic: "Question 1. Design a URL Shortener like Bitly",
+    domain: "Unique IDs & Caching",
     difficulty: "Medium",
     estTime: "80 mins",
     specId: "sd-1",
     isRevision: false,
-    objective: "Architect a high-read URL shortener generating unique 7-character Base62 keys with sub-8ms redirection.",
+    objective: "Master the 7-Step System Design Framework and architect a high-read URL shortener with Base62 encoding, Redis caching, and 302 redirection.",
     keyTradeoffs: [
-      "Theory Concept 4.10: Generating Globally Unique IDs (UUIDv4 128-bit vs. Twitter Snowflake 64-bit time-ordered IDs vs. Key Generation Service pre-allocated ranges)",
-      "Key Generation Service (KGS): Pre-allocates unique Base62 key blocks in memory, eliminating runtime collision checking and DB roundtrips",
-      "Redirection: HTTP 301 Permanent (browser caches redirect, eliminates server load, kills click telemetry) vs. HTTP 302 Temporary (full analytics tracking)"
+      "Base62 IDs (short codes, fast decode) vs. Random codes (collision retry loop)",
+      "HTTP 302 Found (full click telemetry) vs. HTTP 301 Moved Permanently (browser cached)",
+      "Single-region sequencer vs. Multi-region GeoDNS routing with read-replicas"
     ],
     readingLinks: [
-      { title: "Engineering Monograph: Base62 & KGS Deep Dive", url: "#/blog?article=design-url-shortener-kgs" }
+      { title: "System Design Masterclass: URL Shortener Walkthrough", url: "#/dashboard" }
     ]
   },
   {
     day: 23,
     week: 4,
-    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
-    topic: "Spec 18: API Rate Limiter & Edge Gateway",
+    weekTitle: "Masterclass: Core System Design",
+    topic: "Question 2. Design a Distributed Rate Limiter",
     domain: "Traffic Control & Security",
     difficulty: "Medium",
     estTime: "80 mins",
     specId: "sd-18",
     isRevision: false,
-    objective: "Protect backend services from DDoS traffic spikes and enforce per-client rate quotas across distributed Redis nodes.",
+    objective: "Protect APIs from bursts using Token Bucket algorithm, atomic Redis Lua scripts, and HTTP 429 Retry-After headers.",
     keyTradeoffs: [
-      "Theory Concept 3.4 & 11.2: Rate Limiting Algorithms & Edge Reverse Proxies (Token Bucket vs. Leaky Bucket vs. Sliding Window Counter)",
-      "Distributed Rate Limiting: Atomic Redis Lua scripts executing `INCR` + `EXPIRE` in a single transaction, avoiding race condition gaps",
-      "Edge Gateway Integration: Envoy global rate-limiting gRPC filter with fallback open behavior to avoid dropping valid traffic on cache downtime"
+      "Token Bucket (allows controlled bursts) vs. Sliding Window Counter (accurate, modest state)",
+      "Atomic Redis Lua scripts (guarantee race-free checks) vs. Client-side local token leases",
+      "Fail-open with local limits on cache outage vs. Fail-closed on sensitive auth routes"
     ],
     readingLinks: [
-      { title: "Stripe: Scaling Your API with Distributed Rate Limiters", url: "https://stripe.com/blog/rate-limiters" }
+      { title: "System Design Masterclass: Distributed Rate Limiter Walkthrough", url: "#/dashboard" }
     ]
   },
   {
     day: 24,
     week: 4,
-    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
-    topic: "Spec 11: Content Delivery Network (CDN) Architecture",
-    domain: "Global Edge Delivery",
-    difficulty: "Hard",
-    estTime: "85 mins",
-    specId: "sd-11",
+    weekTitle: "Masterclass: Core System Design",
+    topic: "Question 3. Design a Notification System",
+    domain: "Async Messaging & Push",
+    difficulty: "Medium",
+    estTime: "80 mins",
+    specId: "sd-8",
     isRevision: false,
-    objective: "Design a planetary CDN edge caching network serving static assets and dynamic content with Anycast routing.",
+    objective: "Deliver billions of push, SMS, and email alerts with persistent priority queues, worker pools, provider adapters, and idempotency.",
     keyTradeoffs: [
-      "Theory Concept 2.5 & 11.4: Content Delivery Networks & Anycast BGP Routing (Multi-PoP edge topology, BGP shortest-path routing)",
-      "Tiered Edge Caching: Origin Server → Cache Shield (regional tier) → Edge PoP → Client; shields origin database from collapse during traffic spikes",
-      "Cache Invalidation & Purging: Soft-purge (stale-while-revalidate), surrogate keys (tag-based instant purging), and byte-range HTTP request caching"
+      "Queue Segregation: Separate urgent transactional alerts (OTP) from bulk marketing campaigns",
+      "Provider Idempotency: Stable idempotency keys prevent duplicate deliveries during retries",
+      "Circuit breakers and failover providers for external gateway outages"
     ],
     readingLinks: [
-      { title: "Cloudflare: How CDN Edge Networks Work", url: "https://www.cloudflare.com/learning/cdn/what-is-a-cdn/" }
+      { title: "System Design Masterclass: Notification System Walkthrough", url: "#/dashboard" }
     ]
   },
   {
     day: 25,
     week: 4,
-    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
-    topic: "Spec 3: Distributed Cache Cluster (Redis / Memcached)",
-    domain: "In-Memory Data Structures",
+    weekTitle: "Masterclass: Core System Design",
+    topic: "Question 4. Design a Distributed Cache",
+    domain: "In-Memory Systems",
     difficulty: "Hard",
     estTime: "85 mins",
     specId: "sd-3",
     isRevision: false,
-    objective: "Architect a sub-millisecond distributed cache handling 500K ops/sec with horizontal peer-to-peer sharding and failover.",
+    objective: "Architect a sub-millisecond distributed key-value cache with consistent hashing, LRU/LFU eviction, and cache stampede protection.",
     keyTradeoffs: [
-      "Theory Concept 5.4 & 5.5: Why Redis Is So Fast & Bloom Filters for Cache Penetration Defense",
-      "Redis Cluster Sharding: 16,384 hash slots partitioned across master nodes; MOVED and ASK redirection protocols for smart clients",
-      "Hot Key & Thundering Herd Mitigation: Read-replicas with local cache layers, probabilistic early expiration (XFetch), and mutex singleflight requests"
+      "Consistent Hashing: Minimizes key redistribution when nodes join or leave the cluster",
+      "Cache-aside with singleflight request coalescing and TTL jitter to prevent stampedes",
+      "Replication vs. Regenerating state from authoritative database on miss"
     ],
     readingLinks: [
-      { title: "Redis Cluster Specification", url: "https://redis.io/topics/cluster-spec" }
+      { title: "System Design Masterclass: Distributed Cache Walkthrough", url: "#/dashboard" }
     ]
   },
   {
     day: 26,
     week: 4,
-    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
-    topic: "Spec 17: Distributed Web Crawler & Search Indexer",
-    domain: "Web Ingestion & Indexing",
-    difficulty: "Hard",
-    estTime: "85 mins",
-    specId: "sd-17",
+    weekTitle: "Masterclass: Core System Design",
+    topic: "Question 5. Design an API Gateway",
+    domain: "Edge Ingress & Policies",
+    difficulty: "Medium",
+    estTime: "80 mins",
+    specId: "sd-18",
     isRevision: false,
-    objective: "Traverse billions of web pages respecting domain politeness, filtering duplicates, and generating distributed inverted search indexes.",
+    objective: "Propose a single entry for north-south client traffic handling TLS offloading, token auth, rate limiting, and route resolution.",
     keyTradeoffs: [
-      "Theory Concept 5.5 & 4.12: Bloom Filters for Visited URLs & Big Data Inverted Indexing Papers",
-      "URL Frontier Architecture: Host politeness FIFO queues with delay timers combined with priority queues (PageRank / update frequency)",
-      "Deduplication: 64-bit SimHash / MurmurHash fingerprinting for near-duplicate HTML content; Bloom filters in RAM for 10B+ URL existence checks"
+      "Keep domain business logic strictly out of the gateway to avoid tight coupling",
+      "Bounded timeouts, connection limits, and circuit breakers guard downstream dependencies",
+      "Stateless gateway fleet horizontally scaled behind L4 DNS load balancers"
     ],
     readingLinks: [
-      { title: "Googlebot Architecture & Web Crawling at Scale", url: "http://infolab.stanford.edu/pub/papers/google.pdf" }
+      { title: "System Design Masterclass: API Gateway Walkthrough", url: "#/dashboard" }
     ]
   },
   {
     day: 27,
     week: 4,
-    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
-    topic: "Spec 16: Search Autocomplete / Typeahead (Google Search Bar)",
-    domain: "Prefix Search & Ranking",
+    weekTitle: "Masterclass: Core System Design",
+    topic: "Question 6. Design Instagram",
+    domain: "Consumer Media & Feeds",
     difficulty: "Hard",
-    estTime: "80 mins",
-    specId: "sd-16",
+    estTime: "85 mins",
+    specId: "sd-6",
     isRevision: false,
-    objective: "Return top 5 ranked search suggestions under 30ms for every keystroke entered by hundreds of millions of users.",
+    objective: "Photo-sharing service where users upload media via direct presigned URLs, follow accounts, and scroll personalized feeds.",
     keyTradeoffs: [
-      "Theory Concept 1.6: Choosing Cloud Providers & Storage Engines for Big Data Trie Analytics",
-      "In-Memory Trie Optimization: Serialized Prefix Tree stored in RAM, caching top-K most frequent query strings directly on each Trie node",
-      "Offline Batch Processing: Spark/Hadoop processing past 7 days of search query logs to compute query frequencies and update serialized Trie weekly"
+      "Client-direct upload to object storage bypasses application server bandwidth bottlenecks",
+      "Hybrid fan-out: Push fan-out for normal users, Pull fan-out for high-follower celebrity accounts",
+      "Cursor-based pagination eliminates offset degradation on high-velocity feeds"
     ],
     readingLinks: [
-      { title: "ByteByteGo: Design Search Autocomplete System", url: "https://blog.bytebytego.com" }
+      { title: "System Design Masterclass: Instagram Walkthrough", url: "#/dashboard" }
     ]
   },
   {
     day: 28,
     week: 4,
-    weekTitle: "Applied Designs Part I: Ingress, Caching & Search",
-    topic: "REVISION DAY 4 · Ingress, Caching & Search Whiteboard Drills",
-    domain: "Applied Whiteboard Drills",
-    difficulty: "Review & Mock",
-    estTime: "85 mins",
-    isRevision: true,
-    objective: "Simulate real 45-minute whiteboard interviews on Week 4 designs: TinyURL, Rate Limiter, CDN, Distributed Cache, Web Crawler, and Autocomplete.",
-    keyTradeoffs: [
-      "Whiteboard Mock 1: Conduct a 45-minute timed design of an API Rate Limiter. Defend sliding window counter vs. token bucket with distributed Redis",
-      "Whiteboard Mock 2: Design Autocomplete prefix search under strict 30ms p99 constraints. Detail how to update top-K nodes without taking down the cluster",
-      "Whiteboard Mock 3: Compare Bloom filters with Redis sets for 10 billion URL deduplication: memory sizing and false positive implications"
-    ],
-    readingLinks: [
-      { title: "System Design Interview Cheat Sheet: The 7-Step Method", url: "#/dashboard" }
-    ]
-  },
-
-  // =========================================================================
-  // WEEK 5: THE LAST 18 DAYS · APPLIED DESIGNS PART II (Days 29 to 35)
-  // Planetary Storage, Messaging, Real-Time Collaboration & Telemetry
-  // =========================================================================
-  {
-    day: 29,
-    week: 5,
-    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
-    topic: "Spec 2: Distributed Key-Value Store (DynamoDB / Cassandra)",
-    domain: "Planetary Database Engines",
-    difficulty: "Hard",
-    estTime: "90 mins",
-    specId: "sd-2",
-    isRevision: false,
-    objective: "Design a planetary-scale key-value store with tunable consistency, multi-master writes, and sub-10ms p99 at 1M+ QPS.",
-    keyTradeoffs: [
-      "Theory Concept 10.3: Conflict Resolution & Anti-Entropy (Vector Clocks, Merkle Trees & Gossip Membership)",
-      "Tunable Quorum Math: $R + W > N$ ensures strong consistency; $W=1, R=1$ optimizes for write availability and sub-millisecond response",
-      "Storage Engine & Repair: LSM-Tree storage with commit log on NVMe; Hinted handoff during temporary node failure; Read repair on stale quorum responses"
-    ],
-    readingLinks: [
-      { title: "Amazon Dynamo Paper: Highly Available Key-Value Store", url: "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" }
-    ]
-  },
-  {
-    day: 30,
-    week: 5,
-    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
-    topic: "Spec 4: Distributed Object Storage (Amazon S3 / Google Cloud Storage)",
-    domain: "Exabyte Storage Systems",
-    difficulty: "Hard",
-    estTime: "85 mins",
-    specId: "sd-4",
-    isRevision: false,
-    objective: "Store exabytes of unstructured blob data with 11 9's durability using chunking, parallel multipart upload, and erasure coding.",
-    keyTradeoffs: [
-      "Theory Concept 6.4 & 6.5: Multipart Upload Protocols & Designing Amazon S3 Interview Question",
-      "Decoupled Metadata vs. Block Servers: Metadata tier (CockroachDB/Spanner) managing directory tree and chunk locations separate from raw data chunk nodes",
-      "Reed-Solomon Erasure Coding (e.g., 8+4 scheme: any 4 chunk servers can fail simultaneously without data loss, with only 50% storage overhead)"
-    ],
-    readingLinks: [
-      { title: "AWS S3 Architecture & Multipart Upload Design", url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html" }
-    ]
-  },
-  {
-    day: 31,
-    week: 5,
-    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
-    topic: "Spec 5: Distributed Message Queue & Event Bus (Kafka / RabbitMQ)",
-    domain: "Distributed Event Streaming",
-    difficulty: "Hard",
-    estTime: "85 mins",
-    specId: "sd-5",
-    isRevision: false,
-    objective: "Build high-throughput append-only distributed event brokers supporting multi-partition consumer groups and message retention.",
-    keyTradeoffs: [
-      "Theory Concept 7.1 & 7.2: Delivery Semantics (Exactly-Once) & Why Kafka Is Fast (Sequential I/O + Page Cache Zero-Copy)",
-      "Partitioning & Ordering: Total order guaranteed within a partition; messages routed by partition key hash; consumer rebalancing protocols",
-      "RabbitMQ (push-based AMQP, complex routing exchanges, smart broker/dumb consumer) vs. Kafka (pull-based dumb broker/smart consumer, high throughput log)"
-    ],
-    readingLinks: [
-      { title: "Kafka Internals: The Anatomy of a Distributed Streaming Platform", url: "https://kafka.apache.org/documentation/#design" }
-    ]
-  },
-  {
-    day: 32,
-    week: 5,
-    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
-    topic: "Spec 8: Distributed Multi-Channel Notification System",
-    domain: "Async Messaging & Push",
-    difficulty: "Medium",
-    estTime: "75 mins",
-    specId: "sd-8",
-    isRevision: false,
-    objective: "Deliver billions of push, SMS, and email alerts with user notification preferences, rate limits, and third-party circuit breakers.",
-    keyTradeoffs: [
-      "Theory Concept 2.7 & 13.5: Push Protocols (SSE, WebSockets, APNs/FCM) & Webhooks Outbound Delivery",
-      "Priority Queues: Dedicated worker clusters for critical transactional alerts (OTP) separate from marketing promotional batch blasts",
-      "Deduplication & Replay Defense: Redis key TTL locking on `(userId, eventId)` to guarantee idempotency across network retries"
-    ],
-    readingLinks: [
-      { title: "Designing a Scalable Notification System", url: "https://blog.bytebytego.com" }
-    ]
-  },
-  {
-    day: 33,
-    week: 5,
-    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
-    topic: "Spec 7: Real-Time Chat & Messaging Service (WhatsApp / Slack)",
+    weekTitle: "Masterclass: Core System Design",
+    topic: "Question 7. Design WhatsApp",
     domain: "Real-Time Collaboration",
     difficulty: "Hard",
     estTime: "85 mins",
     specId: "sd-7",
     isRevision: false,
-    objective: "Maintain millions of concurrent stateful WebSocket connections with instantaneous message delivery, online presence, and offline sync.",
+    objective: "Real-time messaging system with persistent WebSocket connections, offline delivery queuing, delivery receipts, and end-to-end encryption.",
     keyTradeoffs: [
-      "Theory Concept 11.5 & 11.6: Scaling Long-Lived Connections & WebRTC Real-Time Media",
-      "Connection Gateways: Ephemeral WebSocket servers tracking user connection state; Redis Pub/Sub routing messages across gateway servers",
-      "Message Delivery State Machine: Device → Gateway → Queue → DB → Recipient Gateway (Single tick: sent, Double tick: delivered, Blue tick: read receipt)"
+      "Persistent WebSocket connection gateways with session/presence routing",
+      "Per-conversation sequence metadata ensures ordering without costly global coordination",
+      "End-to-end encryption keeps message bodies inaccessible to servers"
     ],
     readingLinks: [
-      { title: "Discord: How Discord Scaled WebSocket Connections to 15M Concurrent Users", url: "https://discord.com/blog/why-discord-is-switching-from-go-to-rust" }
-    ]
-  },
-  {
-    day: 34,
-    week: 5,
-    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
-    topic: "Spec 9: Collaborative Document Editor (Google Docs / Figma)",
-    domain: "Multiplayer Concurrency",
-    difficulty: "Staff Level",
-    estTime: "90 mins",
-    specId: "sd-9",
-    isRevision: false,
-    objective: "Synchronize simultaneous character edits over unreliable networks without conflicting overwrites or data loss.",
-    keyTradeoffs: [
-      "Theory Concept 13.1 & 10.2: Event Sourcing, CQRS & Distributed Time / Lamport Ordering",
-      "Operational Transformation (OT: centralized sequencing server transforms character indexes) vs. Conflict-Free Replicated Data Types (CRDTs: mathematically convergent peer-to-peer state vectors)",
-      "Snapshot Compaction & Undo Buffers: Periodic snapshot persistence to S3 with delta log compaction"
-    ],
-    readingLinks: [
-      { title: "Figma: How Figma's Multiplayer Technology Works", url: "https://www.figma.com/blog/how-figmas-multiplayer-technology-works/" }
-    ]
-  },
-  {
-    day: 35,
-    week: 5,
-    weekTitle: "Applied Designs Part II: Storage, Messaging & Real-Time",
-    topic: "REVISION DAY 5 · Storage, Messaging & Real-Time Whiteboard Drills",
-    domain: "Applied Whiteboard Drills",
-    difficulty: "Review & Mock",
-    estTime: "85 mins",
-    isRevision: true,
-    objective: "Simulate whiteboard scenarios for Week 5 systems: DynamoDB, S3, Kafka, Notification Service, WhatsApp, and Google Docs.",
-    keyTradeoffs: [
-      "Whiteboard Mock 1: Walk through an end-to-end design of WhatsApp. Diagram message delivery flow when recipient is offline and then reconnects",
-      "Whiteboard Mock 2: Contrast DynamoDB quorum consistency math ($R+W > N$) with Kafka consumer offset commit guarantees",
-      "Whiteboard Mock 3: Defend Operational Transformation vs. CRDTs in a Collaborative Document Editor whiteboard design session"
-    ],
-    readingLinks: [
-      { title: "The 7-Step System Design Interview Framework", url: "#/dashboard" }
+      { title: "System Design Masterclass: WhatsApp Walkthrough", url: "#/dashboard" }
     ]
   },
 
   // =========================================================================
-  // WEEK 6: THE LAST 18 DAYS · APPLIED DESIGNS PART III & CAPSTONE (Days 36 to 42)
-  // Media, Geospatial, Ledgers, Flash Sales & Staff Capstone
+  // WEEK 5: MASTERCLASS MODULE 2 & 3 (Days 29 to 35)
+  // Consumer Scale & Data-Intensive Systems
   // =========================================================================
   {
-    day: 36,
-    week: 6,
-    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
-    topic: "Spec 10: Global Video Streaming Platform (YouTube / Netflix)",
+    day: 29,
+    week: 5,
+    weekTitle: "Masterclass: Consumer Scale & Data-Intensive",
+    topic: "Question 8. Design YouTube",
     domain: "Media Streaming & Transcoding",
     difficulty: "Hard",
     estTime: "85 mins",
     specId: "sd-10",
     isRevision: false,
-    objective: "Ingest 4K raw video, execute parallel transcoding DAG pipelines, and distribute globally via Adaptive Bitrate Streaming (HLS/DASH).",
+    objective: "Video platform with resumable multipart chunk uploads, distributed GPU transcoding DAGs, HLS/DASH adaptive bitrate streaming, and CDN edge delivery.",
     keyTradeoffs: [
-      "Theory Concept 8.4 & 12.5: Outage War Stories & Autoscaling Capacity Planning Under Massive Ingress",
-      "Distributed Video Transcoding: Split raw video into 10-second chunks → parallel GPU worker clusters → stitch multi-bitrate HLS/DASH manifests",
-      "CDN Edge Caching: Multi-tier CDN caching (Open Connect / Cloudflare) with proactive pre-warming for trending releases"
+      "Resumable chunked uploads straight to object storage prevent app server saturation",
+      "Asynchronous transcoding workers produce multi-bitrate HLS/DASH playlists",
+      "Edge CDN PoPs cache segments close to viewers with adaptive bitrate player switching"
     ],
     readingLinks: [
-      { title: "Netflix: High Quality Video Encoding at Scale", url: "https://netflixtechblog.com/high-quality-video-encoding-at-scale-d159f3136ce7" }
+      { title: "System Design Masterclass: YouTube Walkthrough", url: "#/dashboard" }
+    ]
+  },
+  {
+    day: 30,
+    week: 5,
+    weekTitle: "Masterclass: Consumer Scale & Data-Intensive",
+    topic: "Question 9. Design Uber",
+    domain: "Geospatial Streams & Dispatch",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    specId: "sd-12",
+    isRevision: false,
+    objective: "Ride-hailing platform with high-frequency GPS ingestion, geospatial indexing (H3 / Geohash), candidate driver ranking, and atomic trip matching.",
+    keyTradeoffs: [
+      "Decouple ephemeral in-memory location index from durable trip records in PostgreSQL",
+      "Atomic conditional assignment ensures at most one rider claims a given driver",
+      "Explicit trip state machine: REQUESTED -> MATCHED -> DRIVER_ARRIVING -> IN_PROGRESS -> COMPLETED"
+    ],
+    readingLinks: [
+      { title: "System Design Masterclass: Uber Walkthrough", url: "#/dashboard" }
+    ]
+  },
+  {
+    day: 31,
+    week: 5,
+    weekTitle: "Masterclass: Consumer Scale & Data-Intensive",
+    topic: "Question 10. Design a Food Delivery Platform",
+    domain: "Multi-Party Order Lifecycle",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    specId: "sd-14",
+    isRevision: false,
+    objective: "Connect customers, restaurants, and couriers with catalog caching, idempotent order submission, payment orchestration, and courier matching.",
+    keyTradeoffs: [
+      "Saga orchestration replaces distributed transactions across order, payment, and courier services",
+      "Price snapshots in OrderItem line items protect purchases from subsequent menu price changes",
+      "Idempotency keys prevent duplicate orders during client network retries"
+    ],
+    readingLinks: [
+      { title: "System Design Masterclass: Food Delivery Walkthrough", url: "#/dashboard" }
+    ]
+  },
+  {
+    day: 32,
+    week: 5,
+    weekTitle: "Masterclass: Consumer Scale & Data-Intensive",
+    topic: "Question 11. Design a Web Crawler",
+    domain: "Web Ingestion & Indexing",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    specId: "sd-17",
+    isRevision: false,
+    objective: "Distributed crawler starting from seed URLs, scheduling via polite URL frontiers, robots.txt caching, Bloom filter deduplication, and S3 content storage.",
+    keyTradeoffs: [
+      "Host-level politeness queues prevent flooding target web domains",
+      "Bloom filters in RAM for 10B+ URL existence deduplication",
+      "Store bulky HTML payloads in object storage rather than scheduler database tables"
+    ],
+    readingLinks: [
+      { title: "System Design Masterclass: Web Crawler Walkthrough", url: "#/dashboard" }
+    ]
+  },
+  {
+    day: 33,
+    week: 5,
+    weekTitle: "Masterclass: Consumer Scale & Data-Intensive",
+    topic: "Question 12. Design Search Autocomplete",
+    domain: "Prefix Search & Ranking",
+    difficulty: "Hard",
+    estTime: "80 mins",
+    specId: "sd-16",
+    isRevision: false,
+    objective: "Prefix query suggestions with in-memory tries, precomputed top-K candidates at prefix nodes, caching, and versioned offline index rollouts.",
+    keyTradeoffs: [
+      "Precomputing top-K results directly at trie nodes keeps query latency strictly under 20ms",
+      "Atomic in-memory pointer swaps swap fresh weekly index snapshots with zero downtime",
+      "Prefix caching at CDN / Redis edge layers absorbs viral single-character search loads"
+    ],
+    readingLinks: [
+      { title: "System Design Masterclass: Search Autocomplete Walkthrough", url: "#/dashboard" }
+    ]
+  },
+  {
+    day: 34,
+    week: 5,
+    weekTitle: "Masterclass: Consumer Scale & Data-Intensive",
+    topic: "Question 13. Design a Logging and Monitoring System",
+    domain: "Telemetry & Time-Series",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    specId: "sd-5",
+    isRevision: false,
+    objective: "Telemetry ingestion pipeline with edge ring buffers, Kafka buffering, hot search indexes (OpenSearch), time-series metric rollups, and cold S3 archives.",
+    keyTradeoffs: [
+      "Bounded local buffers at the edge ensure business services never crash when logging fails",
+      "Storage tiering: Hot full-text search (7-14 days) vs. Cold compressed Parquet in S3 (1 year)",
+      "Avoid high-cardinality metric labels to protect time-series metrics backends"
+    ],
+    readingLinks: [
+      { title: "System Design Masterclass: Logging & Monitoring Walkthrough", url: "#/dashboard" }
+    ]
+  },
+  {
+    day: 35,
+    week: 5,
+    weekTitle: "Masterclass: Consumer Scale & Data-Intensive",
+    topic: "Question 14. Design a Real-Time Analytics Pipeline",
+    domain: "Stream Processing & OLAP",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    specId: "sd-5",
+    isRevision: false,
+    objective: "Continuous stream processing with Kafka, Flink windowing on event time, watermarks for late events, deduplication, and real-time OLAP stores.",
+    keyTradeoffs: [
+      "Event-time processing with watermarks handles late and out-of-order event arrivals",
+      "Dual-path architecture: Real-time OLAP for live dashboards + Batch reconciliation for authoritative billing",
+      "Idempotent sink writes ensure exactly-once business outcomes on stream retries"
+    ],
+    readingLinks: [
+      { title: "System Design Masterclass: Real-Time Analytics Walkthrough", url: "#/dashboard" }
+    ]
+  },
+
+  // =========================================================================
+  // WEEK 6: MASTERCLASS MODULE 3 & 4 (Days 36 to 42)
+  // Schedulers, Business-Critical Systems & Capstone
+  // =========================================================================
+  {
+    day: 36,
+    week: 6,
+    weekTitle: "Masterclass: Business-Critical Systems",
+    topic: "Question 15. Design a Distributed Task Scheduler",
+    domain: "Job Orchestration & Leases",
+    difficulty: "Staff Level",
+    estTime: "90 mins",
+    specId: "sd-20",
+    isRevision: false,
+    objective: "Fires one-shot and recurring jobs with timing wheels, time-bounded database leases, durable queues, worker heartbeats, and audit trails.",
+    keyTradeoffs: [
+      "Separate task definitions from execution history records for clean retry tracking",
+      "Atomic conditional leases prevent concurrent schedulers from double-assigning runs",
+      "Heartbeats and fencing tokens guard against zombie worker clobbering"
+    ],
+    readingLinks: [
+      { title: "System Design Masterclass: Distributed Task Scheduler Walkthrough", url: "#/dashboard" }
     ]
   },
   {
     day: 37,
     week: 6,
-    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
-    topic: "Spec 13: Proximity Server (Yelp / Google Maps Places)",
-    domain: "Geospatial Indexing",
-    difficulty: "Medium",
-    estTime: "80 mins",
-    specId: "sd-13",
+    weekTitle: "Masterclass: Business-Critical Systems",
+    topic: "Question 16. Design an E-Commerce Platform",
+    domain: "Inventory Holds & Checkout",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    specId: "sd-14",
     isRevision: false,
-    objective: "Query places within a dynamic radius (e.g. 5km) from billions of coordinates with sub-15ms response times.",
+    objective: "E-commerce platform covering product catalog, shopping cart, checkout, atomic inventory holds, orders, and payment orchestration.",
     keyTradeoffs: [
-      "Theory Concept 9.1 & 9.2: Proximity Search: Geohash and Quadtree & Designing Google Maps Routing Engines",
-      "Geospatial Indexing: Geohash (Base32 2D bounding boxes, prefix string lookup) vs. QuadTree (recursive quadrant subdivision) vs. Google S2 (Hilbert curve space-filling)",
-      "Boundary Conditions: Handling locations lying on quadrant boundaries by querying 8 neighboring bounding cells in parallel"
+      "Atomic conditional SQL updates (WHERE available_qty >= :qty) prevent overselling and negative inventory",
+      "Price snapshots in order line items protect against subsequent catalog price changes",
+      "Idempotent checkout prevents duplicate orders during network connection drops"
     ],
     readingLinks: [
-      { title: "Uber: H3 Hexagonal Hierarchical Spatial Indexing", url: "https://www.uber.com/blog/h3/" }
+      { title: "System Design Masterclass: E-Commerce Platform Walkthrough", url: "#/dashboard" }
     ]
   },
   {
     day: 38,
     week: 6,
-    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
-    topic: "Spec 12: Ride-Sharing Dispatch & Tracking (Uber / Lyft)",
-    domain: "Real-Time Geospatial Streams",
-    difficulty: "Hard",
-    estTime: "85 mins",
-    specId: "sd-12",
+    weekTitle: "Masterclass: Business-Critical Systems",
+    topic: "Question 17. Design a Ticket Booking System",
+    domain: "Concurrency & Seat Holds",
+    difficulty: "Staff Level",
+    estTime: "90 mins",
+    specId: "sd-14",
     isRevision: false,
-    objective: "Ingest driver GPS coordinates every 4 seconds and match ride requests with nearby active drivers under dynamic surge pricing.",
+    objective: "Event ticketing with numbered seating, 5-minute optimistic holds, payment coordination, automatic hold expiry, and anti-double booking guarantees.",
     keyTradeoffs: [
-      "Theory Concept 12.1 & 12.2: Distributed Tracing & High-Throughput Logging Pipelines",
-      "Location Ingestion Pipeline: High-velocity driver GPS streams into Kafka → In-Memory Location Cache (Redis Geohash)",
-      "Surge Pricing Engine: Streaming supply vs. demand calculation using Apache Flink across hexagonal H3 cells with dynamic multiplier updates"
+      "Authoritative store conditional state transitions from AVAILABLE to HELD ensure single-winner seat assignment",
+      "Background worker safely releases expired holds without corrupting completed sales",
+      "Virtual waiting rooms absorb extreme on-sale demand spikes before database tier"
     ],
     readingLinks: [
-      { title: "Uber Engineering: Designing the Real-Time Dispatch Platform", url: "https://www.uber.com/blog/engineering/" }
+      { title: "System Design Masterclass: Ticket Booking Walkthrough", url: "#/dashboard" }
     ]
   },
   {
     day: 39,
     week: 6,
-    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
-    topic: "Spec 6: Social Media News Feed (Twitter / Instagram / Facebook)",
-    domain: "Social Graph & Feeds",
-    difficulty: "Hard",
-    estTime: "85 mins",
-    specId: "sd-6",
+    weekTitle: "Masterclass: Business-Critical Systems",
+    topic: "Question 18. Design a Payment System",
+    domain: "Fintech, Ledgers & Idempotency",
+    difficulty: "Staff Level",
+    estTime: "90 mins",
+    specId: "sd-15",
     isRevision: false,
-    objective: "Generate personalized feeds for hundreds of millions of users balancing write amplification against read latencies.",
+    objective: "Payment service with idempotency keys, payment state machines, immutable double-entry ledger entries, provider webhooks, and reconciliation.",
     keyTradeoffs: [
-      "Theory Concept 7.3 & 13.4: Orchestration vs. Choreography & Service Decomposition with the Strangler Fig Pattern",
-      "Fan-out on Write (Push: post copied to all followers' timeline caches; instant O(1) reads, catastrophic write amplification for celebrities)",
-      "Hybrid Fan-out Architecture: Push for normal users, Pull for verified celebrities (>20k followers), merged at read time in Redis"
+      "Idempotency keys eliminate double charging when payment requests time out",
+      "Immutable double-entry ledger ensures total debits always equal total credits",
+      "Daily automated reconciliation matches internal records against provider settlement reports"
     ],
     readingLinks: [
-      { title: "Twitter Engineering: Timelines at Scale", url: "https://blog.x.com/engineering/en_us/topics/infrastructure/2013/timelines-at-scale" }
+      { title: "System Design Masterclass: Payment System Walkthrough", url: "#/dashboard" }
     ]
   },
   {
     day: 40,
     week: 6,
-    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
-    topic: "Spec 15: Payment Processing & Ledger System (Stripe / PayPal)",
-    domain: "Fintech & Ledgers",
-    difficulty: "Staff Level",
-    estTime: "90 mins",
-    specId: "sd-15",
+    weekTitle: "Masterclass: Business-Critical Systems",
+    topic: "Question 19. Design a Cloud File Storage Service like Dropbox",
+    domain: "Object Storage & File Sync",
+    difficulty: "Hard",
+    estTime: "85 mins",
+    specId: "sd-4",
     isRevision: false,
-    objective: "Process multi-currency monetary transactions with exactly-once settlement, immutable double-entry ledgers, and zero financial drift.",
+    objective: "Cloud storage where users upload files, sync across devices with cursors, manage versions, share files, and resolve simultaneous edit conflicts.",
     keyTradeoffs: [
-      "Theory Concept 7.4 & 13.2: Distributed Transactions (2PC vs. Saga) & Idempotency Key Architecture",
-      "Double-Entry Bookkeeping: Immutable debits and credits must sum to zero; account balances are never updated in-place",
-      "Idempotency Protocol: Client UUID token acquired with distributed lock; response cached for 24 hours to prevent duplicate credit card charges"
+      "Chunked block uploads (e.g. 4MB) directly to object storage provide resilience for large files",
+      "Sequential sync cursors enable reliable catch-up after offline disconnected periods",
+      "Optimistic version checks expose simultaneous edits and create conflict copies"
     ],
     readingLinks: [
-      { title: "Stripe: Designing Robust and Idempotent APIs", url: "https://stripe.com/blog/idempotency" }
+      { title: "System Design Masterclass: Dropbox Walkthrough", url: "#/dashboard" }
     ]
   },
   {
     day: 41,
     week: 6,
-    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
-    topic: "Spec 14 & 20: Flash Sale (Ticketmaster) & Distributed Scheduler",
-    domain: "High Concurrency & Scheduling",
+    weekTitle: "Masterclass: Business-Critical Systems",
+    topic: "Question 20. Design an Ad Impression Tracking System",
+    domain: "Ad-Tech & Real-Time Streams",
     difficulty: "Staff Level",
     estTime: "90 mins",
-    specId: "sd-14",
+    specId: "sd-5",
     isRevision: false,
-    objective: "Prevent inventory overselling during 100K QPS flash sales and execute delayed tasks across distributed worker nodes.",
+    objective: "Pipeline ingesting ad impressions at 100K-500K eps, deduplicating with stable event IDs, event-time window aggregation, and batch reconciliation.",
     keyTradeoffs: [
-      "Theory Concept 9.6 & 13.3: Flash Sale Architectures & Workflow Orchestration with Durable Execution",
-      "Inventory Pre-Allocation: Stock stored in atomic Redis Lua counters (`DECRBY`) with virtual queuing gates (Token Bucket)",
-      "Distributed Task Scheduler (`sd-20`): Hierarchical Timing Wheels, database leases, and worker heartbeat locks for millions of delayed jobs"
+      "Stable event IDs prevent publisher retries from inflating billable impression counts",
+      "Stream processing produces real-time provisional dashboards; batch reconciles final billing",
+      "Partitioning strategy balances throughput without creating single-campaign hot partitions"
     ],
     readingLinks: [
-      { title: "Designing a Flash Sale System Under Extreme Concurrency", url: "https://blog.bytebytego.com" }
+      { title: "System Design Masterclass: Ad Impression Tracking Walkthrough", url: "#/dashboard" }
     ]
   },
   {
     day: 42,
     week: 6,
-    weekTitle: "Applied Designs Part III: Media, Geospatial & Staff Capstone",
-    topic: "REVISION DAY 6 · Full Staff/Principal Mock Simulation & Capstone",
-    domain: "Staff Capstone Simulation",
-    difficulty: "Staff Level",
+    weekTitle: "Masterclass: Business-Critical Systems",
+    topic: "Final Interview Checklist & Masterclass Principles",
+    domain: "Staff Capstone Readiness",
+    difficulty: "Review & Mock",
     estTime: "90 mins",
     isRevision: true,
-    objective: "Execute a full 45-minute senior/staff whiteboard interview on an unseen prompt incorporating trade-offs, disaster recovery, cost, and cross-functional leadership.",
+    objective: "Audit your readiness against the 10-point checklist and memorize the 6 core architectural principles before entering senior and staff interviews.",
     keyTradeoffs: [
-      "The 45-Minute Execution Rubric: Step 1 Scope & Numbers (8m) → Step 2 API & Capacity (7m) → Step 3 Core Architecture (15m) → Step 4 Bottleneck Deep Dives (15m)",
-      "Staff-Level Differentiation: Driving trade-offs proactively, addressing financial cost constraints, multi-region failover, and operational observability",
-      "Final Review: Complete personal mastery audit across all 20 production specs and 14 concept domains"
+      "Begin with the smallest design that satisfies requirements rather than premature over-engineering",
+      "Tie every single architectural choice to a concrete bottleneck or failure mode rationale",
+      "Review the 10-point readiness checklist across all 20 Masterclass system walkthroughs"
     ],
     readingLinks: [
-      { title: "The Senior / Staff Engineering Interview Rubric", url: "#/dashboard" }
+      { title: "System Design Masterclass: Final Interview Checklist & Principles", url: "#/dashboard" }
     ]
   }
 ];
@@ -1509,7 +1504,7 @@ export function renderTodayRoadmapTask(item, progress, roadmapState = {}, active
       </div>
 
       <!-- Dynamic Topic Content Container -->
-      <div id="roadmap-topic-content-${item.day}" class="roadmap-topic-content flex flex-col gap-4 p-4 rounded-xl bg-white dark:bg-[#0A0E1A]/90 border border-[#E2E8F0] dark:border-[#24314A]/90 shadow-xs dark:shadow-inner">
+      <div id="roadmap-topic-content-${item.day}" class="roadmap-topic-content lesson-content-area flex flex-col gap-4 p-4 rounded-xl bg-white dark:bg-[#0A0E1A]/90 border border-[#E2E8F0] dark:border-[#24314A]/90 shadow-xs dark:shadow-inner" data-content-id="${topics[0]?.id || ''}" data-day="${item.day}" data-lesson-content="true">
         ${renderTopicDetail(topics[0])}
       </div>
 
@@ -1782,8 +1777,72 @@ export function renderTopicDetail(topic) {
   if (topic.id === '4.12' || topic.id === '1.6-trie' || topic.id === 'trie-arch' || topic.title?.includes('Prefix Trie') || topic.title?.includes('Big Data') || topic.title?.includes('Papers and the Evolution')) {
     return renderBigDataEvolutionContent(topic);
   }
-  if (topic.id === 'spec-1-interview' || topic.id === 'sd-1' || topic.id === 'kgs-base62' || topic.title?.includes('Base62 Encoding') || topic.title?.includes('Key Generation Service') || topic.title?.includes('URL Shortener') || topic.title?.includes('TinyURL') || topic.title?.includes('Bitly')) {
-    return renderUrlShortenerInterviewDesign(topic);
+  // --- MASTERCLASS 20 TOPICS + FRAMEWORK + FINAL CHECKLIST ROUTING ---
+  if (topic.id === 'mc-framework' || topic.title?.includes('Interview Framework')) {
+    return renderSystemDesignFrameworkContent(topic);
+  }
+  if (topic.id === 'mc-q1' || topic.id === 'spec-1-interview' || topic.id === 'sd-1' || topic.title?.includes('URL Shortener') || topic.title?.includes('TinyURL') || topic.title?.includes('Bitly')) {
+    return renderUrlShortenerDetail(topic);
+  }
+  if (topic.id === 'mc-q2' || topic.id === 'sd-18' || topic.title?.includes('Distributed Rate Limiter') || topic.title?.includes('Rate Limiter')) {
+    return renderDistributedRateLimiterDetail(topic);
+  }
+  if (topic.id === 'mc-q3' || topic.id === 'sd-8' || topic.title?.includes('Notification System')) {
+    return renderNotificationSystemDetail(topic);
+  }
+  if (topic.id === 'mc-q4' || topic.id === 'sd-3' || topic.title?.includes('Distributed Cache')) {
+    return renderDistributedCacheDetail(topic);
+  }
+  if (topic.id === 'mc-q5' || topic.title?.includes('Design an API Gateway') || topic.title?.includes('API Gateway')) {
+    return renderApiGatewayDetail(topic);
+  }
+  if (topic.id === 'mc-q6' || topic.id === 'sd-6' || topic.title?.includes('Instagram')) {
+    return renderInstagramDetail(topic);
+  }
+  if (topic.id === 'mc-q7' || topic.id === 'sd-7' || topic.title?.includes('WhatsApp')) {
+    return renderWhatsAppDetail(topic);
+  }
+  if (topic.id === 'mc-q8' || topic.id === 'sd-10' || topic.title?.includes('YouTube')) {
+    return renderYouTubeDetail(topic);
+  }
+  if (topic.id === 'mc-q9' || topic.id === 'sd-12' || topic.title?.includes('Uber')) {
+    return renderUberDetail(topic);
+  }
+  if (topic.id === 'mc-q10' || topic.title?.includes('Food Delivery')) {
+    return renderFoodDeliveryDetail(topic);
+  }
+  if (topic.id === 'mc-q11' || topic.id === 'sd-17' || topic.title?.includes('Web Crawler')) {
+    return renderWebCrawlerDetail(topic);
+  }
+  if (topic.id === 'mc-q12' || topic.id === 'sd-16' || topic.title?.includes('Search Autocomplete') || topic.title?.includes('Autocomplete')) {
+    return renderSearchAutocompleteDetail(topic);
+  }
+  if (topic.id === 'mc-q13' || topic.title?.includes('Logging and Monitoring System') || topic.title?.includes('Logging & Monitoring')) {
+    return renderLoggingMonitoringDetail(topic);
+  }
+  if (topic.id === 'mc-q14' || topic.title?.includes('Real-Time Analytics Pipeline') || topic.title?.includes('Real-Time Analytics')) {
+    return renderRealTimeAnalyticsDetail(topic);
+  }
+  if (topic.id === 'mc-q15' || topic.id === 'sd-20' || topic.title?.includes('Distributed Task Scheduler') || topic.title?.includes('Task Scheduler')) {
+    return renderDistributedTaskSchedulerDetail(topic);
+  }
+  if (topic.id === 'mc-q16' || topic.title?.includes('E-Commerce Platform')) {
+    return renderEcommercePlatformDetail(topic);
+  }
+  if (topic.id === 'mc-q17' || topic.id === 'sd-14' || topic.title?.includes('Ticket Booking')) {
+    return renderTicketBookingDetail(topic);
+  }
+  if (topic.id === 'mc-q18' || topic.id === 'sd-15' || topic.title?.includes('Payment System')) {
+    return renderPaymentSystemDetail(topic);
+  }
+  if (topic.id === 'mc-q19' || topic.id === 'sd-4' || topic.title?.includes('Dropbox') || topic.title?.includes('Cloud File Storage')) {
+    return renderCloudFileStorageDetail(topic);
+  }
+  if (topic.id === 'mc-q20' || topic.title?.includes('Ad Impression Tracking')) {
+    return renderAdImpressionTrackingDetail(topic);
+  }
+  if (topic.id === 'mc-checklist' || topic.title?.includes('Final Interview Checklist') || topic.title?.includes('Final Checklist')) {
+    return renderFinalInterviewChecklistDetail(topic);
   }
   if (topic.id === '8.1' || topic.title?.includes('Deployment Strategies')) {
     return renderDeploymentStrategiesContent(topic);
@@ -1794,83 +1853,17 @@ export function renderTopicDetail(topic) {
   if (topic.id === '8.3' || topic.title?.includes('Runaway Process')) {
     return renderLinuxProcessTriageContent(topic);
   }
-  if (topic.id === '8.4' || topic.title?.includes('War Story') || topic.title?.includes('Outage')) {
-    return renderOutagePostmortemContent(topic);
-  }
   if (topic.id === '12.3' || topic.title?.includes('SLIs, SLOs')) {
     return renderSloErrorBudgetsContent(topic);
   }
   if (topic.id === '12.4' || topic.title?.includes('Multi-Region')) {
     return renderMultiRegionDisasterRecoveryContent(topic);
   }
-  if (topic.id === '12.5' || topic.id === '12.6' || topic.title?.includes('Capacity Planning') || topic.title?.includes('Autoscaling') || topic.title?.includes('Cost as a Design')) {
-    return renderCapacityAutoscalingContent(topic);
-  }
   if (topic.id === '12.7' || topic.title?.includes('Chaos Engineering')) {
     return renderChaosEngineeringContent(topic);
   }
   if (topic.id === 'rev-3' || topic.id === 'rev-3-checklist' || topic.title?.includes('Revision Day 3') || topic.title?.includes('Week 3 Core Mastery')) {
     return renderWeek3RevisionContent(topic);
-  }
-  if (topic.id === '13.5' || topic.title?.includes('Webhooks') || topic.title?.includes('Outbound Integrations')) {
-    return renderWebhooksContent(topic);
-  }
-  if (topic.id === '13.1' || topic.title?.includes('Event Sourcing') || topic.title?.includes('CQRS')) {
-    return renderEventSourcingCqrsContent(topic);
-  }
-  if (topic.id === '12.1' || topic.title?.includes('Distributed Tracing') || topic.title?.includes('Context Propagation')) {
-    return renderDistributedTracingContent(topic);
-  }
-  if (topic.id === '12.2' || topic.title?.includes('Logging Pipeline') || topic.title?.includes('Logging Pipelines')) {
-    return renderLoggingPipelineContent(topic);
-  }
-  if (topic.id === '13.4' || topic.title?.includes('Service Decomposition') || topic.title?.includes('Strangler Fig')) {
-    return renderServiceDecompositionContent(topic);
-  }
-  if (topic.id === '13.2' || topic.title?.includes('Idempotency Keys') || topic.title?.includes('Idempotency')) {
-    return renderIdempotencyContent(topic);
-  }
-  if (topic.id === '13.3' || topic.title?.includes('Durable Execution') || topic.title?.includes('Temporal') || topic.title?.includes('Cadence')) {
-    return renderDurableExecutionContent(topic);
-  }
-  if (topic.id === '9.1' || topic.title?.includes('Proximity Search') || topic.title?.includes('Geohash and Quadtree') || topic.title?.includes('Geohash & Quadtree') || topic.title?.includes('Yelp')) {
-    return renderProximitySearchContent(topic);
-  }
-  if (topic.id === '9.2' || topic.title?.includes('Google Maps') || topic.title?.includes('Tiling & Route Planning')) {
-    return renderGoogleMapsContent(topic);
-  }
-  if (topic.id === '9.3' || topic.title?.includes('Gmail') || topic.title?.includes('Distributed Email')) {
-    return renderDistributedEmailContent(topic);
-  }
-  if (topic.id === '9.4' || topic.title?.includes('Payment System') || topic.title?.includes('Payment Systems') || topic.title?.includes('Clearing, Settlement')) {
-    return renderPaymentSystemsContent(topic);
-  }
-  if (topic.id === '9.5' || topic.title?.includes('Stock Exchange') || topic.title?.includes('Matching Engine')) {
-    return renderStockExchangeContent(topic);
-  }
-  if (topic.id === '9.6' || topic.title?.includes('Flash Sale') || topic.title?.includes('Flash Sales')) {
-    return renderFlashSaleContent(topic);
-  }
-  if (topic.id === '9.7' || topic.title?.includes('AlphaCode') || topic.title?.includes('AI Coding Engines') || topic.title?.includes('AI Inference')) {
-    return renderAiCodingEngineContent(topic);
-  }
-  if (topic.id === 'rev-4-cheat' || topic.title?.includes('Appendix C Cheat Sheet') || topic.title?.includes('Tip-of-the-Tongue Numbers')) {
-    return renderAppendixCheatSheetContent(topic);
-  }
-  if (topic.id === 'rev-4' || topic.title?.includes('Revision Day 4')) {
-    return renderWeek4RevisionContent(topic);
-  }
-  if (topic.id === 'rev-5-patterns' || topic.title?.includes('Appendix C.3 Problem-to-Pattern') || topic.title?.includes('Problem-to-Pattern Index')) {
-    return renderAppendixPatternIndexContent(topic);
-  }
-  if (topic.id === 'rev-5' || topic.title?.includes('Revision Day 5')) {
-    return renderWeek5RevisionContent(topic);
-  }
-  if (topic.id === 'capstone-rubric' || topic.title?.includes('Staff & Principal 45-Minute Interview Rubric') || topic.title?.includes('Staff & Principal')) {
-    return renderStaffRubricContent(topic);
-  }
-  if (topic.id === 'rapid-257' || topic.title?.includes('Appendix D: 257-Question') || topic.title?.includes('257-Question Rapid-Fire')) {
-    return renderRapidFireQuestionBankContent(topic);
   }
   if (topic.customHtml) {
     return typeof topic.customHtml === 'function' ? topic.customHtml(topic) : topic.customHtml;

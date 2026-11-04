@@ -8,82 +8,82 @@ export function renderProcessVsThreadContent(topic) {
   const concurrencyModels = [
     {
       model: "Process per request",
-      cost: "MBs memory, ~1 ms spawn",
+      cost: "MBs memory, ~1 ms to create",
       scheduledBy: "OS Kernel (Preemptive)",
-      contextSwitchCost: "High (TLB flush + page table swap + cache misses)",
-      faultBlastRadius: "Isolated (Crash affects 0 other requests)",
-      failsAt: "High concurrency (>1,000 concurrent requests; memory exhaustion)",
+      contextSwitchCost: "High — switching between processes forces the CPU to throw away its memory address cache (TLB flush), causing thousands of slow page table lookups",
+      faultBlastRadius: "Fully isolated — if one process crashes, zero other requests are affected (like separate apartments with their own walls)",
+      failsAt: "Beyond ~1,000 concurrent requests: each process eats MBs of RAM, so memory runs out fast",
       badgeColor: "text-amber-400 bg-amber-500/15 border-amber-500/30"
     },
     {
       model: "Thread per request",
-      cost: "~1 MB stack, ~10–100 µs spawn",
+      cost: "~1 MB stack, ~10–100 µs to create",
       scheduledBy: "OS Kernel (Preemptive)",
-      contextSwitchCost: "Moderate (Registers saved, same page tables, mild cache pollution)",
-      faultBlastRadius: "Shared (Uncaught segfault / OOM kills parent process)",
-      failsAt: "~10,000 threads (Context switch overhead and RAM stack dominate)",
+      contextSwitchCost: "Moderate — CPU saves registers but keeps the same memory maps loaded, so cache stays warm",
+      faultBlastRadius: "Shared risk — one thread's crash (segfault or out-of-memory) kills the entire parent process and all its sibling threads",
+      failsAt: "Beyond ~10,000 threads: CPU spends more time switching between threads than doing real work",
       badgeColor: "text-cyan-400 bg-cyan-500/15 border-cyan-500/30"
     },
     {
       model: "Coroutine / Green thread",
-      cost: "~2–4 KB stack, ~ns–µs spawn",
-      scheduledBy: "Language Runtime (Cooperative/M:N)",
-      contextSwitchCost: "Near-zero (User-space register swap, 0 syscalls)",
-      faultBlastRadius: "Runtime-bound (Panic can bubble unless recovered)",
-      failsAt: "CPU-bound work or blocking C syscall stalls underlying OS thread",
+      cost: "Tiny: ~2–4 KB stack, nanoseconds to create",
+      scheduledBy: "Language Runtime (Go, Kotlin, Java 21) — cooperative M:N scheduling",
+      contextSwitchCost: "Near-zero — switches happen in user-space without asking the OS kernel, no TLB flush needed",
+      faultBlastRadius: "Runtime-bound — a panic can bubble up unless caught, but other goroutines/coroutines on different OS threads survive",
+      failsAt: "CPU-heavy work or calling a blocking C library — the coroutine hogs its underlying OS thread and starves siblings",
       badgeColor: "text-emerald-400 bg-emerald-500/15 border-emerald-500/30"
     },
     {
       model: "Event Loop (Single-threaded Reactor)",
-      cost: "Single stack total, near-zero overhead",
-      scheduledBy: "Application Event Loop (Callbacks/Poll)",
-      contextSwitchCost: "Zero (Single thread executing sequential tasks)",
-      faultBlastRadius: "Entire service (Uncaught exception crashes loop)",
-      failsAt: "Any single CPU-intensive handler halts all concurrent clients",
+      cost: "Minimal: one thread, one stack, near-zero overhead",
+      scheduledBy: "Application Event Loop (Node.js, Redis, Nginx) — callbacks and I/O polling",
+      contextSwitchCost: "Zero — there is literally only one thread, so no switching happens",
+      faultBlastRadius: "Entire service — one uncaught exception crashes the whole event loop and drops every connected client",
+      failsAt: "Any single CPU-intensive task (e.g., image resize, JSON parse of 100 MB) blocks ALL other clients until it finishes",
       badgeColor: "text-purple-400 bg-purple-500/15 border-purple-500/30"
     }
   ];
 
   const processVsThreadComparison = [
     {
-      dimension: "Definition & Identity",
-      process: "An isolated instance of a program in execution with private kernel-allocated resources",
-      thread: "The smallest dispatchable unit of execution within a parent process"
+      dimension: "What It Is",
+      process: "A running copy of a program with its own private memory, files, and identity — like a separate apartment with its own walls, kitchen, and keys",
+      thread: "A lightweight worker inside a process — like a roommate sharing the same apartment but with their own desk and to-do list"
     },
     {
-      dimension: "Virtual Address Space",
-      process: "Independent virtual address space (Code, Data, Heap, Stack mapped via own Page Tables)",
-      thread: "Shares parent process address space (Heap, Data, Code segment, file descriptors)"
+      dimension: "Memory Layout",
+      process: "Gets its own private virtual address space — its own Code, Data, Heap, and Stack sections, completely invisible to other processes",
+      thread: "Shares the parent process's Heap, Code, Data, and open files — only the Stack, CPU registers, and Thread ID are private to each thread"
     },
     {
-      dimension: "Private State",
-      process: "Entire memory map, file descriptors, credentials, environment, PID, signal handlers",
-      thread: "Program Counter (PC), CPU registers, Stack pointer, Thread-Local Storage (TLS), TID"
+      dimension: "What's Private vs. Shared",
+      process: "Everything is private: memory map, file descriptors, credentials, environment variables, PID, and signal handlers",
+      thread: "Only a few things are private: Program Counter (where it is in the code), CPU registers, Stack pointer, and Thread-Local Storage (TLS)"
     },
     {
-      dimension: "Creation & Termination Overhead",
-      process: "Heavyweight (~1 ms). Requires cloning page tables, file table, and allocating mm_struct",
-      thread: "Lightweight (~10–20 µs). Allocates stack memory and initializes thread control block (TCB)"
+      dimension: "Cost to Create",
+      process: "Expensive (~1 ms). The OS must copy page tables, clone the file table, and set up a full memory context",
+      thread: "Cheap (~10–20 µs, about 50–100× faster). Just allocates a stack and initializes a small thread control block"
     },
     {
-      dimension: "Context Switch Overhead",
-      process: "Expensive (~1–3 µs). Saves registers, switches CR3 page table register, invalidates TLB, cache pollution",
-      thread: "Moderate (~100–300 ns). Saves CPU registers and stack pointer. Page tables stay loaded in TLB"
+      dimension: "Cost to Switch Between",
+      process: "Slow (~1–3 µs + cache penalty). The CPU must swap page tables (CR3 register), which flushes its memory address cache (TLB) — causing thousands of cache misses",
+      thread: "Fast (~100–300 ns). Only CPU registers and stack pointer are saved. Page tables stay loaded, so the cache stays warm"
     },
     {
-      dimension: "Inter-Entity Communication",
-      process: "Slow & complex. Requires IPC (Pipes, Unix domain sockets, shared memory, signals, network)",
-      thread: "Blazing fast. Direct memory reads/writes to shared heap (requires mutexes, semaphores, atomics)"
+      dimension: "How They Communicate",
+      process: "Slow and complex — must go through the OS kernel using pipes, sockets, shared memory, or network calls (IPC)",
+      thread: "Instant — threads read/write the same heap memory directly (but you need mutexes or locks to prevent race conditions)"
     },
     {
-      dimension: "Fault Isolation Boundary",
-      process: "Strict hardware-enforced isolation. Memory violation (SIGSEGV) kills only that process",
-      thread: "Zero isolation. A segfault or memory corruption in one thread crashes the entire process"
+      dimension: "What Happens When One Crashes",
+      process: "Only that process dies. Other processes are completely unaffected — the OS hardware (MMU) enforces the wall between them",
+      thread: "The ENTIRE process dies, killing all sibling threads too. One bad thread's memory corruption takes everyone down"
     },
     {
-      dimension: "Primary Architectural Use Case",
-      process: "Hard security & failure boundaries (Chrome browser tabs, Nginx worker processes)",
-      thread: "High-throughput concurrent tasks sharing large in-memory caches (Java Tomcat, C++ servers)"
+      dimension: "When to Use Each",
+      process: "When you need hard crash isolation and security boundaries — Chrome tabs, Nginx workers, running untrusted user code",
+      thread: "When you need high-throughput concurrency with shared in-memory state — Java Tomcat handling 5,000 HTTP requests sharing a cache"
     }
   ];
 
@@ -149,7 +149,7 @@ export function renderProcessVsThreadContent(topic) {
             </h2>
           </div>
           <p class="text-[13.5px] text-slate-400 font-sans pl-4">
-            The Fundamental Concurrency Abstraction · Memory Virtualization, Execution Entities & Context Switching
+            Think of a process as an apartment (private walls, kitchen, keys) and a thread as a roommate inside it (shares the kitchen, has their own desk). This section explains how your OS runs code, why it matters for system design, and how to talk about it in interviews.
           </p>
         </div>
 
@@ -162,7 +162,7 @@ export function renderProcessVsThreadContent(topic) {
               WHAT IT IS
             </span>
             <p class="text-[13px] text-slate-300 leading-relaxed font-sans">
-              A <strong>program</strong> is a passive, immutable executable binary stored on persistent disk (ELF, Mach-O). A <strong>process</strong> is an active instance of that program in execution, allocated a private virtual address space and kernel resources. A <strong>thread</strong> is the smallest schedulable unit of CPU execution inside a process.
+              A <strong>program</strong> is just a file on your hard drive — compiled code sitting there doing nothing (like a recipe book on a shelf). A <strong>process</strong> is what happens when the OS loads that program into memory and starts running it — it gets its own private memory space, files, and an identity (PID). A <strong>thread</strong> is a worker inside that process — the smallest unit the CPU can actually schedule and run.
             </p>
           </div>
 
@@ -170,10 +170,10 @@ export function renderProcessVsThreadContent(topic) {
           <div class="md:col-span-6 bg-[#141C2E] border border-[#24314A] rounded-xl p-5 flex flex-col gap-2">
             <span class="font-code text-[11px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-              WHY IT MATTERS
+              WHY IT MATTERS IN DESIGN INTERVIEWS
             </span>
             <p class="text-[13px] text-slate-300 leading-relaxed font-sans">
-              Every critical backend architectural decision — thread pool sizing, async event loops (Node.js/Redis), coroutine runtimes (Go/Kotlin), multi-process workers (Gunicorn/Nginx), and security sandboxing — begins at this boundary. It is an interviewer's top litmus test for operating system depth.
+              Interviewers ask about this to test whether you understand <em>why</em> Nginx uses multiple processes, why Node.js is single-threaded, why Go uses goroutines, or how to size a thread pool. Every time you say "spin up more servers" or "use a thread pool" in a design interview, you're making a process-vs-thread decision — and the interviewer expects you to know the trade-offs.
             </p>
           </div>
         </div>
@@ -192,7 +192,7 @@ export function renderProcessVsThreadContent(topic) {
                 <span class="text-[13px] font-bold text-white font-sans">Program (Disk)</span>
               </div>
               <p class="text-[12.5px] text-slate-300 leading-relaxed font-sans">
-                Static instructions and initialized data stored passively in non-volatile storage. Contains compiled machine bytecode and symbol tables.
+                A file sitting on your disk — compiled code that does nothing until someone runs it. Like a recipe book on a shelf: all instructions, zero action.
               </p>
             </div>
 
@@ -202,7 +202,7 @@ export function renderProcessVsThreadContent(topic) {
                 <span class="text-[13px] font-bold text-white font-sans">Process (Memory)</span>
               </div>
               <p class="text-[12.5px] text-slate-300 leading-relaxed font-sans">
-                The kernel invokes <code>execve()</code>, maps virtual memory pages, instantiates a <code>task_struct</code>, sets up page tables, and allocates file descriptors.
+                The OS loads the program into memory, gives it a private address space, sets up page tables for memory translation, and assigns a PID. Now it's alive and running — like opening the recipe book and starting to cook.
               </p>
             </div>
 
@@ -212,75 +212,89 @@ export function renderProcessVsThreadContent(topic) {
                 <span class="text-[13px] font-bold text-white font-sans">Threads (CPU Cores)</span>
               </div>
               <p class="text-[12.5px] text-slate-300 leading-relaxed font-sans">
-                The process spawns worker threads sharing heap and global data. Threads execute concurrently across hardware cores, each running an independent execution stream.
+                The process creates threads that share its memory (heap, code, open files) but each gets its own stack and registers. Multiple threads run on different CPU cores simultaneously — like multiple cooks in the same kitchen, each working on different dishes.
               </p>
             </div>
           </div>
         </div>
 
-        <!-- ADDRESS-SPACE VIEW (ASCII Visual Architectural Diagram) -->
-        <div class="bg-[#0A0E1A] border border-[#24314A] rounded-xl p-5 sm:p-6 flex flex-col gap-4 font-mono text-[12px]">
-          <div class="flex items-center justify-between pb-2 border-b border-[#24314A]/60">
-            <span class="text-[11px] font-code font-bold tracking-wider text-cyan-400 uppercase flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-              VIRTUAL MEMORY ARCHITECTURE & ADDRESS SPACE MODEL
+        <!-- VIRTUAL MEMORY ARCHITECTURE & ADDRESS SPACE MODEL (Process vs. Thread Architecture Diagram) -->
+        <div class="os-diagram-canvas rounded-2xl p-5 sm:p-7 flex flex-col gap-6 shadow-xl border border-slate-200 bg-white">
+          
+          <!-- Top Section Title Bar -->
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-slate-200 gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
+              <span class="text-[12.5px] sm:text-[13px] font-code font-bold tracking-wider text-cyan-800 uppercase">
+                VIRTUAL MEMORY ARCHITECTURE &amp; ADDRESS SPACE MODEL
+              </span>
+            </div>
+            <div class="flex items-center gap-2 text-[11px] font-code text-slate-600">
+              <span class="px-2.5 py-0.5 rounded-md bg-slate-100 border border-slate-300 text-slate-700 font-medium">Hardware MMU &amp; Page Tables</span>
+              <span class="px-2.5 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 font-medium">CR3 Register Translation</span>
+            </div>
+          </div>
+
+          <!-- The Architectural Diagram Image As-Is -->
+          <div class="flex flex-col gap-3">
+            <div class="os-diagram-img-frame relative overflow-hidden rounded-xl border border-slate-200 bg-white p-2 sm:p-4 shadow-sm flex items-center justify-center">
+              <img 
+                src="/images/virtual-memory-architecture.jpg" 
+                alt="Operating System Physical Hardware & RAM - Virtual Memory Architecture & Address Space Model (Process vs. Thread)" 
+                class="w-full h-auto max-w-5xl rounded-lg object-contain bg-white cursor-zoom-in transition-transform duration-200 hover:scale-[1.008]"
+                loading="eager"
+                title="Click to view image full resolution"
+                onclick="window.open('/images/virtual-memory-architecture.jpg', '_blank')"
+              />
+            </div>
+            <div class="flex items-center justify-between text-[11px] font-sans text-slate-500 px-1">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px] text-cyan-600">zoom_in</span>
+                Click diagram to view in high resolution in new tab
+              </span>
+              <span class="font-code text-[10.5px] text-slate-500">Process A (PID 1042) vs. Process B (PID 1043) · Ring 0 Kernel · Hardware</span>
+            </div>
+          </div>
+
+          <!-- THREADS VS. PROCESS ARCHITECTURAL DEEP-DIVE -->
+          <div class="flex flex-col gap-3">
+            <span class="font-code text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              MEMORY SHARING &amp; ISOLATION: THREAD CONCURRENCY INSIDE THE ADDRESS SPACE
             </span>
-            <span class="text-[11px] font-code text-slate-500">Hardware Memory Management Unit (MMU) & Page Tables</span>
-          </div>
 
-          <!-- ASCII Architecture Diagram Container -->
-          <div class="p-4 bg-[#070B14] rounded-lg border border-slate-800 text-slate-300 overflow-x-auto text-[11.5px] leading-relaxed">
-            <pre class="font-code text-slate-300">
-+-------------------------------------------------------------------------------------------------------------+
-|                                    OPERATING SYSTEM PHYSICAL HARDWARE & RAM                                  |
-+-------------------------------------------------------------------------------------------------------------+
-                                       ▲                                    ▲
-                   Page Table Mapping  │                                    │  Page Table Mapping
-                   (CR3 Register Ptr)  │                                    │  (CR3 Register Ptr)
-                                       ▼                                    ▼
-+------------------------------------------------------+    +-------------------------------------------------+
-|               PROCESS A (PID: 1042)                  |    |              PROCESS B (PID: 1043)              |
-|        Isolated Virtual 64-bit Address Space         |    |       Isolated Virtual 64-bit Address Space     |
-+------------------------------------------------------+    +-------------------------------------------------+
-| [0xFFFFFFFFFFFFFFFF] Kernel Space (Ring 0)           |    | [0xFFFFFFFFFFFFFFFF] Kernel Space (Ring 0)      |
-|------------------------------------------------------|    |-------------------------------------------------|
-| USER SPACE:                                          |    | USER SPACE:                                     |
-|                                                      |    |                                                 |
-|  +------------------------------------------------+  |    |  +-------------------------------------------+  |
-|  | SHARED PROCESS MEMORY:                         |  |    |  | SHARED PROCESS MEMORY:                    |  |
-|  |  * Code Segment (.text): Read-only instructions|  |    |  |  * Code Segment (.text): Machine code     |  |
-|  |  * Data Segment (.data / .bss): Global/static  |  |    |  |  * Data Segment (.data): Global state     |  |
-|  |  * Heap (Dynamic malloc/new allocations)       |  |    |  |  * Heap Segment: Isolated heap allocations|  |
-|  |  * File Descriptors: Sockets, pipes, open files|  |    |  |  * File Descriptors: Isolated fd table    |  |
-|  +------------------------------------------------+  |    |  +-------------------------------------------+  |
-|          ▲                      ▲                     |    |                                                 |
-|          │ Direct Heap Access   │ Direct Heap Access  |    |                                                 |
-|          ▼                      ▼                     |    |                                                 |
-|  +-----------------+  +-----------------+             |    |  +-----------------+                            |
-|  | THREAD 1 (TID1) |  | THREAD 2 (TID2) |             |    |  | THREAD 1 (TID1) |                            |
-|  | * Private Stack |  | * Private Stack |             |    |  | * Private Stack |                            |
-|  | * Registers, PC |  | * Registers, PC |             |    |  | * Registers, PC |                            |
-|  | * TLS storage   |  | * TLS storage   |             |    |  | * TLS storage   |                            |
-|  +-----------------+  +-----------------+             |    |  +-----------------+                            |
-|                                                      |    |                                                 |
-|  ▲ Cheap sharing of in-memory heap data              |    |  ▲ Process A and Process B share NOTHING!       |
-|  ▲ Zero isolation: memory bug in T1 corrupts T2      |    |  ▲ Communication REQUIRES explicit IPC          |
-+------------------------------------------------------+    +-------------------------------------------------+
-            │                                                                ▲
-            └────────────────────── [ IPC BOUNDARY ] ────────────────────────┘
-                       Unix Domain Sockets / Pipes / Shared Memory / TCP</pre>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 text-[12px]">
-            <div class="bg-[#0F1626] border border-emerald-500/30 rounded-lg p-3 text-emerald-300">
-              <strong class="text-white block mb-1">Threads Share the Heap:</strong>
-              Enables sub-microsecond data passing via shared memory pointers without copying bytes, but introduces concurrent race conditions, deadlocks, and memory corruption risks that require synchronization locks.
-            </div>
-            <div class="bg-[#0F1626] border border-amber-500/30 rounded-lg p-3 text-amber-300">
-              <strong class="text-white block mb-1">Processes Share Nothing:</strong>
-              Provides hardware-enforced MMU memory protection. One process crashing leaves sibling processes completely unaffected, but passing data requires OS syscalls, memory copying, and context switching.
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[12px]">
+              <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-1.5 font-bold text-[13px] text-emerald-900">
+                  <span class="material-symbols-outlined text-[18px]">group_work</span>
+                  <span>Threads Share the Process Heap &amp; Segments</span>
+                </div>
+                <p class="leading-relaxed text-[12px] text-slate-700">
+                  Threads inside the same process are like roommates sharing an apartment. They all see the same <strong>Heap, Data, Code, and open files</strong>.
+                  This makes communication blazing fast — threads just read and write shared memory directly (sub-microsecond). But sharing also creates danger: if two threads write to the same variable at the same time, you get <strong>race conditions</strong>. That's why you need mutexes, locks, or atomic operations to coordinate access.
+                </p>
+                <div class="mt-2.5 pt-2.5 border-t border-emerald-200 flex items-center gap-2 text-[11px] font-code text-emerald-800">
+                  <span class="font-bold">Private per thread:</span>
+                  <span>Dedicated Stack (~1MB), CPU Registers (PC, SP), Thread-Local Storage (TLS).</span>
+                </div>
+              </div>
+              
+              <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-1.5 font-bold text-[13px] text-amber-900">
+                  <span class="material-symbols-outlined text-[18px]">lock</span>
+                  <span>Processes Share Nothing (Hardware MMU Isolation)</span>
+                </div>
+                <p class="leading-relaxed text-[12px] text-slate-700">
+                  Processes are like <strong>separate apartments with thick walls</strong>. Process A and Process B share zero memory. The CPU's hardware memory unit (MMU) enforces this: each process has its own page tables. A crash, buffer overflow, or memory corruption in Process A <em>cannot touch</em> Process B. To communicate, they must go through the OS kernel using pipes, sockets, or shared memory (IPC).
+                </p>
+                <div class="mt-2.5 pt-2.5 border-t border-amber-200 flex items-center gap-2 text-[11px] font-code text-amber-800">
+                  <span class="font-bold">Context Switch Penalty:</span>
+                  <span>Reloading CR3 invalidates the hardware TLB, incurring multi-microsecond cache miss penalties.</span>
+                </div>
+              </div>
             </div>
           </div>
+
         </div>
 
         <!-- Architectural Comparison Table: Process vs. Thread -->
@@ -318,8 +332,8 @@ export function renderProcessVsThreadContent(topic) {
             THE HIDDEN COST OF CONTEXT SWITCHING: CACHE & TLB INVALIDATION
           </span>
           <p class="text-[13px] text-amber-200/90 leading-relaxed font-sans">
-            Junior engineers often assume a context switch only costs the time required to save and restore CPU registers (~10–20 nanoseconds). In reality, an <strong>inter-process context switch costs microseconds to milliseconds of tail latency</strong> because reloading the <code>CR3</code> register flushes the CPU’s Translation Lookaside Buffer (TLB). The newly scheduled process suffers thousands of L1/L2 data cache misses and multi-level page table walks in main memory to warm its working set. Thread switches preserve page table mappings, avoiding the devastating TLB shootdown penalty.
-          </p>
+          <p class="text-[13px] text-amber-200/90 leading-relaxed font-sans">
+            Most people think a context switch is just saving a few CPU registers (~20 nanoseconds). That's <em>not</em> where the pain is. The real cost is the <strong>cache and TLB flush</strong>. When the OS switches to a different process, it changes the page table pointer (CR3 register), which wipes the CPU's Translation Lookaside Buffer — a fast cache that maps virtual memory addresses to physical RAM. The new process now has an ice-cold cache: every memory access triggers a slow, multi-level page table walk. You pay thousands of L1/L2 cache misses until the working set warms up. <strong>Thread switches avoid this entirely</strong> because threads in the same process share the same page tables — the TLB stays warm.
         </div>
 
         <!-- Official Page 10 Footer -->
@@ -345,7 +359,7 @@ export function renderProcessVsThreadContent(topic) {
             </h3>
           </div>
           <p class="text-[13px] text-slate-300 leading-relaxed font-sans">
-            Every backend application framework chooses a concurrency runtime. You must be able to contrast their memory footprints, scheduling mechanisms, and catastrophic failure modes on the whiteboard:
+            Every backend framework picks one of these 4 approaches to handle multiple users at the same time. In a design interview, the interviewer expects you to know why Node.js chose event loops, why Go chose coroutines, and what breaks each model under pressure:
           </p>
 
           <!-- Responsive Concurrency Models Comparison Table -->
@@ -388,8 +402,8 @@ export function renderProcessVsThreadContent(topic) {
             SENIOR PERSPECTIVE: SIZING THREAD POOLS VIA LITTLE'S LAW
           </span>
           <p class="text-[13px] text-emerald-200/90 leading-relaxed font-sans">
-            In system design interviews, never say <em>"I'll spin up 1,000 threads to handle the traffic."</em> For CPU-bound workloads, optimal thread count is strictly tied to physical hardware: <code>Threads = N_cores</code>. For I/O-bound microservices (calling databases or downstream APIs), size your thread pool using <strong>Little’s Law</strong>: <code>Concurrency = QPS × Average Latency</code>. If your service handles 2,000 QPS with 50 ms latency, you need exactly <code>2,000 × 0.05 = 100 concurrent threads</code>. Always pair this with a strictly bounded queue and fail-fast backpressure (HTTP 429/503), because an unbounded queue converts temporary downstream latency spikes into catastrophic out-of-memory crashes.
-          </p>
+          <p class="text-[13px] text-emerald-200/90 leading-relaxed font-sans">
+            <strong>Never say "I'll spin up 1,000 threads" in a design interview without justifying the number.</strong> Here's the simple framework: For <strong>CPU-bound work</strong> (number crunching, encoding), set <code>threads = number of CPU cores</code> — adding more just causes useless switching. For <strong>I/O-bound work</strong> (DB queries, API calls), use <strong>Little's Law</strong>: <code>threads needed = requests per second × average response time</code>. <em>Example: 2,000 QPS with 50 ms database latency → 2,000 × 0.05 = 100 threads.</em> And always use a <strong>bounded queue</strong> in front of the pool. An unbounded queue silently piles up requests during a downstream slowdown until your server runs out of memory and crashes. Respond with HTTP 429/503 instead.
         </div>
 
         <!-- Coroutine vs Thread Deep Dive Box -->
@@ -400,16 +414,16 @@ export function renderProcessVsThreadContent(topic) {
             </span>
           </div>
           <p class="text-[13px] text-slate-300 leading-relaxed font-sans">
-            An OS thread is scheduled <strong>preemptively</strong> by the kernel scheduler; the CPU timer interrupt halts it at arbitrary instructions to allocate core cycles fairly. A <strong>coroutine</strong> (Go Goroutines, Kotlin Coroutines, Java 21 Virtual Threads, Python asyncio) is scheduled <strong>cooperatively</strong> by the user-space language runtime. Coroutines yield control only at explicit suspension points (network I/O, channel reads, sleep timers).
+            <strong>OS threads</strong> are managed by the kernel, which can interrupt them at any time (preemptive scheduling) — like a teacher calling on students at random. <strong>Coroutines</strong> (Go goroutines, Kotlin coroutines, Java 21 virtual threads, Python asyncio) are managed by the language runtime — they voluntarily pause themselves at specific points (network I/O, channel reads, timers). Think of it as polite turn-taking vs. forced interruption.
           </p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 text-[12.5px] font-sans">
             <div class="bg-[#0A0E1A] p-3.5 rounded-lg border border-emerald-500/30 text-emerald-200">
               <strong class="text-white block mb-1">The Coroutine Advantage:</strong>
-              Starts with an elastic ~2KB stack (scaling dynamically up to MBs), performs context switches purely in user space without kernel traps or TLB flushes, allowing millions of concurrent connections on a single machine.
+              Each coroutine starts with a tiny ~2 KB stack (a thread needs ~1 MB — that's 500× more). Switching between coroutines happens in user-space without asking the OS, so there's no TLB flush and no kernel overhead. This is how a single Go server handles millions of concurrent connections — each goroutine costs almost nothing.
             </div>
             <div class="bg-[#0A0E1A] p-3.5 rounded-lg border border-amber-500/30 text-amber-200">
-              <strong class="text-white block mb-1">The Cooperative Trap:</strong>
-              If a coroutine enters an intensive CPU calculation or executes a blocking C-level system call without yielding, it hijacks its underlying OS carrier thread, starving all other coroutines mapped to that carrier core.
+              <strong class="text-white block mb-1">The Cooperative Trap (the gotcha):</strong>
+              Since coroutines only pause at yield points, a coroutine that does heavy CPU work (e.g., compressing a large file) or calls a blocking C library <em>never yields</em> — it hogs its underlying OS thread and blocks all other coroutines waiting on that thread. This is why Go's runtime detects long-running goroutines and preempts them since Go 1.14.
             </div>
           </div>
         </div>
@@ -425,15 +439,15 @@ export function renderProcessVsThreadContent(topic) {
             <ul class="flex flex-col gap-2.5 text-[12.5px] text-emerald-200/90 font-sans">
               <li class="flex items-start gap-2">
                 <span class="text-emerald-400 mt-1 font-bold">•</span>
-                <span><strong>Hardware fault isolation:</strong> A segfault or memory leak in one worker must never compromise sibling workers (Chrome tab renderers, Nginx master/worker architecture).</span>
+                <span><strong>You need crash isolation:</strong> If one worker crashes (segfault, memory leak, infinite loop), the others must keep running. Real examples: Chrome runs each tab as a separate process, Nginx uses a master process that supervises worker processes.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="text-emerald-400 mt-1 font-bold">•</span>
-                <span><strong>Bypassing runtime Global Interpreter Locks:</strong> Overcoming single-threaded runtime limitations (e.g., Python GIL, Ruby MRI) using multi-process pools (Gunicorn, Celery).</span>
+                <span><strong>Your language has a Global Interpreter Lock (GIL):</strong> Python and Ruby can only run one thread at a time due to their GIL. To use multiple CPU cores, you <em>must</em> use multiple processes (Gunicorn, Celery workers). Each process gets its own GIL.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="text-emerald-400 mt-1 font-bold">•</span>
-                <span><strong>Executing untrusted multi-tenant code:</strong> Sandboxing customer-submitted scripts using operating system process restrictions and seccomp filters.</span>
+                <span><strong>You're running untrusted user code:</strong> If your platform runs customer-submitted code (like a coding playground, CI/CD runner, or serverless function), each execution must be in a sandboxed process with restricted OS permissions (seccomp, namespaces) so one user can't access another's data.</span>
               </li>
             </ul>
           </div>
@@ -447,15 +461,15 @@ export function renderProcessVsThreadContent(topic) {
             <ul class="flex flex-col gap-2.5 text-[12.5px] text-cyan-200/90 font-sans">
               <li class="flex items-start gap-2">
                 <span class="text-cyan-400 mt-1 font-bold">•</span>
-                <span><strong>Massive I/O fan-out concurrency:</strong> Handling 10,000 to 1,000,000 concurrent network connections (WebSockets, API gateways, proxy routers).</span>
+                <span><strong>You need massive concurrency (10K–1M connections):</strong> WebSocket servers, API gateways, and proxy routers must handle tens of thousands of simultaneous connections. Threads would eat too much RAM; coroutines or event loops are the only viable options.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="text-cyan-400 mt-1 font-bold">•</span>
-                <span><strong>Cheap shared memory state:</strong> Concurrent tasks frequently query or update a large in-memory cache without incurring IPC serialization overhead.</span>
+                <span><strong>Tasks need to share in-memory data:</strong> If your concurrent tasks frequently read or update a shared cache (e.g., a 10 GB product catalog in RAM), threads give instant access via shared heap — no serialization or network hops needed. Processes would require IPC, which is far slower.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="text-cyan-400 mt-1 font-bold">•</span>
-                <span><strong>Near-instantaneous task spawning:</strong> Sub-microsecond dispatch latency is mandatory for high-throughput batch stream processing.</span>
+                <span><strong>You need to create tasks extremely fast:</strong> In stream processing (Kafka consumers, log pipelines), spawning a new handler per message must cost nanoseconds, not milliseconds. Goroutines and coroutines spawn in nanoseconds; processes take ~1 ms — far too slow at 100K messages/sec.</span>
               </li>
             </ul>
           </div>
@@ -467,7 +481,7 @@ export function renderProcessVsThreadContent(topic) {
             OVER TO YOU
           </span>
           <span class="text-slate-300 font-medium">
-            In an interview, if asked to build an ultra-low latency trading gateway, would you select a multi-threaded C++ model with pinned CPU cores or an async Node.js reactor? How would you justify your choice using cache locality and TLB metrics?
+            <strong>Interview scenario:</strong> You're designing an ultra-low latency stock trading gateway. Would you choose multi-threaded C++ with pinned CPU cores, or async Node.js? <em>Hint: Think about who controls scheduling, cache locality, and what happens when one handler is slow.</em>
           </span>
         </div>
 
@@ -502,7 +516,7 @@ export function renderProcessVsThreadContent(topic) {
             KEY INTERVIEW TAKEAWAY
           </span>
           <p class="text-[14px] font-sans font-medium text-white leading-relaxed">
-            Processes buy hardware-enforced fault isolation at the expense of memory footprint and context-switch latency; threads buy ultra-cheap shared state at the expense of memory safety; coroutines buy massive concurrency density at the expense of cooperative CPU scheduling. Always explicitly state the property you are buying before choosing a concurrency model — that architectural framing is what separates a senior systems engineer from a textbook memorizer.
+            Every concurrency model is a <strong>trade-off</strong>: Processes give you crash isolation but cost more memory. Threads give you cheap shared memory but one crash kills everyone. Coroutines give you million-connection concurrency but can't handle CPU-heavy work. Event loops give you zero overhead but one slow handler blocks the world. <strong>In interviews, always name the trade-off you're making</strong> — "I'm choosing Go goroutines because I need 100K concurrent WebSocket connections and the I/O-bound workload suits cooperative scheduling." That framing is what separates a senior engineer from someone reciting definitions.
           </p>
         </div>
 

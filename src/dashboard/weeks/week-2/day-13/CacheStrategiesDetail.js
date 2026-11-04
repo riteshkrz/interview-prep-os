@@ -57,7 +57,7 @@ export function renderCacheStrategiesContent(topic) {
       <br/><br/>
       <strong class="text-emerald-400">The Deletion Fix (Cache Invalidation):</strong>
       <br/>
-      If both threads execute <code>DEL X</code> on DB write, the cache is simply emptied. The next incoming read query will read the authoritative latest value ($2$) from the database and populate the cache safely. Invalidation eliminates write-write race conditions.`,
+      If both threads execute <code>DEL X</code> on DB write, the cache is simply emptied. The next incoming read query will read the authoritative latest value ($2$) from the database and populate the cache safely. Invalidation eliminates write-write race conditions.`
     },
     {
       qNum: "Q2",
@@ -70,10 +70,10 @@ export function renderCacheStrategiesContent(topic) {
       </ol>
       <strong class="text-indigo-400">Why This is Rare in Practice:</strong>
       <br/>
-      Database write operations take significantly longer (disk I/O, transaction locks, binlog commits: 10–50ms) than in-memory cache set operations (<1ms). For this race to occur, Thread 1's memory write to Redis must take <em>longer</em> than Thread 2's entire database transaction and network roundtrip.
+      Database write operations take significantly longer (disk I/O, transaction locks, binlog commits: 10–50ms) than in-memory cache set operations (&lt;1ms). For this race to occur, Thread 1's memory write to Redis must take <em>longer</em> than Thread 2's entire database transaction and network roundtrip.
       <br/><br/>
       <strong class="text-white">Senior Mitigation:</strong>
-      Always configure reasonable TTLs (e.g. 5 minutes) as a backstop, or use <strong>Delayed Double Deletion</strong> (delete key $\to$ commit DB $\to$ sleep 500ms $\to$ delete key again).`,
+      Always configure reasonable TTLs (e.g. 5 minutes) as a backstop, or use <strong>Delayed Double Deletion</strong> (delete key &rarr; commit DB &rarr; sleep 500ms &rarr; delete key again).`
     },
     {
       qNum: "Q3",
@@ -85,7 +85,7 @@ export function renderCacheStrategiesContent(topic) {
         <li><strong>Read-Immediately-After-Write Workloads:</strong> In systems where every write is guaranteed to be read within seconds, Cache-Aside forces every write to suffer a cache miss on the first subsequent read. Write-Through keeps the cache 100% pre-warmed.</li>
         <li><strong>Strict Data Freshness:</strong> Simplifies application code by guaranteeing the cache never holds stale values because updates are synchronous atomic units.</li>
         <li><strong>Write Penalty:</strong> Every write pays the roundtrip cost to both the cache and the database before acknowledging the client. Avoid Write-Through if write throughput dominates read traffic.</li>
-      </ul>`,
+      </ul>`
     },
     {
       qNum: "Q4",
@@ -97,7 +97,7 @@ export function renderCacheStrategiesContent(topic) {
         <li><strong>Access Frequency Tracking:</strong> The cache records the access timestamp of keys. If a key with a 60-second TTL is read frequently in the 50th to 59th second window, the cache engine detects high demand.</li>
         <li><strong>Asynchronous Background Pre-Fetch:</strong> An asynchronous worker thread reaches out to the database at the 55-second mark, fetches the latest record, and updates the cache value while resetting the TTL.</li>
         <li><strong>Zero Client Latency Penalty:</strong> Clients continuously hit warm in-memory cache data with 0ms latency, never experiencing a synchronous database miss.</li>
-      </ul>`,
+      </ul>`
     }
   ];
 
@@ -117,30 +117,46 @@ export function renderCacheStrategiesContent(topic) {
               5.1 Caching Strategies: Cache-Aside, Write-Through, Write-Behind, Refresh-Ahead
             </h2>
           </div>
+          <p class="text-slate-400 text-[13px] font-sans">
+            How to coordinate data synchronization between memory and persistent storage to achieve maximum speed and data safety.
+          </p>
         </div>
 
-        <!-- Overview Text -->
-        <div class="bg-[#141C2E] border border-[#24314A] rounded-xl p-4 sm:p-5 flex flex-col gap-3 font-sans text-[13px] leading-relaxed">
-          <p class="text-slate-300">
-            In distributed architectures, RAM is approximately <strong class="text-cyan-400">100,000x faster than disk</strong>. Caching intercepts requests before they hit the database, shielding storage from connection exhaustion and slashing latency from tens of milliseconds to sub-millisecond territory. The critical architectural decision is <strong class="text-indigo-400">cache orchestration</strong>: who coordinates data synchronization between the cache and the persistent database?
+        <!-- Everyday Mental Model Card -->
+        <div class="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/50 border border-indigo-500/30 rounded-xl p-5 flex flex-col gap-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-400 text-[20px]">lightbulb</span>
+            <span class="font-code text-[11px] font-bold text-indigo-300 uppercase tracking-wider">
+              EVERYDAY MENTAL MODEL: THE EXECUTIVE ASSISTANT'S DESK
+            </span>
+          </div>
+          <p class="text-slate-300 text-[13px] leading-relaxed font-sans">
+            Your database is a massive filing room in the basement. Your cache is a desk tray right beside you:
           </p>
-
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-            <div class="bg-[#0F1626] border border-cyan-500/30 rounded-lg p-3 flex flex-col gap-1">
-              <span class="font-code text-[11px] font-bold text-cyan-300 uppercase">1. Cache-Aside</span>
-              <span class="text-[12px] text-slate-300">App queries cache; on miss reads DB & populates cache. App updates DB & deletes cache key. The industry default.</span>
+            <div class="bg-[#090D16] p-3 rounded-lg border border-cyan-500/20 flex flex-col gap-1">
+              <strong class="text-cyan-300 text-[12px] font-code">1. Cache-Aside (Lazy Fetch)</strong>
+              <p class="text-[11.5px] text-slate-300 leading-relaxed font-sans">
+                You check your desk tray. If it's missing, you walk to the basement, grab the file, photocopy it for your desk tray, and start reading.
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-indigo-500/30 rounded-lg p-3 flex flex-col gap-1">
-              <span class="font-code text-[11px] font-bold text-indigo-300 uppercase">2. Write-Through</span>
-              <span class="text-[12px] text-slate-300">App writes to cache; cache synchronously writes to DB before confirming. Cache is always 100% warm and fresh.</span>
+            <div class="bg-[#090D16] p-3 rounded-lg border border-indigo-500/20 flex flex-col gap-1">
+              <strong class="text-indigo-300 text-[12px] font-code">2. Write-Through (Safe Copier)</strong>
+              <p class="text-[11.5px] text-slate-300 leading-relaxed font-sans">
+                When you update a document, you update your desk tray AND wait until your assistant files it in the basement before returning to work.
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-amber-500/30 rounded-lg p-3 flex flex-col gap-1">
-              <span class="font-code text-[11px] font-bold text-amber-300 uppercase">3. Write-Behind</span>
-              <span class="text-[12px] text-slate-300">App writes to cache; cache returns immediate ACK and flushes batches to DB asynchronously. Highest write speed.</span>
+            <div class="bg-[#090D16] p-3 rounded-lg border border-amber-500/20 flex flex-col gap-1">
+              <strong class="text-amber-300 text-[12px] font-code">3. Write-Behind (Delayed Tray)</strong>
+              <p class="text-[11.5px] text-slate-300 leading-relaxed font-sans">
+                You dump updates in the desk tray and resume work in &lt;1 second. A runner takes batches to the basement tonight. If the office burns down, unsaved tray papers are lost!
+              </p>
             </div>
-            <div class="bg-[#0F1626] border border-emerald-500/30 rounded-lg p-3 flex flex-col gap-1">
-              <span class="font-code text-[11px] font-bold text-emerald-300 uppercase">4. Refresh-Ahead</span>
-              <span class="text-[12px] text-slate-300">Cache automatically predicts expiration and reloads hot keys in the background before TTL expires.</span>
+            <div class="bg-[#090D16] p-3 rounded-lg border border-emerald-500/20 flex flex-col gap-1">
+              <strong class="text-emerald-300 text-[12px] font-code">4. Refresh-Ahead (Smart Scout)</strong>
+              <p class="text-[11.5px] text-slate-300 leading-relaxed font-sans">
+                The assistant knows you read the daily financial report every morning at 9:00 AM, so at 8:58 AM they fetch the freshest copy before you even ask!
+              </p>
             </div>
           </div>
         </div>
